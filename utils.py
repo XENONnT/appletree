@@ -1,3 +1,44 @@
+def exporter(export_self=False):
+    """
+    Export utility modified from https://stackoverflow.com/a/41895194
+    Returns export decorator, __all__ list
+    """
+    all_ = []
+    if export_self:
+        all_.append('exporter')
+
+    def decorator(obj):
+        all_.append(obj.__name__)
+        return obj
+
+    return decorator, all_
+
+export, __all__ = exporter(export_self=True)
+
+
+
+from time import time
+
+@export
+def timeit(indent=""):
+    """
+    Use timeit as a decorator.
+    """
+    def _timeit(func, indent):
+        name = func.__name__
+        def _func(*args, **kwargs):
+            print(indent + ' Function <%s> starts. '%name)
+            start = time()
+            res = func(*args, **kwargs)
+            print(indent + ' Function <%s> ends! Time cost = %f msec. '%(name, (time()-start)*1e3))
+            return res
+        return _func
+    if isinstance(indent, str):
+        return lambda func: _timeit(func, indent)
+    else:
+        return _timeit(indent, "")
+
+
 # Copyright Contributors to the Pyro project.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -188,26 +229,6 @@ def _binomial(key, p, n, shape):
     return jnp.reshape(ret, shape)
 
 
+@export
 def binomial(key, p, n=1, shape=()):
     return _binomial(key, p, n, shape)
-
-
-from time import time
-def timeit(indent=""):
-    """
-    Use timeit as a decorator.
-    """
-    def _timeit(func, indent):
-        name = func.__name__
-        def _func(*args, **kwargs):
-            print(indent + ' Function <%s> starts. '%name)
-            start = time()
-            res = func(*args, **kwargs)
-            print(indent + ' Function <%s> ends! Time cost = %f msec. '%(name, (time()-start)*1e3))
-            return res
-        return _func
-    if isinstance(indent, str):
-        return lambda func: _timeit(func, indent)
-    else:
-        return _timeit(indent, "")
-    
