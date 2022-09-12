@@ -5,11 +5,17 @@ from functools import partial
 import utils
 import numpy as np
 import jax
+from time import time
 
 INT = np.int32
 FLOAT = np.float32
 ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
 
+
+def get_key(seed=None):
+    if seed is None:
+        seed = int(time())
+    return random.PRNGKey(seed)
 
 @partial(jit, static_argnums=(3, ))
 def uniform(key, vmin, vmax, shape=()):
