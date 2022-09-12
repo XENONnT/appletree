@@ -1,3 +1,6 @@
+from time import time
+import os
+
 def exporter(export_self=False):
     """
     Export utility modified from https://stackoverflow.com/a/41895194
@@ -14,10 +17,6 @@ def exporter(export_self=False):
     return decorator, all_
 
 export, __all__ = exporter(export_self=True)
-
-
-
-from time import time
 
 @export
 def timeit(indent=""):
@@ -38,6 +37,14 @@ def timeit(indent=""):
     else:
         return _timeit(indent, "")
 
+    
+@export
+def set_gpu_memory_usage(fraction=0.3):
+    if fraction > 1.:
+        fraction = 1
+    if fraction <= 0:
+        raise ValueError("fraction must be positive!")
+    os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = f"{fraction:.2f}"
 
 # Copyright Contributors to the Pyro project.
 # SPDX-License-Identifier: Apache-2.0
