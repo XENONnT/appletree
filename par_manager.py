@@ -21,6 +21,8 @@ class par_manager():
             "gas_gain": 31.3,
             "s2_threshold": 500,
         }
+        self.keys = self._parameter_dict.keys()
+        self.values = self._parameter_dict.values()
         
     def __eq__(self):
         pass
