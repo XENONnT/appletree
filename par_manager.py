@@ -1,6 +1,6 @@
 import numpy as np
 
-class par_manager():
+class ParManager():
     def __init__(self):
         self._parameter_dict = {
             "fano": 0.059,
