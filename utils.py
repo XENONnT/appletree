@@ -1,5 +1,8 @@
 from time import time
 import os
+from matplotlib.patches import Rectangle
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 def exporter(export_self=False):
     """
@@ -45,6 +48,78 @@ def set_gpu_memory_usage(fraction=0.3):
     if fraction <= 0:
         raise ValueError("fraction must be positive!")
     os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = f"{fraction:.2f}"
+    
+
+@export
+def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
+    hist = np.asarray(hist)
+    bins_x = np.asarray(bins_x)
+    bins_y = np.asarray(bins_y)
+    
+    density = kwargs.get('density', False)
+    cmap = mpl.cm.get_cmap("RdBu_r")
+
+    loc = []
+    width = []
+    height = []
+    area = []
+    n = []
+    
+    for i in range(len(hist)):
+        for j in range(len(hist[i])):
+            x_lower = bins_x[i]
+            x_upper = bins_x[i+1]
+            y_lower = bins_y[i, j]
+            y_upper = bins_y[i, j+1]
+
+            loc.append((x_lower, y_lower))
+            width.append(x_upper - x_lower)
+            height.append(y_upper - y_lower)
+            area.append((x_upper - x_lower) * (y_upper - y_lower))
+            n.append(hist[i, j])
+
+    loc = np.asarray(loc)
+    width = np.asarray(width)
+    height = np.asarray(height)
+    area = np.asarray(area)
+    n = np.asarray(n)
+
+    if density:
+        norm = mpl.colors.Normalize(
+            vmin=np.min(n/area),
+            vmax=np.max(n/area),
+            clip=False
+        )
+    else:
+        norm = mpl.colors.Normalize(
+            vmin=0,
+            vmax=np.max(n),
+            clip=False
+        )
+
+    ax = plt.subplot()
+    for i in range(len(loc)):
+        rec = Rectangle(
+            loc[i],
+            width[i],
+            height[i],
+            facecolor=cmap(norm(n[i]/area[i] if density else n[i])),
+            edgecolor='k'
+        )
+        ax.add_patch(rec)
+        
+    fig = plt.gcf() 
+    fig.colorbar(
+        mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+        ax=ax,
+        label=('# events / bin size' if density else '# events')
+    )
+
+    ax.set_xlim(np.min(bins_x), np.max(bins_x))
+    ax.set_ylim(np.min(bins_y), np.max(bins_y))
+
+    return ax
+
 
 # Copyright Contributors to the Pyro project.
 # SPDX-License-Identifier: Apache-2.0
