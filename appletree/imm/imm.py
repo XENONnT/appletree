@@ -17,3 +17,7 @@ class MapRegBin(object):
         self.coordinate_uppers = jnp.asarray(self.data['coordinate_uppers'], dtype=float)
         self.map = jnp.asarray(self.data['map'], dtype=float)
         self.coordinate_name = self.data['coordinate_name']
+        
+class InputMapManager(object):
+    def __init__(self):
+        pass

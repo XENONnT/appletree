@@ -1,8 +1,10 @@
 import numpy as np
-from inspect import getsource
 
-from par_manager import ParManager
+from inspect import getsource
 from utils import exporter
+
+from appletree.ipm import ParManager
+from appletree.flex import randgen
 
 export, __all__ = exporter()
 
@@ -34,3 +36,19 @@ class Plugin():
     
     def get_doc(self):
         print("%s -> %s\n\nSource:\n"%(self.input, self.output) + getsource(self.simulate))
+        
+        
+@export
+class EnergySpectra(Plugin):
+    def __init__(self, par : ParManager, lower, upper):
+        super().__init__()
+        self.lower = lower
+        self.upper = upper
+        
+        self.input = ['batch_size']
+        self.output = ['energy']
+    
+    @partial(jit, static_argnums=(0, 2))
+    def simulate(self, key, batch_size):
+        key, energy = randgen.uniform(key, self.lower, self.upper, shape=(batch_size, ))
+        return key, energy
