@@ -2,8 +2,8 @@ import jax.numpy as jnp
 from jax import jit
 from functools import partial
 
+from appletree.flex.plugin.common import Plugin
 from appletree.flex import randgen
-from appletree.flex import Plugin
 from appletree.ipm import ParManager
     
 class Quenching(Plugin):

@@ -1,10 +1,12 @@
 import numpy as np
 
+from jax import jit
+from functools import partial
 from inspect import getsource
-from utils import exporter
 
 from appletree.ipm import ParManager
 from appletree.flex import randgen
+from appletree.flex.utils import exporter
 
 export, __all__ = exporter()
 
