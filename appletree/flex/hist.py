@@ -1,6 +1,7 @@
 import jax.numpy as jnp
-from functools import partial
+
 from jax import jit, vmap
+from functools import partial
 
 @partial(jit, static_argnums=(1,))
 def make_hist_mesh_grid(sample, bins=10, weights=None):

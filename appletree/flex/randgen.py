@@ -1,16 +1,16 @@
-from jax import numpy as jnp
+import jax
+import jax.numpy as jnp
+import numpy as np
+
 from jax import random, lax, jit, vmap
 from functools import partial
-
-import utils
-import numpy as np
-import jax
 from time import time
+
+from appletree.flex import utils
 
 INT = np.int32
 FLOAT = np.float32
 ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
-
 
 def get_key(seed=None):
     if seed is None:

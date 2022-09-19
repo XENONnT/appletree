@@ -1,8 +1,9 @@
-from time import time
 import os
-from matplotlib.patches import Rectangle
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+
+from time import time
+from matplotlib.patches import Rectangle
 
 def exporter(export_self=False):
     """
