@@ -5,8 +5,8 @@ from functools import partial
 from appletree.flex.plugin.common import Plugin
 from appletree.flex import randgen
 from appletree.flex import interp
-from appletree.imm import MapRegBin, Map
 from appletree.ipm import ParManager
+from appletree.imm import MapManager
 from appletree import exporter
 
 export, __all__ = exporter(export_self=False)
@@ -14,21 +14,22 @@ export, __all__ = exporter(export_self=False)
 
 @export
 class S1(Plugin):
-    def __init__(self, par : ParManager, s1_bias : Map, s1_smear : Map):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = ['s1_bias', 's1_smear']
+        self.update_map(map_manager)
         
         self.input = ['num_s1_phd', 'num_s1_pe']
         self.output = ['s1']
         
-        self.map_coordinate_bias = s1_bias.coordinate_system
-        self.map_coordinate_smear = s1_smear.coordinate_system
-        self.map_bias = s1_bias.map
-        self.map_smear = s1_smear.map
-        
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, num_s1_phd, num_s1_pe):
-        mean = interp.curve_interpolator(num_s1_phd, self.map_coordinate_bias, self.map_bias)
-        std = interp.curve_interpolator(num_s1_phd, self.map_coordinate_smear, self.map_smear)
+        mean = interp.curve_interpolator(num_s1_phd, self.s1_bias.coordinate_system, self.s1_bias.map)
+        std = interp.curve_interpolator(num_s1_phd, self.s1_smear.coordinate_system, self.s1_smear.map)
         key, bias = randgen.normal(key, mean, std)
         s1 = num_s1_pe * (1. + bias)
         return key, s1
@@ -36,21 +37,22 @@ class S1(Plugin):
     
 @export
 class S2(Plugin):
-    def __init__(self, par : ParManager, s2_bias : Map, s2_smear : Map):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = ['s2_bias', 's2_smear']
+        self.update_map(map_manager)
         
         self.input = ['num_s2_pe']
         self.output = ['s2']
         
-        self.map_coordinate_bias = s2_bias.coordinate_system
-        self.map_coordinate_smear = s2_smear.coordinate_system
-        self.map_bias = s2_bias.map
-        self.map_smear = s2_smear.map
-        
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, num_s2_pe):
-        mean = interp.curve_interpolator(num_s2_pe, self.map_coordinate_bias, self.map_bias)
-        std = interp.curve_interpolator(num_s2_pe, self.map_coordinate_smear, self.map_smear)
+        mean = interp.curve_interpolator(num_s2_pe, self.s2_bias.coordinate_system, self.s2_bias.map)
+        std = interp.curve_interpolator(num_s2_pe, self.s2_smear.coordinate_system, self.s2_smear.map)
         key, bias = randgen.normal(key, mean, std)
         s2 = num_s2_pe * (1. + bias)
         return key, s2
@@ -58,8 +60,14 @@ class S2(Plugin):
     
 @export
 class cS1(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['s1', 's1_correction']
         self.output = ['cs1']
@@ -72,8 +80,14 @@ class cS1(Plugin):
     
 @export
 class cS2(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['s2', 's2_correction', 'drift_survive_prob']
         self.output = ['cs2']

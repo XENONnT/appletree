@@ -40,7 +40,8 @@ class MapManager(object):
         
         self._maps[map_name] = item
         
-    def get_registration(self):
+    @property
+    def registration(self):
         registration = {map_name : map_dict['file_name'] for map_name, map_dict in self._maps.items()}
         return registration
     

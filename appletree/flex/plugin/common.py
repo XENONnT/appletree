@@ -6,6 +6,7 @@ from functools import partial
 from inspect import getsource
 
 from appletree.ipm import ParManager
+from appletree.imm import MapManager
 from appletree.flex import randgen
 from appletree import exporter
 
@@ -18,6 +19,9 @@ class Plugin():
         self.par_values = np.array([])
         self.par_dict = {}
         
+        self.map_names = []
+        self.map_registration = {}
+        
         self.input = []
         self.output = []
     
@@ -25,6 +29,9 @@ class Plugin():
         return self.simulate(*args, **kwargs)
         
     def update_parameter(self, par_manager):
+        if self.par_names == []:
+            return
+        
         check, missing = par_manager.check_parameter_exist(self.par_names, return_not_exist=True)
         assert check, "%s not found in par_manager!"%missing
         
@@ -33,6 +40,16 @@ class Plugin():
         
         for key, val in zip(self.par_names, self.par_values):
             self.__setattr__(key, val)
+            
+    def update_map(self, map_manager):
+        if self.map_names == []:
+            return
+        
+        registration = map_manager.registration
+        
+        for name in self.map_names:
+            self.map_registration[name] = registration[name]
+            self.__setattr__(name, map_manager.get_map(name))
     
     def simulate(self, *args, **kwargs):
         pass
@@ -43,13 +60,20 @@ class Plugin():
         
 @export
 class EnergySpectra(Plugin):
-    def __init__(self, par : ParManager, lower, upper):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager, lower=0.01, upper=20.):
         super().__init__()
-        self.lower = lower
-        self.upper = upper
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['batch_size']
         self.output = ['energy']
+        
+        self.lower = lower
+        self.upper = upper
     
     @partial(jit, static_argnums=(0, 2))
     def simulate(self, key, batch_size):
@@ -59,14 +83,21 @@ class EnergySpectra(Plugin):
     
 @export
 class PositionSpectra(Plugin):
-    def __init__(self, par : ParManager, z_sim_min=-133.97, z_sim_max=-13.35, r_sim_max=60.):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager, z_sim_min=-133.97, z_sim_max=-13.35, r_sim_max=60.):
         super().__init__()
-        self.z_lower = z_sim_min
-        self.z_upper = z_sim_max
-        self.r_upper = r_sim_max
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['batch_size']
         self.output = ['x', 'y', 'z']
+        
+        self.z_lower = z_sim_min
+        self.z_upper = z_sim_max
+        self.r_upper = r_sim_max
     
     @partial(jit, static_argnums=(0, 2))
     def simulate(self, key, batch_size):
