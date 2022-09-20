@@ -5,6 +5,7 @@ from functools import partial
 from appletree.flex.plugin.common import Plugin
 from appletree.flex import randgen
 from appletree.ipm import ParManager
+from appletree.imm import MapManager
 from appletree import exporter
 
 export, __all__ = exporter(export_self=False)
@@ -12,10 +13,14 @@ export, __all__ = exporter(export_self=False)
 
 @export
 class Quenching(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
-        self.param_names = ['w', 'fano']
-        self.update_parameter(par)
+        
+        self.par_names = ['w', 'fano']
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['energy']
         self.output = ['num_quanta']
@@ -30,10 +35,14 @@ class Quenching(Plugin):
     
 @export
 class Ionization(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
-        self.param_names = ['nex_ni_ratio']
-        self.update_parameter(par)
+        
+        self.par_names = ['nex_ni_ratio']
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['num_quanta']
         self.output = ['num_ion']
@@ -47,10 +56,14 @@ class Ionization(Plugin):
     
 @export
 class mTI(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
-        self.param_names = ['w', 'nex_ni_ratio', 'py0', 'py1', 'py2', 'py3', 'py4', 'field']
-        self.update_parameter(par)
+        
+        self.par_names = ['w', 'nex_ni_ratio', 'py0', 'py1', 'py2', 'py3', 'py4', 'field']
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['energy']
         self.output = ['recomb_mean']
@@ -70,10 +83,14 @@ class mTI(Plugin):
     
 @export
 class RecombFluct(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
-        self.param_names = ['rf0', 'rf1']
-        self.update_parameter(par)
+        
+        self.par_names = ['rf0', 'rf1']
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['energy']
         self.output = ['recomb_std']
@@ -85,8 +102,14 @@ class RecombFluct(Plugin):
     
 @export
 class TrueRecomb(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['recomb_mean', 'recomb_std']
         self.output = ['recomb']
@@ -99,8 +122,14 @@ class TrueRecomb(Plugin):
     
 @export
 class Recombination(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['num_quanta', 'num_ion', 'recomb']
         self.output = ['num_photon', 'num_electron']

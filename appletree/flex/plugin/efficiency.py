@@ -5,8 +5,8 @@ from functools import partial
 from appletree.flex.plugin.common import Plugin
 from appletree.flex import randgen
 from appletree.flex import interp
-from appletree.imm import MapRegBin, Map
 from appletree.ipm import ParManager
+from appletree.imm import MapManager
 from appletree import exporter
 
 export, __all__ = exporter(export_self=False)
@@ -14,10 +14,14 @@ export, __all__ = exporter(export_self=False)
 
 @export
 class S2Threshold(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
-        self.param_names = ['s2_threshold']
-        self.update_parameter(par)
+        
+        self.par_names = ['s2_threshold']
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['s2']
         self.output = ['acc_s2_threshold']
@@ -29,15 +33,18 @@ class S2Threshold(Plugin):
     
 @export
 class S1ReconEff(Plugin):
-    def __init__(self, par : ParManager, s1_eff : Map):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = ['s1_eff']
+        self.update_map(map_manager)
         
         self.input = ['num_s1_phd']
         self.output = ['acc_s1_recon_eff']
         
-        self.map_coordinate = s1_eff.coordinate_system
-        self.map = s1_eff.map
-        
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, num_s1_phd):
-        return key, interp.curve_interpolator(num_s1_phd, self.map_coordinate, self.map)
+        return key, interp.curve_interpolator(num_s1_phd, self.s1_eff.coordinate_system, self.s1_eff.map)

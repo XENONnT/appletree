@@ -5,8 +5,8 @@ from functools import partial
 from appletree.flex.plugin.common import Plugin
 from appletree.flex import randgen
 from appletree.flex import interp
-from appletree.imm import MapRegBin, Map
 from appletree.ipm import ParManager
+from appletree.imm import MapManager
 from appletree import exporter
 
 export, __all__ = exporter(export_self=False)
@@ -14,58 +14,66 @@ export, __all__ = exporter(export_self=False)
 
 @export
 class S1Correction(Plugin):
-    def __init__(self, par : ParManager, s1_lce_map : MapRegBin):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = ['s1_lce']
+        self.update_map(map_manager)
         
         self.input = ['x', 'y', 'z']
         self.output = ['s1_correction']
-        
-        self.map_lowers = s1_lce_map.coordinate_lowers
-        self.map_uppers = s1_lce_map.coordinate_uppers
-        self.map = s1_lce_map.map
         
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, x, y, z):
         pos = jnp.stack([x, y, z]).T
         s1_correction = interp.map_interpolator_regular_binning_3d(
             pos,
-            self.map_lowers,
-            self.map_uppers,
-            self.map
+            self.s1_lce.coordinate_lowers,
+            self.s1_lce.coordinate_uppers,
+            self.s1_lce.map
         )
         return key, s1_correction
     
     
 @export
 class S2Correction(Plugin):
-    def __init__(self, par : ParManager, s2_lce_map : MapRegBin):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = ['s2_lce']
+        self.update_map(map_manager)
         
         self.input = ['x', 'y']
         self.output = ['s2_correction']
-        
-        self.map_lowers = s2_lce_map.coordinate_lowers
-        self.map_uppers = s2_lce_map.coordinate_uppers
-        self.map = s2_lce_map.map
         
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, x, y):
         pos = jnp.stack([x, y]).T
         s2_correction = interp.map_interpolator_regular_binning_2d(
             pos,
-            self.map_lowers,
-            self.map_uppers,
-            self.map
+            self.s2_lce.coordinate_lowers,
+            self.s2_lce.coordinate_uppers,
+            self.s2_lce.map
         )
         return key, s2_correction
     
     
 @export
 class PhotonDetection(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
-        self.param_names = ['g1', 'p_dpe']
-        self.update_parameter(par)
+        
+        self.par_names = ['g1', 'p_dpe']
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['num_photon', 's1_correction']
         self.output = ['num_s1_phd']
@@ -79,10 +87,14 @@ class PhotonDetection(Plugin):
     
 @export
 class S1PE(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
-        self.param_names = ['p_dpe']
-        self.update_parameter(par)
+        
+        self.par_names = ['p_dpe']
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['num_s1_phd']
         self.output = ['num_s1_pe']
@@ -96,29 +108,36 @@ class S1PE(Plugin):
     
 @export
 class DriftLoss(Plugin):
-    def __init__(self, par : ParManager, elife_map : Map):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
-        self.param_names = ['drift_velocity']
-        self.update_parameter(par)
+        
+        self.par_names = ['drift_velocity']
+        self.update_parameter(par_manager)
+        
+        self.map_names = ['elife']
+        self.update_map(map_manager)
         
         self.input = ['z']
         self.output = ['drift_survive_prob']
-        
-        self.map_coordinate = elife_map.coordinate_system
-        self.map = elife_map.map
     
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, z):
         key, p = randgen.uniform(key, 0, 1., shape=jnp.shape(z))
-        lifetime = interp.curve_interpolator(p, self.map_coordinate, self.map)
+        lifetime = interp.curve_interpolator(p, self.elife.coordinate_system, self.elife.map)
         drift_survive_prob = jnp.exp(- jnp.abs(z) / self.drift_velocity / lifetime)
         return key, drift_survive_prob
     
     
 @export
 class ElectronDrifted(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
+        
+        self.par_names = []
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['num_electron', 'drift_survive_prob']
         self.output = ['num_electron_drifted']
@@ -131,10 +150,14 @@ class ElectronDrifted(Plugin):
         
 @export
 class S2PE(Plugin):
-    def __init__(self, par : ParManager):
+    def __init__(self, par_manager : ParManager, map_manager : MapManager):
         super().__init__()
-        self.param_names = ['g2', 'gas_gain']
-        self.update_parameter(par)
+        
+        self.par_names = ['g2', 'gas_gain']
+        self.update_parameter(par_manager)
+        
+        self.map_names = []
+        self.update_map(map_manager)
         
         self.input = ['num_electron_drifted', 's2_correction']
         self.output = ['num_s2_pe']
