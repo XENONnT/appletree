@@ -7,7 +7,7 @@ from inspect import getsource
 
 from appletree.ipm import ParManager
 from appletree.flex import randgen
-from appletree.flex.utils import exporter
+from appletree import exporter
 
 export, __all__ = exporter()
 

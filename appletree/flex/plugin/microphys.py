@@ -5,7 +5,12 @@ from functools import partial
 from appletree.flex.plugin.common import Plugin
 from appletree.flex import randgen
 from appletree.ipm import ParManager
-    
+from appletree import exporter
+
+export, __all__ = exporter(export_self=False)
+
+
+@export
 class Quenching(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()
@@ -23,6 +28,7 @@ class Quenching(Plugin):
         return key, num_quanta.round().astype(int)
     
     
+@export
 class Ionization(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()
@@ -39,6 +45,7 @@ class Ionization(Plugin):
         return key, num_ion
     
     
+@export
 class mTI(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()
@@ -61,6 +68,7 @@ class mTI(Plugin):
         return key, r * fd
     
     
+@export
 class RecombFluct(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()
@@ -75,6 +83,7 @@ class RecombFluct(Plugin):
         return key, jnp.clip(self.rf0 * (1. - jnp.exp(- energy / self.rf1)), 0, 1.)
     
     
+@export
 class TrueRecomb(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()
@@ -88,6 +97,7 @@ class TrueRecomb(Plugin):
         return key, recomb
     
     
+@export
 class Recombination(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()

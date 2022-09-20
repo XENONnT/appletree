@@ -2,11 +2,18 @@ import jax.numpy as jnp
 
 from jax import jit, vmap
 from functools import partial
+from appletree import exporter
 
+export, __all__ = exporter(export_self=False)
+
+
+@export
 @partial(jit, static_argnums=(1,))
 def make_hist_mesh_grid(sample, bins=10, weights=None):
     return jnp.histogramdd(sample, bins=bins, weights=weights)
 
+
+@export
 @jit
 def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights=None):
     """

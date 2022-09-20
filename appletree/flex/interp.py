@@ -3,6 +3,11 @@ import jax.numpy as jnp
 from jax import jit, lax
 from functools import partial
 
+from appletree import exporter
+
+export, __all__ = exporter(export_self=False)
+
+
 @jit
 def _L2_dist2(pos1, pos2):
     """
@@ -15,6 +20,7 @@ def _L2_dist2(pos1, pos2):
     return jnp.sum(dr * dr, axis=-1)
 
 
+@export
 @partial(jit, static_argnums=(3,))
 def map_interpolator_knn(pos, ref_pos, ref_val, k=3):
     """
@@ -37,6 +43,7 @@ def map_interpolator_knn(pos, ref_pos, ref_val, k=3):
     return val
 
 
+@export
 @jit
 def curve_interpolator(pos, ref_pos, ref_val):
     """
@@ -64,6 +71,7 @@ def curve_interpolator(pos, ref_pos, ref_val):
     return val
 
 
+@export
 @jit
 def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
     num_bins = jnp.asarray(jnp.shape(ref_val))
@@ -96,6 +104,7 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
     return val
 
 
+@export
 @jit
 def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
     num_bins = jnp.asarray(jnp.shape(ref_val))
