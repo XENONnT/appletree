@@ -7,7 +7,12 @@ from appletree.flex import randgen
 from appletree.flex import interp
 from appletree.imm import MapRegBin, Map
 from appletree.ipm import ParManager
+from appletree import exporter
 
+export, __all__ = exporter(export_self=False)
+
+
+@export
 class S1Correction(Plugin):
     def __init__(self, par : ParManager, s1_lce_map : MapRegBin):
         super().__init__()
@@ -31,6 +36,7 @@ class S1Correction(Plugin):
         return key, s1_correction
     
     
+@export
 class S2Correction(Plugin):
     def __init__(self, par : ParManager, s2_lce_map : MapRegBin):
         super().__init__()
@@ -54,6 +60,7 @@ class S2Correction(Plugin):
         return key, s2_correction
     
     
+@export
 class PhotonDetection(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()
@@ -70,6 +77,7 @@ class PhotonDetection(Plugin):
         return key, num_s1_phd
     
     
+@export
 class S1PE(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()
@@ -86,6 +94,7 @@ class S1PE(Plugin):
         return key, num_s1_pe
     
     
+@export
 class DriftLoss(Plugin):
     def __init__(self, par : ParManager, elife_map : Map):
         super().__init__()
@@ -106,6 +115,7 @@ class DriftLoss(Plugin):
         return key, drift_survive_prob
     
     
+@export
 class ElectronDrifted(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()
@@ -119,6 +129,7 @@ class ElectronDrifted(Plugin):
         return key, num_electron_drifted
         
         
+@export
 class S2PE(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()

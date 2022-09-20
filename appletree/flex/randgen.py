@@ -6,17 +6,24 @@ from jax import random, lax, jit, vmap
 from functools import partial
 from time import time
 
-from appletree.flex import utils
+from appletree import utils
+from appletree import exporter
+
+export, __all__ = exporter(export_self=False)
 
 INT = np.int32
 FLOAT = np.float32
 ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
 
+
+@export
 def get_key(seed=None):
     if seed is None:
         seed = int(time())
     return random.PRNGKey(seed)
 
+
+@export
 @partial(jit, static_argnums=(3, ))
 def uniform(key, vmin, vmax, shape=()):
     """
@@ -39,6 +46,7 @@ def uniform(key, vmin, vmax, shape=()):
     return key, rvs.astype(FLOAT)
     
     
+@export
 @partial(jit, static_argnums=(2, ))
 def poisson(key, lam, shape=()):
     """
@@ -59,6 +67,7 @@ def poisson(key, lam, shape=()):
     return key, rvs.astype(INT)
 
 
+@export
 @partial(jit, static_argnums=(3, ))
 def normal(key, mean, std, shape=()):
     """
@@ -81,6 +90,7 @@ def normal(key, mean, std, shape=()):
     return key, rvs.astype(FLOAT)
 
 
+@export
 @partial(jit, static_argnums=(5, ))
 def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
     """
@@ -100,6 +110,7 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
     return key, rvs.astype(FLOAT)
 
 
+@export
 @partial(jit, static_argnums=(3, 4))
 def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_BINOM):
     """

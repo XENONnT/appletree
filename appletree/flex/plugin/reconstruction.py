@@ -7,7 +7,12 @@ from appletree.flex import randgen
 from appletree.flex import interp
 from appletree.imm import MapRegBin, Map
 from appletree.ipm import ParManager
+from appletree import exporter
 
+export, __all__ = exporter(export_self=False)
+
+
+@export
 class S1(Plugin):
     def __init__(self, par : ParManager, s1_bias : Map, s1_smear : Map):
         super().__init__()
@@ -29,6 +34,7 @@ class S1(Plugin):
         return key, s1
     
     
+@export
 class S2(Plugin):
     def __init__(self, par : ParManager, s2_bias : Map, s2_smear : Map):
         super().__init__()
@@ -50,6 +56,7 @@ class S2(Plugin):
         return key, s2
     
     
+@export
 class cS1(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()
@@ -63,6 +70,7 @@ class cS1(Plugin):
         return key, cs1
     
     
+@export
 class cS2(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()

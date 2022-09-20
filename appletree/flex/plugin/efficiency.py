@@ -7,7 +7,12 @@ from appletree.flex import randgen
 from appletree.flex import interp
 from appletree.imm import MapRegBin, Map
 from appletree.ipm import ParManager
+from appletree import exporter
 
+export, __all__ = exporter(export_self=False)
+
+
+@export
 class S2Threshold(Plugin):
     def __init__(self, par : ParManager):
         super().__init__()
@@ -22,6 +27,7 @@ class S2Threshold(Plugin):
         return key, jnp.where(s2 > self.s2_threshold, 1., 0)
     
     
+@export
 class S1ReconEff(Plugin):
     def __init__(self, par : ParManager, s1_eff : Map):
         super().__init__()
