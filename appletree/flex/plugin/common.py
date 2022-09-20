@@ -14,9 +14,9 @@ export, __all__ = exporter()
 @export
 class Plugin():
     def __init__(self):
-        self.param_names = []
-        self.param_values = np.array([])
-        self.param_dict = {}
+        self.par_names = []
+        self.par_values = np.array([])
+        self.par_dict = {}
         
         self.input = []
         self.output = []
@@ -25,13 +25,13 @@ class Plugin():
         return self.simulate(*args, **kwargs)
         
     def update_parameter(self, par_manager):
-        check, missing = par_manager.check_parameter_exist(self.param_names, return_not_exist=True)
+        check, missing = par_manager.check_parameter_exist(self.par_names, return_not_exist=True)
         assert check, "%s not found in par_manager!"%missing
         
-        self.param_values = par_manager.get_parameter(self.param_names)
-        self.param_dict = {key : val for key, val in zip(self.param_names, self.param_values)}
+        self.par_values = par_manager.get_parameter(self.par_names)
+        self.par_dict = {key : val for key, val in zip(self.par_names, self.par_values)}
         
-        for key, val in zip(self.param_names, self.param_values):
+        for key, val in zip(self.par_names, self.par_values):
             self.__setattr__(key, val)
     
     def simulate(self, *args, **kwargs):
