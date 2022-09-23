@@ -1,4 +1,4 @@
-from .imm import DATAPATH
+from .imm import MAPPATH
 from .utils import exporter
 
 from . import flex

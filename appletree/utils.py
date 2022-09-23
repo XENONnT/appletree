@@ -1,6 +1,8 @@
 import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
+import GOFevaluation
 
 from time import time
 from matplotlib.patches import Rectangle
@@ -50,6 +52,18 @@ def set_gpu_memory_usage(fraction=0.3):
         raise ValueError("fraction must be positive!")
     os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = f"{fraction:.2f}"
     
+    
+@export
+def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.inf], y_clip=[-np.inf, +np.inf], which_np=np):
+    mask = (data[:, 0] > x_clip[0]) & (data[:, 0] < x_clip[1])
+    mask &= (data[:, 1] > y_clip[0]) & (data[:, 1] < y_clip[1])
+    
+    x_bins, y_bins = GOFevaluation.utils._get_equiprobable_binning(data[mask], n_partitions, order=order)
+    x_bins = np.clip(x_bins, *x_clip)
+    y_bins = np.clip(y_bins, *y_clip)
+    
+    return which_np.array(x_bins), which_np.array(y_bins)
+
 
 @export
 def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
