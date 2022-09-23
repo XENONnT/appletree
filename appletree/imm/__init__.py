@@ -2,5 +2,4 @@ from . import imm
 from .imm import *
 
 import os
-SOURCEPATH = os.path.abspath(os.path.dirname(__file__))
-DATAPATH = os.path.join(SOURCEPATH, 'data')
+MAPPATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'map')
