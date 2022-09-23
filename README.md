@@ -8,3 +8,5 @@
   - multiple-scattering
   - emcee fitting
   - parameter handler
+  - add autotest
+  - add coverage check
