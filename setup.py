@@ -31,5 +31,5 @@ setuptools.setup(
             'flake8',
         ],
     },
-    packages=setuptools.find_packages() + ['extra_requirements']
+    packages=setuptools.find_packages()
 )
