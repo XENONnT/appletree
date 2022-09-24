@@ -1,3 +1,4 @@
+import os
 import typing as ty
 import json
 from enum import IntEnum
@@ -10,6 +11,9 @@ from appletree import exporter
 export, __all__ = exporter()
 
 OMITTED = '<OMITTED>'
+
+MAPPATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'maps')
+
 __all__ += 'OMITTED InvalidConfiguration'.split()
 
 @export
@@ -74,24 +78,25 @@ class Map(object):
         self.build(self.coord_type, self.file_name)
 
     def build(self, type, file_name):
+        file_path = os.path.join(MAPPATH, file_name)
         if type == 'point':
             self.type = MapType.POINT
-            self.build_point(file_name)
+            self.build_point(file_path)
         elif type == 'regbin':
             self.type = MapType.REGBIN
-            self.build_regbin(file_name)
+            self.build_regbin(file_path)
         else:
             raise ValueError("map_type must be either 'point' or 'regbin'!")
 
-    def build_point(self, file_name):
-        with open(file_name, 'r') as file:
+    def build_point(self, file_path):
+        with open(file_path, 'r') as file:
             self.data = json.load(file)
         self.coordinate_name = self.data['coordinate_name']
         self.coordinate_system = jnp.asarray(self.data['coordinate_system'], dtype=float)
         self.map = jnp.asarray(self.data['map'], dtype=float)
 
-    def build_regbin(self, file_name):
-        with open(file_name, 'r') as file:
+    def build_regbin(self, file_path):
+        with open(file_path, 'r') as file:
             self.data = json.load(file)
         self.coordinate_name = self.data['coordinate_name']
         self.coordinate_lowers = jnp.asarray(self.data['coordinate_lowers'], dtype=float)
