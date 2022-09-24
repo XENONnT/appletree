@@ -15,7 +15,7 @@ def make_hist_mesh_grid(sample, bins=10, weights=None):
 
 @export
 @jit
-def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights=None):
+def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights):
     """
     sample : (N, 2)
     bins_x : (M1, )
@@ -24,7 +24,6 @@ def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights=None):
     
     return : (M1-1, M2-1)
     """
-    weights = jnp.ones(len(sample))
 
     x = sample[:, 0]
     y = sample[:, 1]
