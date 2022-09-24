@@ -33,13 +33,13 @@ def map_interpolator_knn(pos, ref_pos, ref_val, k=3):
     pos = jnp.asarray(pos)
     ref_pos = jnp.asarray(ref_pos)
     ref_val = jnp.asarray(ref_val)
-    
+
     dr2 = -_L2_dist2(pos, ref_pos)
     dr2, ind = lax.top_k(dr2, k)
     weights = 1.0 / jnp.clip(jnp.sqrt(-dr2), 1e-6, float('inf'))
     val = jnp.take(ref_val, ind)
     val = jnp.sum(val * weights, axis=1) / jnp.sum(weights, axis=1)
-    
+
     return val
 
 
@@ -62,7 +62,6 @@ def curve_interpolator(pos, ref_pos, ref_val):
     val_right = ref_val[right]
     val_left = ref_val[left]
 
-
     dist_right = jnp.abs(pos - ref_pos[right])
     dist_left = jnp.abs(pos - ref_pos[left])
 
@@ -78,7 +77,7 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
     bin_sizes = (ref_pos_uppers - ref_pos_lowers) / (num_bins - 1)
     num_bins = num_bins[jnp.newaxis, :]
     bin_sizes = bin_sizes[jnp.newaxis, :]
-    
+
     ind1 = jnp.asarray(jnp.clip(jnp.floor((pos - ref_pos_lowers) / bin_sizes), a_min=0, a_max=num_bins-1), dtype=int)
     ind2 = ind1.at[:, 0].add(1)
     ind3 = ind1.at[:, 1].add(1)
@@ -100,7 +99,7 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
     dr4 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos4 - pos)**2, axis=-1)), a_min=1e-10)
 
     val = (val1/dr1+val2/dr2+val3/dr3+val4/dr4) / (1./dr1+1./dr2+1./dr3+1./dr4)
-    
+
     return val
 
 
@@ -111,7 +110,7 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
     bin_sizes = (ref_pos_uppers - ref_pos_lowers) / (num_bins - 1)
     num_bins = num_bins[jnp.newaxis, :]
     bin_sizes = bin_sizes[jnp.newaxis, :]
-    
+
     ind1 = jnp.asarray(jnp.clip(jnp.floor((pos - ref_pos_lowers) / bin_sizes), a_min=0, a_max=num_bins-1), dtype=int)
     ind2 = ind1.at[:, 0].add(1)
     ind3 = ind1.at[:, 1].add(1)
@@ -149,5 +148,5 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
     dr8 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos8 - pos)**2, axis=-1)), a_min=1e-10)
 
     val = (val1/dr1+val2/dr2+val3/dr3+val4/dr4+val5/dr5+val6/dr6+val7/dr7+val8/dr8) / (1./dr1+1./dr2+1./dr3+1./dr4+1./dr5+1./dr6+1./dr7+1./dr8)
-    
+
     return val

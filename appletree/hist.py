@@ -36,5 +36,5 @@ def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights):
 
     hist = jnp.zeros((len(bins_x)+1, bins_y.shape[-1]+1))
     hist = hist.at[tuple(bin_ind)].add(weights)
-    
+
     return hist[1:-1, 1:-1]
