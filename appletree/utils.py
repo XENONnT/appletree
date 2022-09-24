@@ -1,11 +1,13 @@
 import os
+import re
+from time import time
+
+import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import numpy as np
-import GOFevaluation
-
-from time import time
 from matplotlib.patches import Rectangle
+
+import GOFevaluation
 
 def exporter(export_self=False):
     """
@@ -23,6 +25,13 @@ def exporter(export_self=False):
     return decorator, all_
 
 export, __all__ = exporter(export_self=True)
+
+@export
+def camel_to_snake(x):
+    """Convert x from CamelCase to snake_case"""
+    # From https://stackoverflow.com/questions/1175208
+    x = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', x)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', x).lower()
 
 @export
 def timeit(indent=""):
