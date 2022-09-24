@@ -1,6 +1,6 @@
 import appletree
+from appletree import Parameter
 from appletree import exporter
-from symbol import parameters
 
 export, __all__ = exporter()
 
@@ -9,15 +9,16 @@ class Context:
     """
     """
     par_manager = None
-    parameters = dict()
 
     def __init__(self,
                  parameter_config=None,
-                 parameter=None,
                  register=None):
         self._plugin_class_registry = dict()
         if register is not None:
             self.register(register)
+
+        self.set_par_manager(parameter_config)
+        self.init_parameters()
 
     def register(self, plugin_class):
         if isinstance(plugin_class, (tuple, list)):
@@ -71,33 +72,24 @@ class Context:
                     # These are option which are inherited from context options.
                     pass
 
-    def new_context(self,
-                    parameter_config=None,
-                    parameter=None,
-                    register=None):
+    def new_context(self, *args, **kwargs):
         raise NotImplementedError
 
-    def init_parameters(self, external_parameter:dict()=None):
-        pass
+    def set_par_manager(self, parameter_config):
+        self.par_manager = Parameter(parameter_config)
 
-    def set_parameters(self, external_parameter:dict()=None):
-        pass
+    def init_parameters(self):
+        self.par_manager.init_parameter()
 
-    def update_parameters(self, par_manager):
-        if self.par_names == []:
-            return
+    def set_parameters(self, *args, **kwargs):
+        self.par_manager.set_parameter(*args, **kwargs)
 
-        check, missing = par_manager.check_parameter_exist(self.par_names, return_not_exist=True)
-        assert check, "%s not found in par_manager!"%missing
+    @property
+    def parameters(self):
+        return self.par_manager._parameter_dict
 
-        self.par_values = par_manager.get_parameter(self.par_names)
-        self.par_dict = {key : val for key, val in zip(self.par_names, self.par_values)}
-
-        for key, val in zip(self.par_names, self.par_values):
-            self.__setattr__(key, val)
-
-    def get_parameters(self, external_parameter:dict()=None):
-        pass
+    def get_parameters(self):
+        return self.parameters
 
     def dependencies_deduce(self):
         pass
