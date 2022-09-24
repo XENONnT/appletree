@@ -110,14 +110,14 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
 
     if density:
         norm = mpl.colors.Normalize(
-            vmin=np.min(n/area),
-            vmax=np.max(n/area),
+            vmin=kwargs.get('vmin', np.min(n/area)),
+            vmax=kwargs.get('vmax', np.max(n/area)),
             clip=False
         )
     else:
         norm = mpl.colors.Normalize(
-            vmin=0,
-            vmax=np.max(n),
+            vmin=kwargs.get('vmin', np.min(n)),
+            vmax=kwargs.get('vmax', np.max(n)),
             clip=False
         )
 
