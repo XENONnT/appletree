@@ -5,20 +5,20 @@ from functools import partial
 import appletree
 from appletree import randgen
 from appletree import interpolation
-from appletree.map import Map
+from appletree.mapping import Mapping
 from appletree.plugin import Plugin
-from appletree import exporter
+from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
 
 @export
 @appletree.takes_map(
-    Map(name='s1_bias',
+    Mapping(name='s1_bias',
         coord_type='point',
         file_name='s1_bias.json',
         help='S1 reconstruction bias'),
-    Map(name='s1_smear',
+    Mapping(name='s1_smear',
         coord_type='point',
         file_name='s1_smearing.json',
         help='S1 reconstruction smearing')
@@ -38,11 +38,11 @@ class S1(Plugin):
 
 @export
 @appletree.takes_map(
-    Map(name='s2_bias',
+    Mapping(name='s2_bias',
         coord_type='point',
         file_name='s2_bias.json',
         help='S2 reconstruction bias'),
-    Map(name='s2_smear',
+    Mapping(name='s2_smear',
         coord_type='point',
         file_name='s2_smearing.json',
         help='S2 reconstruction smearing')

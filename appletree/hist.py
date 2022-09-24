@@ -1,8 +1,9 @@
-import jax.numpy as jnp
-
-from jax import jit, vmap
 from functools import partial
-from appletree import exporter
+
+import jax.numpy as jnp
+from jax import jit, vmap
+
+from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 

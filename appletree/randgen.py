@@ -1,13 +1,13 @@
-import jax
-import jax.numpy as jnp
-import numpy as np
-
-from jax import random, lax, jit, vmap
 from functools import partial
 from time import time
 
+import jax
+import jax.numpy as jnp
+import numpy as np
+from jax import random, lax, jit, vmap
+
 from appletree import utils
-from appletree import exporter
+from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 

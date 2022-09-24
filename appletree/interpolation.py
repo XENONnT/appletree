@@ -1,9 +1,9 @@
-import jax.numpy as jnp
-
-from jax import jit, lax
 from functools import partial
 
-from appletree import exporter
+import jax.numpy as jnp
+from jax import jit, lax
+
+from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 

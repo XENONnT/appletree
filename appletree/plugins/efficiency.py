@@ -5,8 +5,8 @@ from functools import partial
 import appletree
 from appletree.plugin import Plugin
 from appletree import interpolation
-from appletree.map import Map
-from appletree import exporter
+from appletree.mapping import Mapping
+from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
@@ -23,7 +23,7 @@ class S2Threshold(Plugin):
 
 @export
 @appletree.takes_map(
-    Map(name='s1_eff',
+    Mapping(name='s1_eff',
         coord_type='point',
         file_name='3fold_recon_eff.json',
         help='S1 light collation efficiency correction')
@@ -37,3 +37,14 @@ class S1ReconEff(Plugin):
         acc_s1_recon_eff = interpolation.curve_interpolator(num_s1_phd, 
             self.s1_eff.coordinate_system, self.s1_eff.map)
         return key, acc_s1_recon_eff
+
+
+@export
+class Eff(Plugin):
+    depends_on = ['acc_s2_threshold', 'acc_s1_recon_eff']
+    provides = ['eff']
+
+    @partial(jit, static_argnums=(0, ))
+    def simulate(self, key, parameters, acc_s2_threshold, acc_s1_recon_eff):
+        eff = acc_s2_threshold * acc_s1_recon_eff
+        return key, eff

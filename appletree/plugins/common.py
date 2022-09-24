@@ -1,11 +1,11 @@
-import jax.numpy as jnp
-
-from jax import jit
 from functools import partial
+
+import jax.numpy as jnp
+from jax import jit
 
 from appletree import randgen
 from appletree.plugin import Plugin
-from appletree import exporter
+from appletree.utils import exporter
 
 export, __all__ = exporter()
 
