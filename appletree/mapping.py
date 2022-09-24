@@ -1,50 +1,51 @@
 import os
+import inspect
 import typing as ty
 import json
 from enum import IntEnum
-from immutabledict import immutabledict
 
+from immutabledict import immutabledict
 import jax.numpy as jnp
 
-from appletree import exporter
+from appletree.utils import exporter
 
 export, __all__ = exporter()
 
 OMITTED = '<OMITTED>'
 
-MAPPATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'maps')
+MAPPATH = os.path.join(os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe()))), 'maps')
 
-__all__ += 'OMITTED InvalidConfiguration'.split()
+__all__ += 'OMITTED MAPPATH'.split()
 
 @export
 def takes_map(*maps):
     """
     Decorator for plugin classes, to specify which maps it takes.
-    :param maps: Map instances of maps this plugin takes.
+    :param maps: Mapping instances of maps this plugin takes.
     """
     def wrapped(plugin_class):
         result = {}
-        for map in maps:
-            if not isinstance(map, Map):
-                raise RuntimeError("Specify config options by Map objects")
-            map.taken_by = plugin_class.__name__
-            result[map.name] = map
+        for mapping in maps:
+            if not isinstance(mapping, Mapping):
+                raise RuntimeError("Specify config options by Mapping objects")
+            mapping.taken_by = plugin_class.__name__
+            result[mapping.name] = mapping
 
         if (hasattr(plugin_class, 'takes_map')
                 and len(plugin_class.takes_map)):
             # Already have some maps set, e.g. because of subclassing
             # where both child and parent have a takes_map decorator
-            for map in result.values():
-                if map.name in plugin_class.takes_map:
+            for mapping in result.values():
+                if mapping.name in plugin_class.takes_map:
                     raise RuntimeError(
-                        f'Attempt to specify map {map.name} twice')
+                        f'Attempt to specify mapping {mapping.name} twice')
             plugin_class.takes_map = immutabledict({
                 **plugin_class.takes_map, **result})
         else:
             plugin_class.takes_map = immutabledict(result)
 
-        for map in plugin_class.takes_map:
-            setattr(plugin_class, map.name, map)
+        for mapping in plugin_class.takes_map.values():
+            setattr(plugin_class, mapping.name, mapping)
         return plugin_class
 
     return wrapped
@@ -52,15 +53,15 @@ def takes_map(*maps):
 @export
 class MapType(IntEnum):
     """
-    Identifies what type of map
+    Identifies what type of mapping
     """
-    # Map has only discrete points
+    # Mapping has only discrete points
     POINT = 0
-    # Map has regular binning, like a meshgrid
+    # Mapping has regular binning, like a meshgrid
     REGBIN = 1
 
 
-class Map(object):
+class Mapping(object):
     taken_by: str
 
     def __init__(self,

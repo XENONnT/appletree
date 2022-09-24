@@ -4,7 +4,7 @@ from functools import partial
 
 from appletree import randgen
 from appletree.plugin import Plugin
-from appletree import exporter
+from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
