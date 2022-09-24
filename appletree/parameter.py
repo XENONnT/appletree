@@ -1,19 +1,26 @@
-import numpy as np
+import copy
 import json
 
-class Parameter():
-    def __init__(self, par_config_file_name):
-        self.load_par_config(par_config_file_name)
-        # self.keys = self._parameter_dict.keys()
-        # self.values = self._parameter_dict.values()
+import numpy as np
 
-    def load_par_config(self, par_config_file_name):
-        with open(par_config_file_name, 'r') as file:
-            self.par_config = json.load(file)
+class Parameter():
+    _parameter_fixed = []
+    _parameter_fit = []
+
+    def __init__(self, parameter_config):
+        if isinstance(parameter_config, str):
+            with open(parameter_config, 'r') as file:
+                self.par_config = json.load(file)
+        elif isinstance(parameter_config, dict):
+            self.par_config = copy.deepcopy(parameter_config)
+        else:
+            raise RuntimeError('Parameter configuration should be file name or dictionary')
+
+        self.init_parameter()
+
+    def init_parameter(self):
         self._parameter_dict = {par_name : 0 for par_name in self.par_config}
 
-        self._parameter_fixed = []
-        self._parameter_fit = []
         for par_name in self.par_config:
             if self.par_config[par_name]['prior_type'] == 'fixed':
                 self._parameter_fixed.append(par_name)
@@ -21,27 +28,6 @@ class Parameter():
                 self._parameter_fit.append(par_name)
 
         self.sample_prior()
-
-    @property
-    def log_prior(self):
-        log_prior = 0
-
-        for par_name in self._parameter_fit:
-            val = self._parameter_dict[par_name]
-            setting = self.par_config[par_name]
-
-            if val < setting['allowed_range'][0] or val > setting['allowed_range'][1]:
-                log_prior += -1e30
-            elif setting['prior_type'] == 'norm':
-                mean = setting['prior_args']['mean']
-                std = setting['prior_args']['std']
-                log_prior += - (val - mean)**2 / 2 / std**2
-            elif setting['prior_type'] == 'free':
-                pass
-            elif setting['prior_type'] == 'uniform':
-                pass
-
-        return log_prior
 
     def sample_prior(self):
         for par_name in self._parameter_dict:
@@ -70,6 +56,27 @@ class Parameter():
                 self._parameter_dict[par_name] = np.clip(val, *setting['allowed_range'])
             elif setting['prior_type'] == 'fixed':
                 self._parameter_dict[par_name] = setting['prior_args']['val']
+
+    @property
+    def log_prior(self):
+        log_prior = 0
+
+        for par_name in self._parameter_fit:
+            val = self._parameter_dict[par_name]
+            setting = self.par_config[par_name]
+
+            if val < setting['allowed_range'][0] or val > setting['allowed_range'][1]:
+                log_prior += -1e30
+            elif setting['prior_type'] == 'norm':
+                mean = setting['prior_args']['mean']
+                std = setting['prior_args']['std']
+                log_prior += - (val - mean)**2 / 2 / std**2
+            elif setting['prior_type'] == 'free':
+                pass
+            elif setting['prior_type'] == 'uniform':
+                pass
+
+        return log_prior
 
     def check_parameter_exist(self, keys, return_not_exist=False):
         """
