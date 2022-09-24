@@ -156,7 +156,7 @@
         "init_mean": 43.1,
         "init_std": 1.0,
         "unit": "au",
-        "doc": "py0"
+        "doc": "py1"
     },
     "py2": {
         "par_name": "py2",
@@ -169,7 +169,7 @@
         "init_mean": -0.3,
         "init_std": 0.05,
         "unit": "au",
-        "doc": "py0"
+        "doc": "py2"
     },
     "py3": {
         "par_name": "py3",
@@ -182,7 +182,7 @@
         "init_mean": 0.94,
         "init_std": 0.25,
         "unit": "au",
-        "doc": "py0"
+        "doc": "py3"
     },
     "py4": {
         "par_name": "py4",
@@ -195,7 +195,7 @@
         "init_mean": 0.59,
         "init_std": 0.25,
         "unit": "au",
-        "doc": "py0"
+        "doc": "py4"
     },
     "rf0": {
         "par_name": "rf0",
@@ -208,7 +208,7 @@
         "init_mean": 0.029,
         "init_std": 0.005,
         "unit": "au",
-        "doc": "py0"
+        "doc": "rf0"
     },
     "rf1": {
         "par_name": "rf1",
@@ -221,6 +221,6 @@
         "init_mean": 0.26,
         "init_std": 0.1,
         "unit": "au",
-        "doc": "py0"
+        "doc": "rf1"
     }
 }
