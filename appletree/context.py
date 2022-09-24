@@ -177,7 +177,7 @@ class Context:
             plugin = work[0]
             code += f'from appletree.plugins import {plugin}\n'
 
-        # generate new global variables
+        # initialize new instances
         for work in self.worksheet:
             instance = work[0] + self.tag
             code += f'{instance} = {work[0]}()\n'
