@@ -1,5 +1,6 @@
 import os
 import inspect
+from functools import partial
 
 import appletree
 from appletree import plugins
@@ -156,6 +157,7 @@ class Context:
                data_names:list=['cs1', 'cs2', 'eff']):
         dependencies = self.dependencies_deduce(data_names)
         self.dependencies_simplify(dependencies)
+        self.flush_source_code(data_names)
 
     def flush_source_code(self, 
                           data_names:list=['cs1', 'cs2', 'eff']):
@@ -164,73 +166,49 @@ class Context:
         if isinstance(data_names, str):
             data_names = [data_names]
 
-        if hasattr(self, 'code'):
-            self.old_code = self.code
         code = ''
         indent = ' ' * 4
+
+        code += 'from functools import partial\n'
+        code += 'from jax import jit\n'
+
+        # import needed plugins
+        for work in self.worksheet:
+            plugin = work[0]
+            code += f'from appletree.plugins import {plugin}\n'
 
         # generate new global variables
         for work in self.worksheet:
             instance = work[0] + self.tag
-            code += f'global {instance}\n'
             code += f'{instance} = {work[0]}()\n'
 
         # define functions
         code += '\n'
-        code += 'global simulate\n'
-        code += '@partial(jit, static_argnums=(1, 2))\n'
-        code += 'def simulate(key, parameters, batch_size):\n'
-        # TODO: change the function of simulation to some hashed names
+        code += '@partial(jit, static_argnums=(1, ))\n'
+        code += 'def simulate(key, batch_size, parameters):\n'
+
         for work in self.worksheet:
-            provides = ', '.join(work[1])
+            provides = 'key, ' + ', '.join(work[1])
             depends_on = ', '.join(work[2])
             instance = work[0] + self.tag
             code += f'{indent}{provides} = {instance}(key, parameters, {depends_on})\n'
-        output = ', '.join(data_names)
+        output = 'key, ' + '[' + ', '.join(data_names) + ']'
         code += f'{indent}return {output}'
+
         self.code = code
 
-    def compile(self, 
-                data_names:list=['cs1', 'cs2', 'eff']):
-        self.deduce(data_names)
-        self.flush_source_code(data_names)
+    @property
+    def code(self):
+        return self._code
 
-        if self.old_code == self.code:
-            # only recompile code when needed
-            return
-
-        print('New compilation begins!')
-        # delete all defined global variables
-        for name in self.initialized_names:
-            exec(f'del {name}')
-        self.initialized_names = []
-
-        for work in self.worksheet:
-            instance = work[0] + self.tag
-            self.initialized_names.append(instance)
-
-        # compile worksheet
-        exec(self.code)
-        print('New compilation finished! Global variables changed!')
+    @code.setter
+    def code(self, code):
+        self._code = code
+        self.compile = partial(exec, self.code)
 
     def lineage(self, data_name:str='cs2'):
         assert isinstance(data_name, str)
         pass
-
-    def get_array(self,
-                  key, 
-                  batch_size, 
-                  data_names=['cs1', 'cs2', 'eff'], 
-                  allow_compilation=True):
-        if allow_compilation:
-            if not isinstance(data_names, (list, str)):
-                raise RuntimeError(f'data_names must be list or str, but given {type(data_names)}')
-            if not isinstance(data_names, str):
-                data_names = [data_names]
-            self.compile(data_names)
-
-        global simulate  # Just to stop warning of editor
-        return simulate(key, self.parameters, batch_size)
 
 
 @export

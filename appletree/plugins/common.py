@@ -21,7 +21,7 @@ class EnergySpectra(Plugin):
         self.lower = lower
         self.upper = upper
 
-    @partial(jit, static_argnums=(0, 2))
+    @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
         key, energy = randgen.uniform(key, self.lower, self.upper, shape=(batch_size, ))
         return key, energy
@@ -39,7 +39,7 @@ class PositionSpectra(Plugin):
         self.z_upper = z_sim_max
         self.r_upper = r_sim_max
 
-    @partial(jit, static_argnums=(0, 2))
+    @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
         key, z = randgen.uniform(key, self.z_lower, self.z_upper, shape=(batch_size, ))
         key, r2 = randgen.uniform(key, 0, self.r_upper**2, shape=(batch_size, ))
