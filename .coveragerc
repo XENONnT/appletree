@@ -1,0 +1,10 @@
+# .coveragerc to control coverage.py
+[report]
+# omit =
+
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    if __name__ == .__main__.:
+    raise
+
+ignore_errors = True
