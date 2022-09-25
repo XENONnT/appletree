@@ -1,13 +1,13 @@
-import jax
-import jax.numpy as jnp
-import numpy as np
-
-from jax import random, lax, jit, vmap
 from functools import partial
 from time import time
 
+import jax
+import jax.numpy as jnp
+import numpy as np
+from jax import random, lax, jit, vmap
+
 from appletree import utils
-from appletree import exporter
+from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
@@ -37,15 +37,15 @@ def uniform(key, vmin, vmax, shape=()):
         rvs: random variables
     """
     key, seed = random.split(key)
-    
+
     shape = shape or jnp.broadcast_shapes(jnp.shape(vmin), jnp.shape(vmax))
     vmin = jnp.broadcast_to(vmin, shape).astype(FLOAT)
     vmax = jnp.broadcast_to(vmax, shape).astype(FLOAT)
     
     rvs = random.uniform(key, shape, minval=vmin, maxval=vmax)
     return key, rvs.astype(FLOAT)
-    
-    
+
+
 @export
 @partial(jit, static_argnums=(2, ))
 def poisson(key, lam, shape=()):
@@ -59,10 +59,10 @@ def poisson(key, lam, shape=()):
         rvs: random variables
     """
     key, seed = random.split(key)
-    
+
     shape = shape or jnp.shape(lam)
     lam = jnp.broadcast_to(lam, shape).astype(FLOAT)
-    
+
     rvs = random.poisson(seed, lam, shape=shape)
     return key, rvs.astype(INT)
 
@@ -85,7 +85,7 @@ def normal(key, mean, std, shape=()):
     shape = shape or jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std))
     mean = jnp.broadcast_to(mean, shape).astype(FLOAT)
     std = jnp.broadcast_to(std, shape).astype(FLOAT)
-    
+
     rvs = random.normal(seed, shape=shape) * std + mean
     return key, rvs.astype(FLOAT)
 
@@ -130,7 +130,7 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
         mean = n * p
         std = jnp.sqrt(n * p * q)
         return jnp.clip(random.normal(seed) * std + mean, a_min=0.).round().astype(INT)
-    
+
     def _binomial_dispatch(seed, p, n):
         use_normal_approx = (n * p >= 5.)
         return lax.cond(
@@ -140,17 +140,17 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
         )
 
     key, seed = random.split(key)
-    
+
     shape = shape or lax.broadcast_shapes(jnp.shape(p), jnp.shape(n))
     p = jnp.reshape(jnp.broadcast_to(p, shape), -1).astype(FLOAT)
     n = jnp.reshape(jnp.broadcast_to(n, shape), -1).astype(INT)
     seed = random.split(seed, jnp.size(p))
-    
+
     if always_use_normal:
         dispatch = _binomial_normal_approx_dispatch
     else:
         dispatch = _binomial_dispatch
-    
+
     if jax.default_backend() == "cpu":
         ret = lax.map(lambda x: dispatch(*x), (seed, p, n))
     else:
