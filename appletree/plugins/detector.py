@@ -63,6 +63,7 @@ class S2Correction(Plugin):
 class PhotonDetection(Plugin):
     depends_on = ['num_photon', 's1_correction']
     provides = ['num_s1_phd']
+    parameters = ('g1', 'p_dpe')
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_photon, s1_correction):
@@ -76,6 +77,7 @@ class PhotonDetection(Plugin):
 class S1PE(Plugin):
     depends_on = ['num_s1_phd']
     provides = ['num_s1_pe']
+    parameters = ('p_dpe',)
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s1_phd):
@@ -95,6 +97,7 @@ class S1PE(Plugin):
 class DriftLoss(Plugin):
     depends_on = ['z']
     provides = ['drift_survive_prob']
+    parameters = ('drift_velocity',)
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, z):
@@ -120,6 +123,7 @@ class ElectronDrifted(Plugin):
 class S2PE(Plugin):
     depends_on = ['num_electron_drifted', 's2_correction']
     provides = ['num_s2_pe']
+    parameters = ('g2', 'gas_gain')
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_electron_drifted, s2_correction):

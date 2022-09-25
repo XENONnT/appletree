@@ -10,3 +10,4 @@
   - parameter handler
   - add autotest
   - add coverage check
+  - set random seeds

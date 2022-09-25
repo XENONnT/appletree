@@ -15,6 +15,7 @@ export, __all__ = exporter(export_self=False)
 class S2Threshold(Plugin):
     depends_on = ['s2']
     provides = ['acc_s2_threshold']
+    parameters = ('s2_threshold',)
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, s2):
