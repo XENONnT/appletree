@@ -103,8 +103,8 @@ class Context:
     def set_par_manager(self, parameter_config):
         self.par_manager = Parameter(parameter_config)
 
-    def init_parameters(self):
-        self.par_manager.init_parameter(self.needed_parameters)
+    def init_parameters(self, seed=None):
+        self.par_manager.init_parameter(self.needed_parameters, seed=seed)
 
     def update_parameters(self, *args, **kwargs):
         self.par_manager.set_parameter(*args, **kwargs)
@@ -152,13 +152,17 @@ class Context:
             self.worksheet.append([plugin.__name__, plugin.provides, plugin.depends_on])
             already_seen.append(plugin.__name__)
             self.needed_parameters += plugin.parameters
+        # filter out duplicated parameters
+        self.needed_parameters = list(set(self.needed_parameters))
+        self.needed_parameters.sort()
 
     def deduce(self, 
-               data_names:list=['cs1', 'cs2', 'eff']):
+               data_names:list=['cs1', 'cs2', 'eff'], 
+               seed=None):
         dependencies = self.dependencies_deduce(data_names)
         self.dependencies_simplify(dependencies)
         self.flush_source_code(data_names)
-        self.init_parameters()
+        self.init_parameters(seed=seed)
 
     def flush_source_code(self, 
                           data_names:list=['cs1', 'cs2', 'eff']):
@@ -194,7 +198,7 @@ class Context:
             instance = work[0] + self.tag
             code += f'{indent}{provides} = {instance}(key, parameters, {depends_on})\n'
         output = 'key, ' + '[' + ', '.join(data_names) + ']'
-        code += f'{indent}return {output}'
+        code += f'{indent}return {output}\n'
 
         self.code = code
 
@@ -206,6 +210,10 @@ class Context:
     def code(self, code):
         self._code = code
         self.compile = partial(exec, self.code)
+
+    def save_code(self, file_path):
+        with open(file_path, 'w') as f:
+            f.write(self.code)
 
     def lineage(self, data_name:str='cs2'):
         assert isinstance(data_name, str)

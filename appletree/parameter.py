@@ -16,7 +16,7 @@ class Parameter():
         else:
             raise RuntimeError('Parameter configuration should be file name or dictionary')
 
-    def init_parameter(self, needed_parameters):
+    def init_parameter(self, needed_parameters, seed=None):
         self._parameter_dict = {par_name : 0 for par_name in needed_parameters}
 
         for par_name in self.par_config:
@@ -25,6 +25,8 @@ class Parameter():
             else:
                 self._parameter_fit.append(par_name)
 
+        if seed is not None:
+            np.random.seed(seed)
         self.sample_prior()
 
     def sample_prior(self):
