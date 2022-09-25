@@ -1,11 +1,13 @@
 import os
+import re
+from time import time
+
+import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import numpy as np
-import GOFevaluation
-
-from time import time
 from matplotlib.patches import Rectangle
+
+import GOFevaluation
 
 def exporter(export_self=False):
     """
@@ -23,6 +25,13 @@ def exporter(export_self=False):
     return decorator, all_
 
 export, __all__ = exporter(export_self=True)
+
+@export
+def camel_to_snake(x):
+    """Convert x from CamelCase to snake_case"""
+    # From https://stackoverflow.com/questions/1175208
+    x = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', x)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', x).lower()
 
 @export
 def timeit(indent=""):
@@ -43,7 +52,6 @@ def timeit(indent=""):
     else:
         return _timeit(indent, "")
 
-    
 @export
 def set_gpu_memory_usage(fraction=0.3):
     if fraction > 1.:
@@ -51,26 +59,24 @@ def set_gpu_memory_usage(fraction=0.3):
     if fraction <= 0:
         raise ValueError("fraction must be positive!")
     os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = f"{fraction:.2f}"
-    
-    
+
 @export
 def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.inf], y_clip=[-np.inf, +np.inf], which_np=np):
     mask = (data[:, 0] > x_clip[0]) & (data[:, 0] < x_clip[1])
     mask &= (data[:, 1] > y_clip[0]) & (data[:, 1] < y_clip[1])
-    
+
     x_bins, y_bins = GOFevaluation.utils._get_equiprobable_binning(data[mask], n_partitions, order=order)
     x_bins = np.clip(x_bins, *x_clip)
     y_bins = np.clip(y_bins, *y_clip)
-    
-    return which_np.array(x_bins), which_np.array(y_bins)
 
+    return which_np.array(x_bins), which_np.array(y_bins)
 
 @export
 def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
     hist = np.asarray(hist)
     bins_x = np.asarray(bins_x)
     bins_y = np.asarray(bins_y)
-    
+
     density = kwargs.get('density', False)
     cmap = mpl.cm.get_cmap("RdBu_r")
 
@@ -79,7 +85,7 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
     height = []
     area = []
     n = []
-    
+
     for i in range(len(hist)):
         for j in range(len(hist[i])):
             x_lower = bins_x[i]
@@ -122,7 +128,7 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
             edgecolor='k'
         )
         ax.add_patch(rec)
-        
+
     fig = plt.gcf() 
     fig.colorbar(
         mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
