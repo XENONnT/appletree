@@ -33,7 +33,6 @@ class Context:
 
         if parameter_config is not None:
             self.set_par_manager(parameter_config)
-            self.init_parameters()
 
     def register(self, plugin_class):
         if isinstance(plugin_class, (tuple, list)):
@@ -105,7 +104,7 @@ class Context:
         self.par_manager = Parameter(parameter_config)
 
     def init_parameters(self):
-        self.par_manager.init_parameter()
+        self.par_manager.init_parameter(self.needed_parameters)
 
     def update_parameters(self, *args, **kwargs):
         self.par_manager.set_parameter(*args, **kwargs)
@@ -145,19 +144,21 @@ class Context:
     def dependencies_simplify(self, dependencies):
         already_seen = []
         self.worksheet = []
+        self.needed_parameters = []
         for plugin in dependencies[::-1]:
             plugin = plugin['plugin']
             if plugin.__name__ in already_seen:
                 continue
             self.worksheet.append([plugin.__name__, plugin.provides, plugin.depends_on])
             already_seen.append(plugin.__name__)
-        self.worksheet = self.worksheet
+            self.needed_parameters += plugin.parameters
 
     def deduce(self, 
                data_names:list=['cs1', 'cs2', 'eff']):
         dependencies = self.dependencies_deduce(data_names)
         self.dependencies_simplify(dependencies)
         self.flush_source_code(data_names)
+        self.init_parameters()
 
     def flush_source_code(self, 
                           data_names:list=['cs1', 'cs2', 'eff']):
