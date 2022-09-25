@@ -13,6 +13,7 @@ export, __all__ = exporter(export_self=False)
 class Quenching(Plugin):
     depends_on = ['energy']
     provides = ['num_quanta']
+    parameters = ('fano',)
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
@@ -26,6 +27,7 @@ class Quenching(Plugin):
 class Ionization(Plugin):
     depends_on = ['num_quanta']
     provides = ['num_ion']
+    parameters = ('nex_ni_ratio',)
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_quanta):
@@ -38,6 +40,7 @@ class Ionization(Plugin):
 class mTI(Plugin):
     depends_on = ['energy']
     provides = ['recomb_mean']
+    parameters = ('w', 'nex_ni_ratio', 'py0', 'py1', 'py2', 'py3', 'py4', 'field')
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
@@ -56,6 +59,7 @@ class mTI(Plugin):
 class RecombFluct(Plugin):
     depends_on = ['energy']
     provides = ['recomb_std']
+    parameters = ('rf0', 'rf1')
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
