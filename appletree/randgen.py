@@ -19,7 +19,7 @@ ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
 @export
 def get_key(seed=None):
     if seed is None:
-        seed = int(time())
+        seed = int(time()*1e6)
     return random.PRNGKey(seed)
 
 

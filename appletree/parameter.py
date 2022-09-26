@@ -59,6 +59,20 @@ class Parameter():
                 self._parameter_dict[par_name] = np.clip(val, *setting['allowed_range'])
             elif setting['prior_type'] == 'fixed':
                 self._parameter_dict[par_name] = setting['prior_args']['val']
+                
+    def sample_init(self):
+        for par_name in self._parameter_dict:
+            setting = self.par_config[par_name]
+            
+            if setting['prior_type'] == 'fixed':
+                self._parameter_dict[par_name] = setting['prior_args']['val']
+            else:
+                kwargs = {
+                    'loc' : setting['init_mean'],
+                    'scale' : setting['init_std'],
+                }
+                val = np.random.normal(**kwargs)
+                self._parameter_dict[par_name] = np.clip(val, *setting['allowed_range'])
 
     @property
     def log_prior(self):
