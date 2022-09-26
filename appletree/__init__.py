@@ -23,3 +23,9 @@ from .plugin import *
 
 from . import context
 from .context import *
+
+from . import component
+from .component import *
+
+from . import share
+from .share import *

@@ -7,6 +7,7 @@ from appletree import plugins
 from appletree.plugin import Plugin
 from appletree.parameter import Parameter
 from appletree.utils import exporter
+from appletree.share import cached_functions
 
 export, __all__ = exporter()
 
@@ -134,8 +135,7 @@ class Context:
 
     def deduce(self, 
                data_names:list=['cs1', 'cs2', 'eff'], 
-               func_name:str='simulate',
-               seed=None):
+               func_name:str='simulate'):
         dependencies = self.dependencies_deduce(data_names)
         self.dependencies_simplify(dependencies)
         self.flush_source_code(data_names, func_name)
@@ -186,7 +186,7 @@ class Context:
     @code.setter
     def code(self, code):
         self._code = code
-        self.compile = partial(exec, self.code)
+        self.compile = partial(exec, self.code, cached_functions)
 
     def save_code(self, file_path):
         with open(file_path, 'w') as f:
