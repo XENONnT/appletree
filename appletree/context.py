@@ -24,7 +24,6 @@ class Context:
     initialized_names = []
 
     def __init__(self,
-                 # parameter_config=None,
                  register=None):
         self._plugin_class_registry = dict()
         if register is not None:
