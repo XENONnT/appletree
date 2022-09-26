@@ -15,7 +15,9 @@ class Plugin():
     takes_map = immutabledict()
 
     def __init__(self):
-        pass
+        # Maps are loaded when a plugin is initialized
+        for mapping in self.takes_map.values():
+            mapping.build(mapping.coord_type, mapping.file_name)
 
     def __call__(self, *args, **kwargs):
         return self.simulate(*args, **kwargs)
