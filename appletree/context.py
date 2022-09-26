@@ -18,21 +18,17 @@ __all__ += 'PARPATH'.split()
 class Context:
     """
     """
-    par_manager = None
     code: str = None
     old_code: str = None
     tag = '_'  # for instance name of the plugins
     initialized_names = []
 
     def __init__(self,
-                 parameter_config=None,
+                 # parameter_config=None,
                  register=None):
         self._plugin_class_registry = dict()
         if register is not None:
             self.register(register)
-
-        if parameter_config is not None:
-            self.set_par_manager(parameter_config)
 
     def register(self, plugin_class):
         if isinstance(plugin_class, (tuple, list)):
@@ -97,25 +93,6 @@ class Context:
             if issubclass(x, Plugin):
                 self.register(x)
 
-    def new_context(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def set_par_manager(self, parameter_config):
-        self.par_manager = Parameter(parameter_config)
-
-    def init_parameters(self, seed=None):
-        self.par_manager.init_parameter(self.needed_parameters, seed=seed)
-
-    def update_parameters(self, *args, **kwargs):
-        self.par_manager.set_parameter(*args, **kwargs)
-
-    @property
-    def parameters(self):
-        return self.par_manager._parameter_dict
-
-    def get_parameters(self):
-        return self.parameters
-
     def dependencies_deduce(self, 
                             data_names:list=['cs1', 'cs2', 'eff'], 
                             dependencies:list=None) -> list:
@@ -134,7 +111,7 @@ class Context:
                 raise ValueError(f'Can not find dependency for {data_name}')
 
         for data_name in data_names:
-            # `batch_size` have no dependency
+            # `batch_size` has no dependency
             if data_name == 'batch_size':
                 continue
             dependencies = self.dependencies_deduce(data_names=self._plugin_class_registry[data_name].depends_on, dependencies=dependencies)
@@ -163,7 +140,6 @@ class Context:
         dependencies = self.dependencies_deduce(data_names)
         self.dependencies_simplify(dependencies)
         self.flush_source_code(data_names, func_name)
-        self.init_parameters(seed=seed)
 
     def flush_source_code(self, 
                           data_names:list=['cs1', 'cs2', 'eff'],
@@ -225,7 +201,6 @@ class Context:
 @export
 class ERBand(Context):
     def __init__(self):
-        file_path = os.path.join(PARPATH, 'apt_sr0_er.json')
-        super().__init__(parameter_config=file_path)
+        super().__init__()
 
         self.register_all(plugins)
