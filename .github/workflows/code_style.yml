@@ -17,8 +17,12 @@ jobs:
         uses: actions/setup-python@master
         with:
           python-version: 3.8
+      - name: patch reviewdog
+        run: sudo chown -R root:root $GITHUB_WORKSPACE
       - name: Wemake Python Stylguide
         uses: wemake-services/wemake-python-styleguide@0.16.1
         continue-on-error: true
         with:
           reporter: 'github-pr-review'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
