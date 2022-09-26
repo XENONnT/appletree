@@ -146,15 +146,13 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
 # SPDX-License-Identifier: Apache-2.0
 
 from collections import namedtuple
-from functools import partial, update_wrapper
-import math
+from functools import partial
 
 import numpy as np
 
 import jax
 from jax import jit, lax, random, vmap
 import jax.numpy as jnp
-from jax.scipy.linalg import solve_triangular
 
 # Parameters for Transformed Rejection with Squeeze (TRS) algorithm - page 3.
 _tr_params = namedtuple(

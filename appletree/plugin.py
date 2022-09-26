@@ -8,8 +8,14 @@ export, __all__ = exporter()
 
 @export
 class Plugin():
+    # the plugin's dependency(the arguments of `simulate`)
     depends_on = []
+
+    # the plugin can provide(`simulate` will return)
     provides = []
+
+    # relevant parameters, will be fitted in MCMC
+    parameters = tuple()
 
     # Set using the takes_map decorator
     takes_map = immutabledict()

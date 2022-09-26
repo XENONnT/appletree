@@ -16,10 +16,8 @@ class Parameter():
         else:
             raise RuntimeError('Parameter configuration should be file name or dictionary')
 
-        self.init_parameter()
-
-    def init_parameter(self):
-        self._parameter_dict = {par_name : 0 for par_name in self.par_config}
+    def init_parameter(self, needed_parameters, seed=None):
+        self._parameter_dict = {par_name : 0 for par_name in needed_parameters}
 
         for par_name in self.par_config:
             if self.par_config[par_name]['prior_type'] == 'fixed':
@@ -27,11 +25,16 @@ class Parameter():
             else:
                 self._parameter_fit.append(par_name)
 
+        if seed is not None:
+            np.random.seed(seed)
         self.sample_prior()
 
     def sample_prior(self):
         for par_name in self._parameter_dict:
-            setting = self.par_config[par_name]
+            try:
+                setting = self.par_config[par_name]
+            except:
+                raise RuntimeError(f'Requested parameter "{par_name}" not in given configuration')
 
             if setting['prior_type'] == 'norm':
                 kwargs = {
