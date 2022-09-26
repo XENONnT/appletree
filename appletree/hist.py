@@ -9,7 +9,7 @@ export, __all__ = exporter(export_self=False)
 
 
 @export
-@partial(jit, static_argnums=(1,))
+@jit
 def make_hist_mesh_grid(sample, bins=10, weights=None):
     return jnp.histogramdd(sample, bins=bins, weights=weights)
 
