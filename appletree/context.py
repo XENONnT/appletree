@@ -158,14 +158,16 @@ class Context:
 
     def deduce(self, 
                data_names:list=['cs1', 'cs2', 'eff'], 
+               func_name:str='simulate',
                seed=None):
         dependencies = self.dependencies_deduce(data_names)
         self.dependencies_simplify(dependencies)
-        self.flush_source_code(data_names)
+        self.flush_source_code(data_names, func_name)
         self.init_parameters(seed=seed)
 
     def flush_source_code(self, 
-                          data_names:list=['cs1', 'cs2', 'eff']):
+                          data_names:list=['cs1', 'cs2', 'eff'],
+                          func_name:str='simulate'):
         if not isinstance(data_names, (list, str)):
             raise RuntimeError(f'data_names must be list or str, but given {type(data_names)}')
         if isinstance(data_names, str):
@@ -190,7 +192,7 @@ class Context:
         # define functions
         code += '\n'
         code += '@partial(jit, static_argnums=(1, ))\n'
-        code += 'def simulate(key, batch_size, parameters):\n'
+        code += f'def {func_name}(key, batch_size, parameters):\n'
 
         for work in self.worksheet:
             provides = 'key, ' + ', '.join(work[1])
