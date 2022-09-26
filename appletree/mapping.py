@@ -76,7 +76,8 @@ class Mapping(object):
         self.default = default
         self.help = help
 
-        self.build(self.coord_type, self.file_name)
+        # We don't load maps when initializing. We load maps when initialize plugins.
+        # self.build(self.coord_type, self.file_name)
 
     def build(self, type, file_name):
         file_path = os.path.join(MAPPATH, file_name)
