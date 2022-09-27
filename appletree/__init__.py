@@ -21,9 +21,6 @@ from .randgen import *
 from . import plugin
 from .plugin import *
 
-from . import context
-from .context import *
-
 from . import component
 from .component import *
 
