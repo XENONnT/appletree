@@ -1,7 +1,7 @@
-from appletree import Context
+from appletree import ComponentSim
 from appletree import plugins
 
-class ERBand(Context):
+class ERBand(ComponentSim):
     def __init__(self):
         super().__init__()
 
