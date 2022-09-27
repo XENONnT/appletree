@@ -144,6 +144,8 @@ class Context:
     def flush_source_code(self, 
                           data_names:list=['cs1', 'cs2', 'eff'],
                           func_name:str='simulate'):
+        self.func_name = func_name
+        
         if not isinstance(data_names, (list, str)):
             raise RuntimeError(f'data_names must be list or str, but given {type(data_names)}')
         if isinstance(data_names, str):
@@ -191,7 +193,12 @@ class Context:
     @code.setter
     def code(self, code):
         self._code = code
-        self.compile = partial(exec, self.code, cached_functions)
+        self._compile = partial(exec, self.code, cached_functions)
+        
+    def compile(self):
+        self._compile()
+        self.simulate = cached_functions[self.func_name]
+        return self.simulate
 
     def save_code(self, file_path):
         with open(file_path, 'w') as f:
