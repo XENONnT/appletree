@@ -222,5 +222,21 @@
         "init_std": 0.1,
         "unit": "au",
         "doc": "rf1"
+    },
+    "ac_rate": {
+        "par_name": "ac_rate",
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 11.2,
+            "std": 2.24
+        },
+        "allowed_range": [
+            0,
+            10000000000.0
+        ],
+        "init_mean": 11.2,
+        "init_std": 2.24,
+        "unit": "1",
+        "doc": "ac_rate"
     }
 }
