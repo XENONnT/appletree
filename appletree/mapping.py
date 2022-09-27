@@ -8,12 +8,11 @@ from immutabledict import immutabledict
 import jax.numpy as jnp
 
 from appletree.utils import exporter
+from appletree.share import MAPPATH
 
 export, __all__ = exporter()
 
 OMITTED = '<OMITTED>'
-
-MAPPATH = os.path.join(os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe()))), 'maps')
 
 __all__ += 'OMITTED MAPPATH'.split()
 
