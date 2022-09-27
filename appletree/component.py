@@ -239,25 +239,22 @@ class ComponentSim:
 
 @export
 class ComponentFixed:
-    def __init__(self):
-        pass
+    file_name = ''
+    rate_par_name = ''
+    norm_type = ''
 
-    def compile(self, 
-                file_name:str, 
+    def compile(self,  
                 bins:list, 
                 bins_type:str, 
-                norm:float, 
-                norm_type:str, 
                 data_names:list=['cs1', 'cs2']):
-        self.file_name = file_name
         self.bins = bins
         self.bins_type = bins_type
 
-        fmt = file_name.split('.')[-1]
+        fmt = self.file_name.split('.')[-1]
         if fmt == 'csv':
-            self.data = pd.read_csv(file_name)[data_names].to_numpy()
+            self.data = pd.read_csv(self.file_name)[data_names].to_numpy()
         elif fmt == 'pkl':
-            self.data = pd.read_pickle(file_name)[data_names].to_numpy()
+            self.data = pd.read_pickle(self.file_name)[data_names].to_numpy()
         else:
             raise ValueError(f'unsupported file format {fmt}!')
         eff = jnp.ones(len(self.data))
@@ -270,12 +267,12 @@ class ComponentFixed:
             raise ValueError(f'unsupported bins_type {bins_type}!')
         hist = hist + 1. # as an uncertainty to prevent blowing up
 
-        if norm_type == 'on_pdf':
-            hist = hist / jnp.sum(hist) * norm
-        elif norm_type == 'on_sim':
-            hist = hist / len(self.data) * norm
+        if self.norm_type == 'on_pdf':
+            hist = hist / jnp.sum(hist)
+        elif self.norm_type == 'on_sim':
+            hist = hist / len(self.data)
         else:
-            raise ValueError(f'unsupported norm_type {norm_type}!')
+            raise ValueError(f'unsupported norm_type {self.norm_type}!')
 
         self.hist = hist
         return self.hist
@@ -283,5 +280,6 @@ class ComponentFixed:
     def simulate(self):
         raise NotImplementedError
 
-    def simulate_hist(self):
-        return self.hist
+    def simulate_hist(self, parameters):
+        rate = parameters[self.rate_par_name]
+        return self.hist * rate
