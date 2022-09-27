@@ -1,6 +1,7 @@
 import os
 import inspect
 from functools import partial
+from warnings import warn
 
 import appletree
 from appletree import plugins
@@ -178,6 +179,10 @@ class Context:
         code += f'{indent}return {output}\n'
 
         self.code = code
+        
+        if func_name in cached_functions.keys():
+            warning = f'function name {func_name} is already cached. Running compile() will overwrite it.'
+            warn(warning)
 
     @property
     def code(self):
@@ -195,11 +200,3 @@ class Context:
     def lineage(self, data_name:str='cs2'):
         assert isinstance(data_name, str)
         pass
-
-
-@export
-class ERBand(Context):
-    def __init__(self):
-        super().__init__()
-
-        self.register_all(plugins)
