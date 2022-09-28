@@ -238,5 +238,18 @@
         "init_std": 2.24,
         "unit": "1",
         "doc": "ac_rate"
+    },
+    "er_rate": {
+        "par_name": "ac_rate",
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            0,
+            10000000000.0
+        ],
+        "init_mean": 2000,
+        "init_std": 100,
+        "unit": "1",
+        "doc": "er_rate"
     }
 }
