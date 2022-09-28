@@ -207,7 +207,6 @@ class ComponentSim:
     def compile(self):
         self._compile()
         self.simulate = cached_functions[self.func_name]
-        return self.simulate
 
     def simulate_hist(self, 
                       key, 
@@ -247,17 +246,18 @@ class ComponentFixed:
 
     def deduce(self, 
                bins:list, 
-               bins_type:str):
+               bins_type:str, 
+               data_names:list=['cs1', 'cs2']):
         self.bins = bins
         self.bins_type = bins_type
+        self.data_names = data_names
 
-    def compile(self, 
-                data_names:list=['cs1', 'cs2']):
+    def compile(self):
         fmt = self.file_name.split('.')[-1]
         if fmt == 'csv':
-            self.data = pd.read_csv(self.file_name)[data_names].to_numpy()
+            self.data = pd.read_csv(self.file_name)[self.data_names].to_numpy()
         elif fmt == 'pkl':
-            self.data = pd.read_pickle(self.file_name)[data_names].to_numpy()
+            self.data = pd.read_pickle(self.file_name)[self.data_names].to_numpy()
         else:
             raise ValueError(f'unsupported file format {fmt}!')
         eff = jnp.ones(len(self.data))
@@ -278,7 +278,6 @@ class ComponentFixed:
             raise ValueError(f'unsupported norm_type {self.norm_type}!')
 
         self.hist = hist
-        return self.hist
 
     def simulate(self):
         raise NotImplementedError
