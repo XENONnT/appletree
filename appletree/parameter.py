@@ -85,7 +85,7 @@ class Parameter():
             setting = self.par_config[par_name]
 
             if val < setting['allowed_range'][0] or val > setting['allowed_range'][1]:
-                log_prior += -1e30
+                log_prior += -np.inf
             elif setting['prior_type'] == 'norm':
                 mean = setting['prior_args']['mean']
                 std = setting['prior_args']['std']
