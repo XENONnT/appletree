@@ -27,6 +27,8 @@ class ComponentSim:
     old_code: str = None
     tag = '_'  # for instance name of the plugins
     initialized_names = []
+    rate_par_name = ''
+    norm_type = ''
 
     def __init__(self,
                  register = None):
@@ -138,8 +140,12 @@ class ComponentSim:
         self.needed_parameters.sort()
 
     def deduce(self, 
-               data_names: list = ['cs1', 'cs2', 'eff'], 
-               func_name: str = 'simulate'):
+               data_names:list=['cs1', 'cs2', 'eff'], 
+               func_name:str='simulate', 
+               bins:list=[], 
+               bins_type:str=''):
+        self.bins = bins,
+        self.bins_type = bins_type
         dependencies = self.dependencies_deduce(data_names)
         self.dependencies_simplify(dependencies)
         self.flush_source_code(data_names, func_name)
@@ -206,27 +212,23 @@ class ComponentSim:
     def simulate_hist(self, 
                       key, 
                       batch_size, 
-                      parameters, 
-                      bins, 
-                      bins_type, 
-                      norm=1., 
-                      norm_type='on_pdf'):
+                      parameters):
         key, result = self.simulate(key, batch_size, parameters)
         mc = result[:-1]
         eff = result[-1]
-        if bins_type == 'meshgrid':
-            hist = make_hist_mesh_grid(jnp.asarray(mc).T, bins=bins, weights=eff)
-        elif bins_type == 'irreg':
-            hist = make_hist_irreg_bin_2d(jnp.asarray(mc).T, bins[0], bins[1], weights=eff)
+        if self.bins_type == 'meshgrid':
+            hist = make_hist_mesh_grid(jnp.asarray(mc).T, bins=self.bins, weights=eff)
+        elif self.bins_type == 'irreg':
+            hist = make_hist_irreg_bin_2d(jnp.asarray(mc).T, self.bins[0], self.bins[1], weights=eff)
         else:
-            raise ValueError(f'unsupported bins_type {bins_type}!')
+            raise ValueError(f'unsupported bins_type {self.bins_type}!')
         hist = hist + 1. # as an uncertainty to prevent blowing up
-        if norm_type == 'on_pdf':
-            hist = hist / jnp.sum(hist) * norm
-        elif norm_type == 'on_sim':
-            hist = hist / batch_size * norm
+        if self.norm_type == 'on_pdf':
+            hist = hist / jnp.sum(hist) * self.norm
+        elif self.norm_type == 'on_sim':
+            hist = hist / batch_size * self.norm
         else:
-            raise ValueError(f'unsupported norm_type {norm_type}!')
+            raise ValueError(f'unsupported norm_type {self.norm_type}!')
         return key, hist
 
     def save_code(self, file_path):
@@ -243,13 +245,14 @@ class ComponentFixed:
     rate_par_name = ''
     norm_type = ''
 
-    def compile(self,  
-                bins:list, 
-                bins_type:str, 
-                data_names:list=['cs1', 'cs2']):
+    def deduce(self, 
+               bins:list, 
+               bins_type:str):
         self.bins = bins
         self.bins_type = bins_type
 
+    def compile(self, 
+                data_names:list=['cs1', 'cs2']):
         fmt = self.file_name.split('.')[-1]
         if fmt == 'csv':
             self.data = pd.read_csv(self.file_name)[data_names].to_numpy()
@@ -259,12 +262,12 @@ class ComponentFixed:
             raise ValueError(f'unsupported file format {fmt}!')
         eff = jnp.ones(len(self.data))
 
-        if bins_type == 'meshgrid':
-            hist = make_hist_mesh_grid(jnp.asarray(self.data), bins=bins, weights=eff)
-        elif bins_type == 'irreg':
-            hist = make_hist_irreg_bin_2d(jnp.asarray(self.data), bins[0], bins[1], weights=eff)
+        if self.bins_type == 'meshgrid':
+            hist = make_hist_mesh_grid(jnp.asarray(self.data), bins=self.bins, weights=eff)
+        elif self.bins_type == 'irreg':
+            hist = make_hist_irreg_bin_2d(jnp.asarray(self.data), self.bins[0], self.bins[1], weights=eff)
         else:
-            raise ValueError(f'unsupported bins_type {bins_type}!')
+            raise ValueError(f'unsupported bins_type {self.bins_type}!')
         hist = hist + 1. # as an uncertainty to prevent blowing up
 
         if self.norm_type == 'on_pdf':
