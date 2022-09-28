@@ -42,7 +42,7 @@ def uniform(key, vmin, vmax, shape=()):
     vmin = jnp.broadcast_to(vmin, shape).astype(FLOAT)
     vmax = jnp.broadcast_to(vmax, shape).astype(FLOAT)
     
-    rvs = random.uniform(key, shape, minval=vmin, maxval=vmax)
+    rvs = random.uniform(seed, shape, minval=vmin, maxval=vmax)
     return key, rvs.astype(FLOAT)
 
 

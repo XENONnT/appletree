@@ -16,8 +16,10 @@ class Parameter():
         else:
             raise RuntimeError('Parameter configuration should be file name or dictionary')
 
-    def init_parameter(self, needed_parameters, seed=None):
-        self._parameter_dict = {par_name : 0 for par_name in needed_parameters}
+        self.init_parameter()
+
+    def init_parameter(self, seed=None):
+        self._parameter_dict = {par_name : 0 for par_name in self.par_config.keys()}
 
         for par_name in self.par_config:
             if self.par_config[par_name]['prior_type'] == 'fixed':
@@ -83,7 +85,7 @@ class Parameter():
             setting = self.par_config[par_name]
 
             if val < setting['allowed_range'][0] or val > setting['allowed_range'][1]:
-                log_prior += -1e30
+                log_prior += -np.inf
             elif setting['prior_type'] == 'norm':
                 mean = setting['prior_args']['mean']
                 std = setting['prior_args']['std']

@@ -1,12 +1,17 @@
 import os
 import inspect
+import pandas as pd
+import jax.numpy as jnp
 from functools import partial
+from warnings import warn
 
 import appletree
 from appletree import plugins
 from appletree.plugin import Plugin
 from appletree.parameter import Parameter
+from appletree.share import cached_functions
 from appletree.utils import exporter
+from appletree.hist import *
 
 export, __all__ = exporter()
 
@@ -15,24 +20,21 @@ PARPATH = os.path.join(os.path.abspath(os.path.dirname(inspect.getfile(inspect.c
 __all__ += 'PARPATH'.split()
 
 @export
-class Context:
+class ComponentSim:
     """
     """
-    par_manager = None
     code: str = None
     old_code: str = None
     tag = '_'  # for instance name of the plugins
     initialized_names = []
+    rate_par_name = ''
+    norm_type = ''
 
     def __init__(self,
-                 parameter_config=None,
-                 register=None):
+                 register = None):
         self._plugin_class_registry = dict()
         if register is not None:
             self.register(register)
-
-        if parameter_config is not None:
-            self.set_par_manager(parameter_config)
 
     def register(self, plugin_class):
         if isinstance(plugin_class, (tuple, list)):
@@ -97,28 +99,9 @@ class Context:
             if issubclass(x, Plugin):
                 self.register(x)
 
-    def new_context(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def set_par_manager(self, parameter_config):
-        self.par_manager = Parameter(parameter_config)
-
-    def init_parameters(self, seed=None):
-        self.par_manager.init_parameter(self.needed_parameters, seed=seed)
-
-    def update_parameters(self, *args, **kwargs):
-        self.par_manager.set_parameter(*args, **kwargs)
-
-    @property
-    def parameters(self):
-        return self.par_manager._parameter_dict
-
-    def get_parameters(self):
-        return self.parameters
-
     def dependencies_deduce(self, 
-                            data_names:list=['cs1', 'cs2', 'eff'], 
-                            dependencies:list=None) -> list:
+                            data_names: list = ['cs1', 'cs2', 'eff'], 
+                            dependencies: list = None) -> list:
         if dependencies is None:
             dependencies = []
 
@@ -134,7 +117,7 @@ class Context:
                 raise ValueError(f'Can not find dependency for {data_name}')
 
         for data_name in data_names:
-            # `batch_size` have no dependency
+            # `batch_size` has no dependency
             if data_name == 'batch_size':
                 continue
             dependencies = self.dependencies_deduce(data_names=self._plugin_class_registry[data_name].depends_on, dependencies=dependencies)
@@ -144,7 +127,7 @@ class Context:
     def dependencies_simplify(self, dependencies):
         already_seen = []
         self.worksheet = []
-        self.needed_parameters = []
+        self.needed_parameters = [self.rate_par_name]
         for plugin in dependencies[::-1]:
             plugin = plugin['plugin']
             if plugin.__name__ in already_seen:
@@ -158,16 +141,20 @@ class Context:
 
     def deduce(self, 
                data_names:list=['cs1', 'cs2', 'eff'], 
-               func_name:str='simulate',
-               seed=None):
+               func_name:str='simulate', 
+               bins:list=[], 
+               bins_type:str=''):
+        self.bins = bins
+        self.bins_type = bins_type
         dependencies = self.dependencies_deduce(data_names)
         self.dependencies_simplify(dependencies)
         self.flush_source_code(data_names, func_name)
-        self.init_parameters(seed=seed)
 
     def flush_source_code(self, 
                           data_names:list=['cs1', 'cs2', 'eff'],
                           func_name:str='simulate'):
+        self.func_name = func_name
+        
         if not isinstance(data_names, (list, str)):
             raise RuntimeError(f'data_names must be list or str, but given {type(data_names)}')
         if isinstance(data_names, str):
@@ -204,6 +191,10 @@ class Context:
 
         self.code = code
 
+        if func_name in cached_functions.keys():
+            warning = f'function name {func_name} is already cached. Running compile() will overwrite it.'
+            warn(warning)
+
     @property
     def code(self):
         return self._code
@@ -211,21 +202,86 @@ class Context:
     @code.setter
     def code(self, code):
         self._code = code
-        self.compile = partial(exec, self.code)
+        self._compile = partial(exec, self.code, cached_functions)
+        
+    def compile(self):
+        self._compile()
+        self.simulate = cached_functions[self.func_name]
+
+    def simulate_hist(self, 
+                      key, 
+                      batch_size, 
+                      parameters):
+        key, result = self.simulate(key, batch_size, parameters)
+        mc = result[:-1]
+        eff = result[-1]
+        if self.bins_type == 'meshgrid':
+            hist = make_hist_mesh_grid(jnp.asarray(mc).T, bins=self.bins, weights=eff)
+        elif self.bins_type == 'irreg':
+            hist = make_hist_irreg_bin_2d(jnp.asarray(mc).T, self.bins[0], self.bins[1], weights=eff)
+        else:
+            raise ValueError(f'unsupported bins_type {self.bins_type}!')
+        hist = hist + 1. # as an uncertainty to prevent blowing up
+        if self.norm_type == 'on_pdf':
+            hist = hist / jnp.sum(hist) * parameters[self.rate_par_name]
+        elif self.norm_type == 'on_sim':
+            hist = hist / batch_size * parameters[self.rate_par_name]
+        else:
+            raise ValueError(f'unsupported norm_type {self.norm_type}!')
+        return key, hist
 
     def save_code(self, file_path):
         with open(file_path, 'w') as f:
             f.write(self.code)
 
-    def lineage(self, data_name:str='cs2'):
+    def lineage(self, data_name: str = 'cs2'):
         assert isinstance(data_name, str)
         pass
 
-
 @export
-class ERBand(Context):
-    def __init__(self):
-        file_path = os.path.join(PARPATH, 'apt_sr0_er.json')
-        super().__init__(parameter_config=file_path)
+class ComponentFixed:
+    file_name = ''
+    rate_par_name = ''
+    norm_type = ''
 
-        self.register_all(plugins)
+    def deduce(self, 
+               bins:list, 
+               bins_type:str, 
+               data_names:list=['cs1', 'cs2']):
+        self.bins = bins
+        self.bins_type = bins_type
+        self.data_names = data_names
+
+    def compile(self):
+        fmt = self.file_name.split('.')[-1]
+        if fmt == 'csv':
+            self.data = pd.read_csv(self.file_name)[self.data_names].to_numpy()
+        elif fmt == 'pkl':
+            self.data = pd.read_pickle(self.file_name)[self.data_names].to_numpy()
+        else:
+            raise ValueError(f'unsupported file format {fmt}!')
+        eff = jnp.ones(len(self.data))
+
+        if self.bins_type == 'meshgrid':
+            hist = make_hist_mesh_grid(jnp.asarray(self.data), bins=self.bins, weights=eff)
+        elif self.bins_type == 'irreg':
+            hist = make_hist_irreg_bin_2d(jnp.asarray(self.data), self.bins[0], self.bins[1], weights=eff)
+        else:
+            raise ValueError(f'unsupported bins_type {self.bins_type}!')
+        hist = hist + 1. # as an uncertainty to prevent blowing up
+
+        if self.norm_type == 'on_pdf':
+            hist = hist / jnp.sum(hist)
+        elif self.norm_type == 'on_sim':
+            hist = hist / len(self.data)
+        else:
+            raise ValueError(f'unsupported norm_type {self.norm_type}!')
+
+        self.hist = hist
+
+    def simulate(self):
+        raise NotImplementedError
+
+    def simulate_hist(self, parameters):
+        rate = parameters[self.rate_par_name]
+        return self.hist * rate
