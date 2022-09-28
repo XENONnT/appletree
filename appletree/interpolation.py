@@ -65,8 +65,11 @@ def curve_interpolator(pos, ref_pos, ref_val):
     dist_right = jnp.abs(pos - ref_pos[right])
     dist_left = jnp.abs(pos - ref_pos[left])
 
-    val = (val_right*dist_left+val_left*dist_right)/(dist_right+dist_left)
-    
+    val = jnp.where(
+        (dist_right+dist_left) > 0,
+        (val_right*dist_left+val_left*dist_right)/(dist_right+dist_left),
+        val_right
+    )
     return val
 
 
