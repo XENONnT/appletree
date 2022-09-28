@@ -127,7 +127,7 @@ class ComponentSim:
     def dependencies_simplify(self, dependencies):
         already_seen = []
         self.worksheet = []
-        self.needed_parameters = []
+        self.needed_parameters = [self.rate_par_name]
         for plugin in dependencies[::-1]:
             plugin = plugin['plugin']
             if plugin.__name__ in already_seen:
@@ -144,7 +144,7 @@ class ComponentSim:
                func_name:str='simulate', 
                bins:list=[], 
                bins_type:str=''):
-        self.bins = bins,
+        self.bins = bins
         self.bins_type = bins_type
         dependencies = self.dependencies_deduce(data_names)
         self.dependencies_simplify(dependencies)
@@ -224,9 +224,9 @@ class ComponentSim:
             raise ValueError(f'unsupported bins_type {self.bins_type}!')
         hist = hist + 1. # as an uncertainty to prevent blowing up
         if self.norm_type == 'on_pdf':
-            hist = hist / jnp.sum(hist) * self.norm
+            hist = hist / jnp.sum(hist) * parameters[self.rate_par_name]
         elif self.norm_type == 'on_sim':
-            hist = hist / batch_size * self.norm
+            hist = hist / batch_size * parameters[self.rate_par_name]
         else:
             raise ValueError(f'unsupported norm_type {self.norm_type}!')
         return key, hist
