@@ -245,9 +245,10 @@ class ComponentFixed:
     norm_type = ''
 
     def deduce(self, 
-               bins:list, 
-               bins_type:str, 
-               data_names:list=['cs1', 'cs2']):
+               data_names:list=['cs1', 'cs2'], 
+               func_name=None, # this will be ignored but good to keep to be consistent with ComponentSim
+               bins:list=[], 
+               bins_type:str=''):
         self.bins = bins
         self.bins_type = bins_type
         self.data_names = data_names
