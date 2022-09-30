@@ -27,6 +27,17 @@ def exporter(export_self=False):
 export, __all__ = exporter(export_self=True)
 
 @export
+def load_data(file_name:str):
+    fmt = file_name.split('.')[-1]
+    if fmt == 'csv':
+        data = pd.read_csv(self.file_name)#[self.data_names].to_numpy()
+    elif fmt == 'pkl':
+        data = pd.read_pickle(self.file_name)#[self.data_names].to_numpy()
+    else:
+        raise ValueError(f'unsupported file format {fmt}!')
+    return data
+
+@export
 def camel_to_snake(x):
     """Convert x from CamelCase to snake_case"""
     # From https://stackoverflow.com/questions/1175208

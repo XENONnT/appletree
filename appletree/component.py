@@ -10,7 +10,7 @@ from appletree import plugins
 from appletree.plugin import Plugin
 from appletree.parameter import Parameter
 from appletree.share import cached_functions
-from appletree.utils import exporter
+from appletree.utils import exporter, load_data
 from appletree.hist import *
 
 export, __all__ = exporter()
@@ -253,13 +253,7 @@ class ComponentFixed:
         self.data_names = data_names
 
     def compile(self):
-        fmt = self.file_name.split('.')[-1]
-        if fmt == 'csv':
-            self.data = pd.read_csv(self.file_name)[self.data_names].to_numpy()
-        elif fmt == 'pkl':
-            self.data = pd.read_pickle(self.file_name)[self.data_names].to_numpy()
-        else:
-            raise ValueError(f'unsupported file format {fmt}!')
+        self.data = load_data(self.file_name)[self.data_names].to_numpy()
         eff = jnp.ones(len(self.data))
 
         if self.bins_type == 'meshgrid':
