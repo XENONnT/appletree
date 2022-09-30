@@ -246,7 +246,6 @@ class ComponentFixed:
 
     def deduce(self, 
                data_names:list=['cs1', 'cs2'], 
-               func_name=None, # this will be ignored but good to keep to be consistent with ComponentSim
                bins:list=[], 
                bins_type:str=''):
         self.bins = bins
