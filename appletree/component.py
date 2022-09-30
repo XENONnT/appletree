@@ -279,3 +279,7 @@ class ComponentFixed:
     def simulate_hist(self, parameters):
         rate = parameters[self.rate_par_name]
         return self.hist * rate
+
+    @property
+    def needed_parameters(self):
+        return [self.rate_par_name]
