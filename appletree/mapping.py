@@ -13,7 +13,7 @@ export, __all__ = exporter()
 
 OMITTED = '<OMITTED>'
 
-__all__ += 'OMITTED MAPPATH'.split()
+__all__ += 'OMITTED'.split()
 
 @export
 def takes_map(*maps):
