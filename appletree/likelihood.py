@@ -1,23 +1,29 @@
-import jax.numpy as jnp
 import numpy as np
+import jax.numpy as jnp
 
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 from appletree.utils import load_data, get_equiprob_bins_2d
 from appletree.component import *
 
-class Likelihood:
-    components = {}
 
+class Likelihood:
     def __init__(self, **config):
+        self.components = {}
         self._config = config
         self.data_file_name = config['data_file_name']
         self.bins_type = config['bins_type']
         self.bins_on = config['bins_on']
         self.bins = config['bins']
         self.dim = len(self.bins_on)
+        self.needed_parameters = set()
         self.sanity_check()
 
         self.data = load_data(self.data_file_name)[self.bins_on].to_numpy()
+        mask = (self.data[:, 0] > config['x_clip'][0])
+        mask &= (self.data[:, 0] < config['x_clip'][1])
+        mask &= (self.data[:, 1] > config['y_clip'][0])
+        mask &= (self.data[:, 1] < config['y_clip'][1])
+        self.data = self.data[mask]
 
         if self.bins_type == 'meshgrid':
             # self.bins = [bin_edges_on_axis0, bin_edges_on_axis1, ...]
@@ -46,14 +52,22 @@ class Likelihood:
                 weights=jnp.ones(len(self.data))
             )
 
+    def __getitem__(self, keys):
+        return self.components[keys]
+
     def sanity_check(self):
         assert len(self.bins_on) == len(self.bins), 'Length of bins must be the same as length of bins_on!'
 
-    def register_component(self, component_cls, component_name):
+    def register_component(self, 
+                           component_cls, 
+                           component_name, 
+                           rate_name=None):
         component = component_cls(
             bins=self.bins,
             bins_type=self.component_bins_type
         )
+        if rate_name is not None:
+            component.rate_name = rate_name
         kwargs = dict(
             data_names=self.bins_on
         )
@@ -63,6 +77,7 @@ class Likelihood:
         component.deduce(**kwargs)
         component.compile()
         self.components[component_name] = component
+        self.needed_parameters |= self.components[component_name].needed_parameters
 
     def simulate_model_hist(self, key, batch_size, parameters):
         hist = jnp.zeros_like(self.data_hist)
@@ -78,6 +93,7 @@ class Likelihood:
 
     def get_log_likelihood(self, key, batch_size, parameters):
         key, model_hist = self.simulate_model_hist(key, batch_size, parameters)
+        # Poisson likelihood
         llh = float(jnp.sum(self.data_hist * jnp.log(model_hist) - model_hist))
         if np.isnan(llh):
             llh = -np.inf
@@ -101,7 +117,7 @@ class Likelihood:
         print('MODEL\n')
         for i, component_name in enumerate(self.components):
             name = component_name
-            component = self.components[component_name]
+            component = self[component_name]
             need = component.needed_parameters
 
             print(f'{indent}COMPONENT {i}: {name}')
