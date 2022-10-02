@@ -3,10 +3,9 @@ import json
 
 import numpy as np
 
-class Parameter():
-    _parameter_fixed = []
-    _parameter_fit = []
 
+# TODO: add parameters after instantiated
+class Parameter():
     def __init__(self, parameter_config):
         if isinstance(parameter_config, str):
             with open(parameter_config, 'r') as file:
@@ -16,6 +15,8 @@ class Parameter():
         else:
             raise RuntimeError('Parameter configuration should be file name or dictionary')
 
+        self._parameter_fixed = set()
+        self._parameter_fit = set()
         self.init_parameter()
 
     def init_parameter(self, seed=None):
@@ -23,9 +24,9 @@ class Parameter():
 
         for par_name in self.par_config:
             if self.par_config[par_name]['prior_type'] == 'fixed':
-                self._parameter_fixed.append(par_name)
+                self._parameter_fixed.add(par_name)
             else:
-                self._parameter_fit.append(par_name)
+                self._parameter_fit.add(par_name)
 
         if seed is not None:
             np.random.seed(seed)
@@ -65,7 +66,7 @@ class Parameter():
     def sample_init(self):
         for par_name in self._parameter_dict:
             setting = self.par_config[par_name]
-            
+
             if setting['prior_type'] == 'fixed':
                 self._parameter_dict[par_name] = setting['prior_args']['val']
             else:
@@ -104,7 +105,7 @@ class Parameter():
         keys             : Parameter names. Can be a single str, or a list of str.
         return_not_exist : If False, function will return a bool if all keys exist. If True, function will additionally return the not existing list of keys.
         """
-        if isinstance(keys, list):
+        if isinstance(keys, (set, list)):
             not_exist = []
             for key in keys:
                 if not key in self._parameter_dict:
@@ -168,7 +169,7 @@ class Parameter():
         return self.__getitem__(keys)
 
     def __getitem__(self, keys):
-        if isinstance(keys, list):
+        if isinstance(keys, (set, list)):
             return np.array([self._parameter_dict[key] for key in keys])
         elif isinstance(keys, str):
             return self._parameter_dict[keys]
