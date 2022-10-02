@@ -8,7 +8,7 @@ import appletree
 from appletree.plugin import Plugin
 from appletree.share import cached_functions
 from appletree.utils import exporter, load_data
-from appletree.hist import *
+from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 
 export, __all__ = exporter()
 
@@ -28,6 +28,8 @@ class Component:
 
     def implement_binning(self, mc, eff):
         if self.bins_type == 'meshgrid':
+            warning = f'The usage of meshgrid binning is highly discouraged.'
+            warn(warning)
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
         elif self.bins_type == 'irreg':
             hist = make_hist_irreg_bin_2d(mc, self.bins[0], self.bins[1], weights=eff)
@@ -212,7 +214,7 @@ class ComponentSim(Component):
         self.code = code
 
         if func_name in cached_functions.keys():
-            warning = f'function name {func_name} is already cached. Running compile() will overwrite it.'
+            warning = f'Function name {func_name} is already cached. Running compile() will overwrite it.'
             warn(warning)
 
     @property
@@ -228,7 +230,7 @@ class ComponentSim(Component):
                data_names:list=['cs1', 'cs2'], 
                func_name:str='simulate'):
         if not isinstance(data_names, (list, tuple)):
-            raise ValueError(f'unsupported data_names type {type(data_names)}!')
+            raise ValueError(f'Unsupported data_names type {type(data_names)}!')
         if 'eff' in data_names:
             data_names = list(data_names)
             data_names.remove('eff')
@@ -248,7 +250,7 @@ class ComponentSim(Component):
                       parameters):
         key, result = self.simulate(key, batch_size, parameters)
         mc = result[:-1]
-        assert len(mc) == len(self.bins), f'Number of required data fields and groups of bins should be the same!'
+        assert len(mc) == len(self.bins), "Length of bins must be the same as length of bins_on!"
         mc = jnp.asarray(mc).T
         eff = result[-1]  # we guarantee that the last output is efficiency in self.deduce
 
@@ -289,4 +291,4 @@ class ComponentFixed(Component):
 
     @property
     def needed_parameters(self):
-        return [self.rate_par_name]
+        return [self.rate_name]

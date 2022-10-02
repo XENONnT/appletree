@@ -1,9 +1,9 @@
-from appletree.component import *
-from appletree.utils import load_data, get_equiprob_bins_2d
-from appletree.hist import *
-import appletree as apt
 import jax.numpy as jnp
 import numpy as np
+
+from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
+from appletree.utils import load_data, get_equiprob_bins_2d
+from appletree.component import *
 
 class Likelihood:
     components = {}
@@ -22,31 +22,40 @@ class Likelihood:
         if self.bins_type == 'meshgrid':
             # self.bins = [bin_edges_on_axis0, bin_edges_on_axis1, ...]
             #          or [num_bins_on_axis0, num_bins_on_axis1, ...]
-            self.bins = self.bins
+            warning = f'The usage of meshgrid binning is highly discouraged.'
+            warn(warning)
             self.component_bins_type = 'meshgrid'
-            self.data_hist = make_hist_mesh_grid(self.data, bins=jnp.asarray(self.bins), weights=jnp.ones(len(self.data)))
+            self.data_hist = make_hist_mesh_grid(
+                self.data, 
+                bins=jnp.asarray(self.bins), 
+                weights=jnp.ones(len(self.data))
+            )
         elif self.bins_type == 'equiprob':
             # self.bins = [num_bins_on_axis0, num_bins_on_axis1, ...]
             assert self.dim == 2, 'only 2D equiprob binned likelihood is supported!'
-            self._x_clip = config['x_clip']
-            self._y_clip = config['y_clip']
             self.bins = get_equiprob_bins_2d(self.data, 
                                              self.bins, 
-                                             x_clip=self._x_clip, 
-                                             y_clip=self._y_clip, 
+                                             x_clip=config['x_clip'], 
+                                             y_clip=config['y_clip'], 
                                              which_np=jnp)
             self.component_bins_type = 'irreg'
-            self.data_hist = make_hist_irreg_bin_2d(self.data, bins_x=self.bins[0], bins_y=self.bins[1], weights=jnp.ones(len(self.data)))
+            self.data_hist = make_hist_irreg_bin_2d(
+                self.data, 
+                bins_x=self.bins[0], 
+                bins_y=self.bins[1], 
+                weights=jnp.ones(len(self.data))
+            )
 
     def sanity_check(self):
-        assert len(self.bins_on) == len(self.bins), "length of bins must be the same as length of bins_on!"
+        assert len(self.bins_on) == len(self.bins), 'Length of bins must be the same as length of bins_on!'
 
     def register_component(self, component_cls, component_name):
-        component = component_cls()
-        kwargs = dict(
-            data_names=self.bins_on,
+        component = component_cls(
             bins=self.bins,
             bins_type=self.component_bins_type
+        )
+        kwargs = dict(
+            data_names=self.bins_on
         )
         if isinstance(component, ComponentSim):
             kwargs['func_name'] = component_name + '_sim'
@@ -64,7 +73,7 @@ class Likelihood:
                 _hist = component.simulate_hist(parameters)
             else:
                 raise TypeError(f'unsupported component type for {component_name}!')
-        hist = hist + _hist
+            hist = hist + _hist
         return key, hist
 
     def get_log_likelihood(self, key, batch_size, parameters):
@@ -74,7 +83,7 @@ class Likelihood:
             llh = -np.inf
         return key, llh
 
-    def print_likelihood_summary(self, indent = ' ' * 4, short=True):
+    def print_likelihood_summary(self, indent:str=' '*4, short=True):
         print('\n'+'='*40)
 
         print(f'BINNING\n')
@@ -98,13 +107,13 @@ class Likelihood:
             print(f'{indent}COMPONENT {i}: {name}')
             if isinstance(component, ComponentSim):
                 print(f'{indent*2}type: simulation')
-                print(f'{indent*2}rate_par: {component.rate_par_name}')
+                print(f'{indent*2}rate_par: {component.rate_name}')
                 print(f'{indent*2}pars: {need}')
                 if not short:
                     print(f'{indent*2}worksheet: {component.worksheet}')
             elif isinstance(component, ComponentFixed):
                 print(f'{indent*2}type: fixed')
-                print(f'{indent*2}rate_par: {component.rate_par_name}')
+                print(f'{indent*2}rate_par: {component.rate_name}')
                 print(f'{indent*2}pars: {need}')
                 if not short:
                     print(f'{indent*2}from_file: {component.file_name}')
