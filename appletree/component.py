@@ -1,7 +1,6 @@
 from warnings import warn
 from functools import partial
 
-import pandas as pd
 import jax.numpy as jnp
 
 import appletree
@@ -14,27 +13,28 @@ export, __all__ = exporter()
 
 @export
 class Component:
-    rate_name = ''
-    norm_type = ''
+    rate_name: str = ''
+    norm_type: str = ''
 
     def __init__(self, 
                  bins:list=[], 
                  bins_type:str=''):
         self.bins = bins
         self.bins_type = bins_type
+        self.needed_parameters = set()
 
     def simulate_hist(self, *args, **kwargs):
         raise NotImplementedError
 
     def implement_binning(self, mc, eff):
-        if self.bins_type == 'meshgrid':
+        if self.bins_type == 'irreg':
+            hist = make_hist_irreg_bin_2d(mc, self.bins[0], self.bins[1], weights=eff)
+        elif self.bins_type == 'meshgrid':
             warning = f'The usage of meshgrid binning is highly discouraged.'
             warn(warning)
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
-        elif self.bins_type == 'irreg':
-            hist = make_hist_irreg_bin_2d(mc, self.bins[0], self.bins[1], weights=eff)
         else:
-            raise ValueError(f'unsupported bins_type {self.bins_type}!')
+            raise ValueError(f'Unsupported bins_type {self.bins_type}!')
         hist = jnp.clip(hist, 1., jnp.inf) # as an uncertainty to prevent blowing up
         return hist
 
@@ -44,7 +44,7 @@ class Component:
         elif self.norm_type == 'on_sim':
             normalization_factor = 1 / batch_size * parameters[self.rate_name]
         else:
-            raise ValueError(f'unsupported norm_type {self.norm_type}!')
+            raise ValueError(f'Unsupported norm_type {self.norm_type}!')
         return normalization_factor
 
     def deduce(self, *args, **kwargs):
@@ -160,17 +160,14 @@ class ComponentSim(Component):
     def dependencies_simplify(self, dependencies):
         already_seen = []
         self.worksheet = []
-        self.needed_parameters = [self.rate_name]
+        self.needed_parameters.add(self.rate_name)
         for plugin in dependencies[::-1]:
             plugin = plugin['plugin']
             if plugin.__name__ in already_seen:
                 continue
             self.worksheet.append([plugin.__name__, plugin.provides, plugin.depends_on])
             already_seen.append(plugin.__name__)
-            self.needed_parameters += plugin.parameters
-        # filter out duplicated parameters
-        self.needed_parameters = list(set(self.needed_parameters))
-        self.needed_parameters.sort()
+            self.needed_parameters |= set(plugin.parameters)
 
     def flush_source_code(self, 
                           data_names:list=['cs1', 'cs2', 'eff'],
@@ -279,6 +276,7 @@ class ComponentFixed(Component):
                data_names:list=['cs1', 'cs2']):
         self.data = load_data(self.file_name)[data_names].to_numpy()
         self.hist = self.implement_binning(self.data, jnp.ones(len(self.data)))
+        self.needed_parameters.add(self.rate_name)
 
     def simulate(self):
         raise NotImplementedError
@@ -288,7 +286,3 @@ class ComponentFixed(Component):
                       *args, **kwargs):
         normalization_factor = self.get_normalization(self.hist, parameters, len(self.data))
         return self.hist * normalization_factor
-
-    @property
-    def needed_parameters(self):
-        return [self.rate_name]
