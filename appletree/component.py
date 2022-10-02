@@ -1,37 +1,68 @@
-import os
-import inspect
+from warnings import warn
+from functools import partial
+
 import pandas as pd
 import jax.numpy as jnp
-from functools import partial
-from warnings import warn
 
 import appletree
-from appletree import plugins
 from appletree.plugin import Plugin
-from appletree.parameter import Parameter
-from appletree.share import cached_functions
+from appletree.share import DATAPATH, cached_functions
 from appletree.utils import exporter
 from appletree.hist import *
 
 export, __all__ = exporter()
 
-PARPATH = os.path.join(os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe()))), 'parameters')
+@export
+class Component:
+    rate_name = ''
+    norm_type = ''
 
-__all__ += 'PARPATH'.split()
+    def __init__(self, 
+                 bins:list=[], 
+                 bins_type:str=''):
+        self.bins = bins
+        self.bins_type = bins_type
+
+    def simulate_hist(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def implement_binning(self, mc, eff):
+        if self.bins_type == 'meshgrid':
+            hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
+        elif self.bins_type == 'irreg':
+            hist = make_hist_irreg_bin_2d(mc, self.bins[0], self.bins[1], weights=eff)
+        else:
+            raise ValueError(f'unsupported bins_type {self.bins_type}!')
+        hist = jnp.clip(hist, 1., jnp.inf) # as an uncertainty to prevent blowing up
+        return hist
+
+    def get_normalization(self, hist, parameters, batch_size=None):
+        if self.norm_type == 'on_pdf':
+            normalization_factor = 1 / jnp.sum(hist) * parameters[self.rate_name]
+        elif self.norm_type == 'on_sim':
+            normalization_factor = 1 / batch_size * parameters[self.rate_name]
+        else:
+            raise ValueError(f'unsupported norm_type {self.norm_type}!')
+        return normalization_factor
+
+    def deduce(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def compile(self):
+        pass
 
 @export
-class ComponentSim:
+class ComponentSim(Component):
     """
     """
     code: str = None
     old_code: str = None
     tag = '_'  # for instance name of the plugins
-    initialized_names = []
-    rate_par_name = ''
-    norm_type = ''
 
     def __init__(self,
-                 register = None):
+                 register = None, 
+                 *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._plugin_class_registry = dict()
         if register is not None:
             self.register(register)
@@ -127,7 +158,7 @@ class ComponentSim:
     def dependencies_simplify(self, dependencies):
         already_seen = []
         self.worksheet = []
-        self.needed_parameters = [self.rate_par_name]
+        self.needed_parameters = [self.rate_name]
         for plugin in dependencies[::-1]:
             plugin = plugin['plugin']
             if plugin.__name__ in already_seen:
@@ -138,17 +169,6 @@ class ComponentSim:
         # filter out duplicated parameters
         self.needed_parameters = list(set(self.needed_parameters))
         self.needed_parameters.sort()
-
-    def deduce(self, 
-               data_names:list=['cs1', 'cs2', 'eff'], 
-               func_name:str='simulate', 
-               bins:list=[], 
-               bins_type:str=''):
-        self.bins = bins
-        self.bins_type = bins_type
-        dependencies = self.dependencies_deduce(data_names)
-        self.dependencies_simplify(dependencies)
-        self.flush_source_code(data_names, func_name)
 
     def flush_source_code(self, 
                           data_names:list=['cs1', 'cs2', 'eff'],
@@ -203,7 +223,21 @@ class ComponentSim:
     def code(self, code):
         self._code = code
         self._compile = partial(exec, self.code, cached_functions)
-        
+
+    def deduce(self, 
+               data_names:list=['cs1', 'cs2'], 
+               func_name:str='simulate'):
+        if not isinstance(data_names, (list, tuple)):
+            raise ValueError(f'unsupported data_names type {type(data_names)}!')
+        if 'eff' in data_names:
+            data_names = list(data_names)
+            data_names.remove('eff')
+        data_names = list(data_names) + ['eff']
+
+        dependencies = self.dependencies_deduce(data_names)
+        self.dependencies_simplify(dependencies)
+        self.flush_source_code(data_names, func_name)
+
     def compile(self):
         self._compile()
         self.simulate = cached_functions[self.func_name]
@@ -214,20 +248,14 @@ class ComponentSim:
                       parameters):
         key, result = self.simulate(key, batch_size, parameters)
         mc = result[:-1]
-        eff = result[-1]
-        if self.bins_type == 'meshgrid':
-            hist = make_hist_mesh_grid(jnp.asarray(mc).T, bins=self.bins, weights=eff)
-        elif self.bins_type == 'irreg':
-            hist = make_hist_irreg_bin_2d(jnp.asarray(mc).T, self.bins[0], self.bins[1], weights=eff)
-        else:
-            raise ValueError(f'unsupported bins_type {self.bins_type}!')
-        hist = hist + 1. # as an uncertainty to prevent blowing up
-        if self.norm_type == 'on_pdf':
-            hist = hist / jnp.sum(hist) * parameters[self.rate_par_name]
-        elif self.norm_type == 'on_sim':
-            hist = hist / batch_size * parameters[self.rate_par_name]
-        else:
-            raise ValueError(f'unsupported norm_type {self.norm_type}!')
+        assert len(mc) == len(self.bins), f'Number of required data fields and groups of bins should be the same!'
+        mc = jnp.asarray(mc).T
+        eff = result[-1]  # we guarantee that the last output is efficiency in self.deduce
+
+        hist = self.implement_binning(mc, eff)
+        normalization_factor = self.get_normalization(hist, parameters, batch_size)
+        hist *= normalization_factor
+
         return key, hist
 
     def save_code(self, file_path):
@@ -239,49 +267,28 @@ class ComponentSim:
         pass
 
 @export
-class ComponentFixed:
-    file_name = ''
-    rate_par_name = ''
-    norm_type = ''
+class ComponentFixed(Component):
+    file_name: str = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def deduce(self, 
-               bins:list, 
-               bins_type:str, 
                data_names:list=['cs1', 'cs2']):
-        self.bins = bins
-        self.bins_type = bins_type
-        self.data_names = data_names
-
-    def compile(self):
         fmt = self.file_name.split('.')[-1]
         if fmt == 'csv':
-            self.data = pd.read_csv(self.file_name)[self.data_names].to_numpy()
+            self.data = pd.read_csv(self.file_name)[data_names].to_numpy()
         elif fmt == 'pkl':
-            self.data = pd.read_pickle(self.file_name)[self.data_names].to_numpy()
+            self.data = pd.read_pickle(self.file_name)[data_names].to_numpy()
         else:
             raise ValueError(f'unsupported file format {fmt}!')
-        eff = jnp.ones(len(self.data))
-
-        if self.bins_type == 'meshgrid':
-            hist = make_hist_mesh_grid(jnp.asarray(self.data), bins=self.bins, weights=eff)
-        elif self.bins_type == 'irreg':
-            hist = make_hist_irreg_bin_2d(jnp.asarray(self.data), self.bins[0], self.bins[1], weights=eff)
-        else:
-            raise ValueError(f'unsupported bins_type {self.bins_type}!')
-        hist = hist + 1. # as an uncertainty to prevent blowing up
-
-        if self.norm_type == 'on_pdf':
-            hist = hist / jnp.sum(hist)
-        elif self.norm_type == 'on_sim':
-            hist = hist / len(self.data)
-        else:
-            raise ValueError(f'unsupported norm_type {self.norm_type}!')
-
-        self.hist = hist
+        self.hist = self.implement_binning(self.data, jnp.ones(len(self.data)))
 
     def simulate(self):
         raise NotImplementedError
 
-    def simulate_hist(self, parameters):
-        rate = parameters[self.rate_par_name]
-        return self.hist * rate
+    def simulate_hist(self, 
+                      parameters, 
+                      *args, **kwargs):
+        normalization_factor = self.get_normalization(self.hist, parameters, len(self.data))
+        return self.hist * normalization_factor
