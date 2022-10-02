@@ -1,7 +1,7 @@
 from functools import partial
 
-import jax.numpy as jnp
 from jax import jit
+import jax.numpy as jnp
 
 from appletree import randgen
 from appletree.plugin import Plugin
@@ -32,6 +32,7 @@ class MonoEnergySpectra(Plugin):
     depends_on = ['batch_size']
     provides = ['energy']
 
+    # default energy is Ar37 K shell
     def __init__(self, mono_energy:float=2.82):
         super().__init__()
 

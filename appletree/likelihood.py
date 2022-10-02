@@ -1,9 +1,10 @@
-import jax.numpy as jnp
 import numpy as np
+import jax.numpy as jnp
 
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 from appletree.utils import load_data, get_equiprob_bins_2d
 from appletree.component import *
+
 
 class Likelihood:
     def __init__(self, **config):
@@ -14,9 +15,15 @@ class Likelihood:
         self.bins_on = config['bins_on']
         self.bins = config['bins']
         self.dim = len(self.bins_on)
+        self.needed_parameters = set()
         self.sanity_check()
 
         self.data = load_data(self.data_file_name)[self.bins_on].to_numpy()
+        mask = (self.data[:, 0] > config['x_clip'][0])
+        mask &= (self.data[:, 0] < config['x_clip'][1])
+        mask &= (self.data[:, 1] > config['y_clip'][0])
+        mask &= (self.data[:, 1] < config['y_clip'][1])
+        self.data = self.data[mask]
 
         if self.bins_type == 'meshgrid':
             # self.bins = [bin_edges_on_axis0, bin_edges_on_axis1, ...]
@@ -45,6 +52,9 @@ class Likelihood:
                 weights=jnp.ones(len(self.data))
             )
 
+    def __getitem__(self, keys):
+        return self.components[keys]
+
     def sanity_check(self):
         assert len(self.bins_on) == len(self.bins), 'Length of bins must be the same as length of bins_on!'
 
@@ -67,6 +77,7 @@ class Likelihood:
         component.deduce(**kwargs)
         component.compile()
         self.components[component_name] = component
+        self.needed_parameters |= self.components[component_name].needed_parameters
 
     def simulate_model_hist(self, key, batch_size, parameters):
         hist = jnp.zeros_like(self.data_hist)
@@ -106,7 +117,7 @@ class Likelihood:
         print('MODEL\n')
         for i, component_name in enumerate(self.components):
             name = component_name
-            component = self.components[component_name]
+            component = self[component_name]
             need = component.needed_parameters
 
             print(f'{indent}COMPONENT {i}: {name}')
