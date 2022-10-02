@@ -3,6 +3,7 @@ import re
 from time import time
 
 import numpy as np
+import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
@@ -25,6 +26,17 @@ def exporter(export_self=False):
     return decorator, all_
 
 export, __all__ = exporter(export_self=True)
+
+@export
+def load_data(file_name:str):
+    fmt = file_name.split('.')[-1]
+    if fmt == 'csv':
+        data = pd.read_csv(file_name)
+    elif fmt == 'pkl':
+        data = pd.read_pickle(file_name)
+    else:
+        raise ValueError(f'unsupported file format {fmt}!')
+    return data
 
 @export
 def camel_to_snake(x):
