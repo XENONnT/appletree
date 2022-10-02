@@ -10,7 +10,7 @@ from appletree import plugins
 from appletree.plugin import Plugin
 from appletree.parameter import Parameter
 from appletree.share import cached_functions
-from appletree.utils import exporter
+from appletree.utils import exporter, load_data
 from appletree.hist import *
 
 export, __all__ = exporter()
@@ -245,21 +245,15 @@ class ComponentFixed:
     norm_type = ''
 
     def deduce(self, 
-               bins:list, 
-               bins_type:str, 
-               data_names:list=['cs1', 'cs2']):
+               data_names:list=['cs1', 'cs2'], 
+               bins:list=[], 
+               bins_type:str=''):
         self.bins = bins
         self.bins_type = bins_type
         self.data_names = data_names
 
     def compile(self):
-        fmt = self.file_name.split('.')[-1]
-        if fmt == 'csv':
-            self.data = pd.read_csv(self.file_name)[self.data_names].to_numpy()
-        elif fmt == 'pkl':
-            self.data = pd.read_pickle(self.file_name)[self.data_names].to_numpy()
-        else:
-            raise ValueError(f'unsupported file format {fmt}!')
+        self.data = load_data(self.file_name)[self.data_names].to_numpy()
         eff = jnp.ones(len(self.data))
 
         if self.bins_type == 'meshgrid':
@@ -285,3 +279,7 @@ class ComponentFixed:
     def simulate_hist(self, parameters):
         rate = parameters[self.rate_par_name]
         return self.hist * rate
+
+    @property
+    def needed_parameters(self):
+        return [self.rate_par_name]

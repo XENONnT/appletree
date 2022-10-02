@@ -8,7 +8,6 @@ from appletree.utils import exporter
 export, __all__ = exporter(export_self=False)
 
 @export
-@jit
 def make_hist_mesh_grid(sample, bins=10, weights=None):
     hist, _ = jnp.histogramdd(sample, bins=bins, weights=weights)
     return hist
