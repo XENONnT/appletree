@@ -26,3 +26,6 @@ from .component import *
 
 from . import share
 from .share import *
+
+from . import likelihood
+from .likelihood import *

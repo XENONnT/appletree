@@ -6,8 +6,8 @@ import jax.numpy as jnp
 
 import appletree
 from appletree.plugin import Plugin
-from appletree.share import DATAPATH, cached_functions
-from appletree.utils import exporter
+from appletree.share import cached_functions
+from appletree.utils import exporter, load_data
 from appletree.hist import *
 
 export, __all__ = exporter()
@@ -275,13 +275,7 @@ class ComponentFixed(Component):
 
     def deduce(self, 
                data_names:list=['cs1', 'cs2']):
-        fmt = self.file_name.split('.')[-1]
-        if fmt == 'csv':
-            self.data = pd.read_csv(self.file_name)[data_names].to_numpy()
-        elif fmt == 'pkl':
-            self.data = pd.read_pickle(self.file_name)[data_names].to_numpy()
-        else:
-            raise ValueError(f'unsupported file format {fmt}!')
+        self.data = load_data(self.file_name)[data_names].to_numpy()
         self.hist = self.implement_binning(self.data, jnp.ones(len(self.data)))
 
     def simulate(self):
@@ -292,3 +286,7 @@ class ComponentFixed(Component):
                       *args, **kwargs):
         normalization_factor = self.get_normalization(self.hist, parameters, len(self.data))
         return self.hist * normalization_factor
+
+    @property
+    def needed_parameters(self):
+        return [self.rate_par_name]
