@@ -61,7 +61,7 @@ class Parameter():
                 self._parameter_dict[par_name] = np.clip(val, *setting['allowed_range'])
             elif setting['prior_type'] == 'fixed':
                 self._parameter_dict[par_name] = setting['prior_args']['val']
-                
+
     def sample_init(self):
         for par_name in self._parameter_dict:
             setting = self.par_config[par_name]
