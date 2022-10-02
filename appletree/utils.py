@@ -1,5 +1,6 @@
 import os
 import re
+import json
 from time import time
 
 import numpy as np
@@ -36,6 +37,12 @@ def load_data(file_name:str):
         data = pd.read_pickle(file_name)
     else:
         raise ValueError(f'unsupported file format {fmt}!')
+    return data
+
+@export
+def load_json(file_name:str):
+    with open(file_name, 'r') as file:
+        data = json.load(file)
     return data
 
 @export

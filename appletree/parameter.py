@@ -3,6 +3,8 @@ import json
 
 import numpy as np
 
+
+# TODO: add parameters after instantiated
 class Parameter():
     _parameter_fixed = []
     _parameter_fit = []
