@@ -11,7 +11,7 @@ export, __all__ = exporter()
 
 
 @export
-class EnergySpectra(Plugin):
+class UniformEnergySpectra(Plugin):
     depends_on = ['batch_size']
     provides = ['energy']
 
@@ -24,6 +24,22 @@ class EnergySpectra(Plugin):
     @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
         key, energy = randgen.uniform(key, self.lower, self.upper, shape=(batch_size, ))
+        return key, energy
+
+
+@export
+class MonoEnergySpectra(Plugin):
+    depends_on = ['batch_size']
+    provides = ['energy']
+
+    def __init__(self, mono_energy:float=2.82):
+        super().__init__()
+
+        self.mono_energy = float(mono_energy)
+
+    @partial(jit, static_argnums=(0, 3))
+    def simulate(self, key, parameters, batch_size):
+        energy = jnp.full(batch_size, self.mono_energy)
         return key, energy
 
 

@@ -6,9 +6,8 @@ from appletree.utils import load_data, get_equiprob_bins_2d
 from appletree.component import *
 
 class Likelihood:
-    components = {}
-
     def __init__(self, **config):
+        self.components = {}
         self._config = config
         self.data_file_name = config['data_file_name']
         self.bins_type = config['bins_type']
@@ -49,11 +48,16 @@ class Likelihood:
     def sanity_check(self):
         assert len(self.bins_on) == len(self.bins), 'Length of bins must be the same as length of bins_on!'
 
-    def register_component(self, component_cls, component_name):
+    def register_component(self, 
+                           component_cls, 
+                           component_name, 
+                           rate_name=None):
         component = component_cls(
             bins=self.bins,
             bins_type=self.component_bins_type
         )
+        if rate_name is not None:
+            component.rate_name = rate_name
         kwargs = dict(
             data_names=self.bins_on
         )
@@ -78,6 +82,7 @@ class Likelihood:
 
     def get_log_likelihood(self, key, batch_size, parameters):
         key, model_hist = self.simulate_model_hist(key, batch_size, parameters)
+        # Poisson likelihood
         llh = float(jnp.sum(self.data_hist * jnp.log(model_hist) - model_hist))
         if np.isnan(llh):
             llh = -np.inf
