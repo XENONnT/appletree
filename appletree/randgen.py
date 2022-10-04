@@ -18,6 +18,9 @@ ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
 
 @export
 def get_key(seed=None):
+    """
+    Generate a key for jax.random.
+    """
     if seed is None:
         seed = int(time()*1e6)
     return random.PRNGKey(seed)
@@ -27,14 +30,14 @@ def get_key(seed=None):
 @partial(jit, static_argnums=(3, ))
 def uniform(key, vmin, vmax, shape=()):
     """
-    Args
-        key: seed for random generator
-        vmin: <jnp.array>-like min in uniform distribution
-        vmax: <jnp.array>-like max in uniform distribution
-        shape: output shape. If not given, output has shape jnp.broadcast_shapes(jnp.shape(vmin), jnp.shape(vmax))
+    :key: seed for random generator.
+    :vmin: <jnp.array>-like min in uniform distribution.
+    :vmax: <jnp.array>-like max in uniform distribution.
+    :shape: output shape. If not given, output has shape jnp.broadcast_shapes(jnp.shape(vmin), jnp.shape(vmax)).
+    
     Returns
-        key: an updated seed
-        rvs: random variables
+    :key: an updated seed.
+    :rvs: random variables.
     """
     key, seed = random.split(key)
 
@@ -50,13 +53,13 @@ def uniform(key, vmin, vmax, shape=()):
 @partial(jit, static_argnums=(2, ))
 def poisson(key, lam, shape=()):
     """
-    Args
-        key: seed for random generator
-        lam: <jnp.array>-like expectation in poisson distribution
-        shape: output shape. If not given, output has shape jnp.shape(lam)
+    :key: seed for random generator.
+    :lam: <jnp.array>-like expectation in poisson distribution.
+    :shape: output shape. If not given, output has shape jnp.shape(lam).
+    
     Returns
-        key: an updated seed
-        rvs: random variables
+    :key: an updated seed.
+    :rvs: random variables.
     """
     key, seed = random.split(key)
 
@@ -71,14 +74,14 @@ def poisson(key, lam, shape=()):
 @partial(jit, static_argnums=(3, ))
 def normal(key, mean, std, shape=()):
     """
-    Args
-        key: seed for random generator
-        mean: <jnp.array>-like mean in normal distribution
-        std: <jnp.array>-like std in normal distribution
-        shape: output shape. If not given, output has shape jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std))
+    :key: seed for random generator.
+    :mean: <jnp.array>-like mean in normal distribution.
+    :std: <jnp.array>-like std in normal distribution.
+    :shape: output shape. If not given, output has shape jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std)).
+    
     Returns
-        key: an updated seed
-        rvs: random variables
+    :key: an updated seed.
+    :rvs: random variables.
     """
     key, seed = random.split(key)
     
@@ -94,16 +97,16 @@ def normal(key, mean, std, shape=()):
 @partial(jit, static_argnums=(5, ))
 def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
     """
-    Args
-        key: seed for random generator
-        mean: <jnp.array>-like mean in normal distribution
-        std: <jnp.array>-like std in normal distribution
-        vmin: <jnp.array>-like min value to clip. By default it's None. vmin and vmax cannot be both None.
-        vmax: <jnp.array>-like max value to clip. By default it's None. vmin and vmax cannot be both None.
-        shape: parameter passed to normal(..., shape=shape)
+    :key: seed for random generator.
+    :mean: <jnp.array>-like mean in normal distribution.
+    :std: <jnp.array>-like std in normal distribution.
+    :vmin: <jnp.array>-like min value to clip. By default it's None. vmin and vmax cannot be both None.
+    :vmax: <jnp.array>-like max value to clip. By default it's None. vmin and vmax cannot be both None.
+    :shape: parameter passed to normal(..., shape=shape)
+    
     Returns
-        key: an updated seed
-        rvs: random variables with shape jnp.broadcast_shapes(mean.shape, std.shape, vmin.shape, vmax.shape)
+    :key: an updated seed.
+    :rvs: random variables with shape jnp.broadcast_shapes(mean.shape, std.shape, vmin.shape, vmax.shape).
     """
     key, rvs = normal(key, mean, std, shape=shape)
     rvs = jnp.clip(rvs, a_min=vmin, a_max=vmax)
@@ -114,16 +117,15 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
 @partial(jit, static_argnums=(3, 4))
 def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_BINOM):
     """
-    Args
-        key: seed for random generator
-        p: <jnp.array>-like probability in binomial distribution
-        n: <jnp.array>-like count in binomial distribution
-        shape: output shape. If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n))
-        always_use_normal: If true, then Norm(np, sqrt(npq)) is always used. 
-                           Otherwise if np < 5, use the inversion method instead
+    :key: seed for random generator.
+    :p: <jnp.array>-like probability in binomial distribution.
+    :n: <jnp.array>-like count in binomial distribution.
+    :shape: output shape. If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
+    :always_use_normal: If true, then Norm(np, sqrt(npq)) is always used. Otherwise if np < 5, use the inversion method instead.
+    
     Returns
-        key: an updated seed
-        rvs: random variables
+    :key: an updated seed.
+    :rvs: random variables.
     """
     def _binomial_normal_approx_dispatch(seed, p, n):
         q = 1. - p
