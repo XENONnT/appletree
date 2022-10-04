@@ -100,19 +100,19 @@ class Likelihood:
         return key, llh
 
     def print_likelihood_summary(self, indent:str=' '*4, short=True):
-        print('\n'+'='*40)
+        print('\n'+'-'*40)
 
         print(f'BINNING\n')
         print(f'{indent}bins_type: {self.bins_type}')
         print(f'{indent}bins_on: {self.bins_on}')
         if not short:
             print(f'{indent}bins: {self.bins}')
-        print('\n'+'='*40)
+        print('\n'+'-'*40)
 
         print(f'DATA\n')
         print(f'{indent}file_name: {self.data_file_name}')
         print(f'{indent}data_rate: {float(self.data_hist.sum())}')
-        print('\n'+'='*40)
+        print('\n'+'-'*40)
 
         print('MODEL\n')
         for i, component_name in enumerate(self.components):
@@ -137,4 +137,4 @@ class Likelihood:
                 pass
             print()
 
-        print('='*40)
+        print('-'*40)
