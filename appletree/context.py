@@ -38,11 +38,11 @@ class Context():
 
     def print_context_summary(self, short=True):
         self.sanity_check()
-        print('\n'+'='*80)
+        print('\n'+'='*40)
         for key, likelihood in self.likelihoods.items():
             print(f'LIKELIHOOD {key}')
             likelihood.print_likelihood_summary(short=short)
-            print('\n'+'='*80)
+            print('\n'+'='*40)
 
     def sanity_check(self):
         needed = set(self.needed_parameters)
