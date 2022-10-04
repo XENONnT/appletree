@@ -75,19 +75,11 @@ class Likelihood:
 
     def _sanity_check(self):
         """Check equality between number of bins group and observables"""
-        assert len(self.bins_on) == len(self.bins), ''
-        'Length of bins must be the same as length of bins_on!'
-        mes = (f'Two plugins have a different default value'
-               f' for the same option. The option'
-               f' takes'
-                f' as a default while in'
-                f' the default value'
-                f' is set to. Please change'
-                ' one of the defaults.'
-                )
+        if len(self.bins_on) != len(self.bins):
+            raise RuntimeError('Length of bins must be the same as length of bins_on!')
 
-    def register_component(self, 
-                           component_cls: Component, 
+    def register_component(self,
+                           component_cls: Component,
                            component_name: str):
         """
         Create an appletree likelihood
