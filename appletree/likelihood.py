@@ -11,7 +11,7 @@ from appletree.component import Component, ComponentSim, ComponentFixed
 class Likelihood:
     """Combine all components(e.g. ER, AC, Wall), and calculate log posterior likelihood"""
 
-    def __init__(self, config: dict):
+    def __init__(self, **config):
         """
         Create an appletree likelihood
         :param config: Dictionary with configuration options that will be applied, should include:
