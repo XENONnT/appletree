@@ -11,7 +11,7 @@ class Parameter():
 
     def __init__(self, parameter_config):
         """
-        :parameter_config: can be either:
+        :param parameter_config: can be either:
             - str: the json file name where the config is stored.
             - dict: config dictionary.
 
@@ -59,8 +59,7 @@ class Parameter():
     def init_parameter(self, seed=None):
         """
         Initializing parameters by sampling prior. If the prior is free, then sampling from the initial guess.
-
-        :seed: integer, sent to np.random.seed(seed)
+        :param seed: integer, sent to np.random.seed(seed)
         """
         self._parameter_dict = {par_name : 0 for par_name in self.par_config.keys()}
 
@@ -152,9 +151,8 @@ class Parameter():
     def check_parameter_exist(self, keys, return_not_exist=False):
         """
         Check whether the keys exist in parameters.
-        
-        :keys: Parameter names. Can be a single str, or a list of str.
-        :return_not_exist: If False, function will return a bool if all keys exist. If True, function will additionally return the list of the not existing keys.
+        :param keys: Parameter names. Can be a single str, or a list of str.
+        :param return_not_exist: If False, function will return a bool if all keys exist. If True, function will additionally return the list of the not existing keys.
         """
         if isinstance(keys, (set, list)):
             not_exist = []
@@ -180,12 +178,11 @@ class Parameter():
     def set_parameter(self, keys, vals=None):
         """
         Set parameter values.
-        
-        :keys: Parameter names. Can be either
+        :param keys: Parameter names. Can be either
             - str: vals must be int or float.
             - list: vals must have the same length.
             - dict: vals will be overwritten as keys.values().
-        :vals: Values to be set.       
+        :param vals: Values to be set.       
         """
         all_exist, not_exist = self.check_parameter_exist(keys, return_not_exist=True)
         assert all_exist, f"{not_exist} not found!"
@@ -214,8 +211,7 @@ class Parameter():
     def get_parameter(self, keys):
         """
         Return parameter values.
-        
-        :keys: Parameter names. Can be a single str, or a list of str.
+        :param keys: Parameter names. Can be a single str, or a list of str.
         """
         all_exist, not_exist = self.check_parameter_exist(keys, return_not_exist=True)
         assert all_exist, f"{not_exist} not found!"
