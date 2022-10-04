@@ -9,6 +9,9 @@ export, __all__ = exporter(export_self=False)
 
 @export
 def make_hist_mesh_grid(sample, bins=10, weights=None):
+    """
+    Same as jnp.histogramdd.
+    """
     hist, _ = jnp.histogramdd(sample, bins=bins, weights=weights)
     return hist
 
@@ -16,12 +19,10 @@ def make_hist_mesh_grid(sample, bins=10, weights=None):
 @jit
 def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights):
     """
-    sample : (N, 2)
-    bins_x : (M1, )
-    bins_y : (M1-1, M2)
-    weights : (N, )
-    
-    return : (M1-1, M2-1)
+    :sample: array with shape (N, 2)
+    :bins_x: array with shape (M1, )
+    :bins_y: array with shape (M1-1, M2)
+    :weights: array with shape (N, )
     """
 
     x = sample[:, 0]
