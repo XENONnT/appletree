@@ -21,6 +21,14 @@ class Plugin():
     takes_map = immutabledict()
 
     def __init__(self):
+        if len(self.depends_on) == 0:
+            raise ValueError('depends_on not provided for '
+                             f'{self.__class__.__name__}')
+
+        if len(self.provides) == 0:
+            raise ValueError('provides not provided for '
+                             f'{self.__class__.__name__}')
+
         # Maps are loaded when a plugin is initialized
         for mapping in self.takes_map.values():
             mapping.build(mapping.coord_type, mapping.file_name)
