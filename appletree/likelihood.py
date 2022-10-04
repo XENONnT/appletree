@@ -95,7 +95,7 @@ class Likelihood:
             bins_type=self.component_bins_type,
         )
         component.rate_name = component_name + '_rate'
-        kwargs = dict(data_names=self.bins_on)
+        kwargs = {'data_names': self.bins_on}
         if isinstance(component, ComponentSim):
             kwargs['func_name'] = component_name + '_sim'
             kwargs['data_names'] = self.bins_on + ['eff']
