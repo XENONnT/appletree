@@ -48,9 +48,9 @@ class mTI(Plugin):
         ti = ni * parameters['py0'] * jnp.exp(- energy / parameters['py1']) * parameters['field']**parameters['py2'] / 4.
         fd = 1. / (1. + jnp.exp(- (energy - parameters['py3']) / parameters['py4']))
         r = jnp.where(
-            ti < 1e-2, 
-            ti / 2. - ti * ti / 3., 
-            1. - jnp.log(1. + ti) / ti
+            ti < 1e-2,
+            ti / 2. - ti * ti / 3.,
+            1. - jnp.log(1. + ti) / ti,
         )
         return key, r * fd
 
@@ -63,7 +63,9 @@ class RecombFluct(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
-        return key, jnp.clip(parameters['rf0'] * (1. - jnp.exp(- energy / parameters['rf1'])), 0, 1.)
+        fd_factor = 1. - jnp.exp(- energy / parameters['rf1'])
+        recomb_std = jnp.clip(parameters['rf0'] * fd_factor, 0, 1.)
+        return key, recomb_std
 
 
 @export
@@ -87,5 +89,4 @@ class Recombination(Plugin):
         p_not_recomb = 1. - recomb
         key, num_electron = randgen.binomial(key, p_not_recomb, num_ion)
         num_photon = num_quanta - num_electron
-        
         return key, num_photon, num_electron

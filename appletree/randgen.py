@@ -33,7 +33,8 @@ def uniform(key, vmin, vmax, shape=()):
     :param key: seed for random generator.
     :param vmin: <jnp.array>-like min in uniform distribution.
     :param vmax: <jnp.array>-like max in uniform distribution.
-    :param shape: output shape. If not given, output has shape jnp.broadcast_shapes(jnp.shape(vmin), jnp.shape(vmax)).
+    :param shape: output shape. If not given, output has shape 
+        jnp.broadcast_shapes(jnp.shape(vmin), jnp.shape(vmax)).
     :return: an updated seed, random variables.
     """
     key, seed = random.split(key)
@@ -71,7 +72,8 @@ def normal(key, mean, std, shape=()):
     :param key: seed for random generator.
     :param mean: <jnp.array>-like mean in normal distribution.
     :param std: <jnp.array>-like std in normal distribution.
-    :param shape: output shape. If not given, output has shape jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std)).
+    :param shape: output shape. If not given, output has shape 
+        jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std)).
     :return: an updated seed, random variables.
     """
     key, seed = random.split(key)
@@ -91,8 +93,10 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
     :param key: seed for random generator.
     :param mean: <jnp.array>-like mean in normal distribution.
     :param std: <jnp.array>-like std in normal distribution.
-    :param vmin: <jnp.array>-like min value to clip. By default it's None. vmin and vmax cannot be both None.
-    :param vmax: <jnp.array>-like max value to clip. By default it's None. vmin and vmax cannot be both None.
+    :param vmin: <jnp.array>-like min value to clip. 
+        By default it's None. vmin and vmax cannot be both None.
+    :param vmax: <jnp.array>-like max value to clip. 
+        By default it's None. vmin and vmax cannot be both None.
     :param shape: parameter passed to normal(..., shape=shape)
     :return: an updated seed, random variables.
     """
@@ -108,8 +112,10 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
     :param key: seed for random generator.
     :param p: <jnp.array>-like probability in binomial distribution.
     :param n: <jnp.array>-like count in binomial distribution.
-    :param shape: output shape. If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
-    :param always_use_normal: If true, then Norm(np, sqrt(npq)) is always used. Otherwise if np < 5, use the inversion method instead.
+    :param shape: output shape. If not given, output has shape 
+        jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
+    :param always_use_normal: If true, then Norm(np, sqrt(npq)) is always used. 
+        Otherwise if np < 5, use the inversion method instead.
     :return: an updated seed, random variables.
     """
     def _binomial_normal_approx_dispatch(seed, p, n):

@@ -152,7 +152,8 @@ class Parameter():
         """
         Check whether the keys exist in parameters.
         :param keys: Parameter names. Can be a single str, or a list of str.
-        :param return_not_exist: If False, function will return a bool if all keys exist. If True, function will additionally return the list of the not existing keys.
+        :param return_not_exist: If False, function will return a bool if all keys exist.
+            If True, function will additionally return the list of the not existing keys.
         """
         if isinstance(keys, (set, list)):
             not_exist = []
@@ -182,7 +183,7 @@ class Parameter():
             - str: vals must be int or float.
             - list: vals must have the same length.
             - dict: vals will be overwritten as keys.values().
-        :param vals: Values to be set.       
+        :param vals: Values to be set.
         """
         all_exist, not_exist = self.check_parameter_exist(keys, return_not_exist=True)
         assert all_exist, f"{not_exist} not found!"

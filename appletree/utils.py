@@ -133,8 +133,10 @@ def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.i
     Get 2D equiprobable binning edges.
     :param data: array with shape (N, 2).
     :param n_partitions: [M1, M2] where M1 M2 are the number of bins on each dimension.
-    :param x_clip: lower and upper binning edges on the 0th dimension. Data outside the x_clip will be dropped.
-    :param y_clip: lower and upper binning edges on the 1st dimension. Data outside the y_clip will be dropped. 
+    :param x_clip: lower and upper binning edges on the 0th dimension.
+        Data outside the x_clip will be dropped.
+    :param y_clip: lower and upper binning edges on the 1st dimension.
+        Data outside the y_clip will be dropped. 
     :param which_np: can be numpy or jax.numpy, determining the returned array type.
     """
     mask = (data[:, 0] > x_clip[0]) & (data[:, 0] < x_clip[1])
