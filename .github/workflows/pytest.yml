@@ -21,14 +21,13 @@ on:
     branches: [ master ]
 
 jobs:
-  update:
-    name: "${{ matrix.test }}_py${{ matrix.python-version }}"
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: False
+      fail-fast: false
       matrix:
+        os: [ "ubuntu-latest" ]
         python-version: [ 3.8, 3.9 ]
-        test: [ 'coveralls', 'pytest' ]
 
     steps:
       # Setup and installation
