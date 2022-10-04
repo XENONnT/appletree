@@ -30,6 +30,9 @@ export, __all__ = exporter(export_self=True)
 
 @export
 def use_xenon_plot_style():
+    """
+    Set matplotlib plot style.
+    """
     params = {
         'font.family': 'serif',
         'font.size' : 24, 'axes.titlesize' : 24,
@@ -57,8 +60,12 @@ def use_xenon_plot_style():
     }
     plt.rcParams.update(params)
 
+
 @export
 def load_data(file_name:str):
+    """
+    Load data from file. The suffix can be ".csv", ".pkl".
+    """
     fmt = file_name.split('.')[-1]
     if fmt == 'csv':
         data = pd.read_csv(file_name)
@@ -68,23 +75,30 @@ def load_data(file_name:str):
         raise ValueError(f'unsupported file format {fmt}!')
     return data
 
+
 @export
 def load_json(file_name:str):
+    """
+    Load data from json file.
+    """
     with open(file_name, 'r') as file:
         data = json.load(file)
     return data
 
+
 @export
 def camel_to_snake(x):
-    """Convert x from CamelCase to snake_case"""
-    # From https://stackoverflow.com/questions/1175208
+    """
+    Convert x from CamelCase to snake_case, from https://stackoverflow.com/questions/1175208
+    """
     x = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', x)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', x).lower()
+
 
 @export
 def timeit(indent=""):
     """
-    Use timeit as a decorator.
+    Use timeit as a decorator. It will print out the running time of the decorated function.
     """
     def _timeit(func, indent):
         name = func.__name__
@@ -100,16 +114,30 @@ def timeit(indent=""):
     else:
         return _timeit(indent, "")
 
+
 @export
 def set_gpu_memory_usage(fraction=0.3):
+    """
+    Set GPU memory usage. See more on https://jax.readthedocs.io/en/latest/gpu_memory_allocation.html
+    """
     if fraction > 1.:
         fraction = 1
     if fraction <= 0:
         raise ValueError("fraction must be positive!")
     os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = f"{fraction:.2f}"
 
+
 @export
 def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.inf], y_clip=[-np.inf, +np.inf], which_np=np):
+    """
+    Get 2D equiprobable binning edges.
+
+    :data: array with shape (N, 2).
+    :n_partitions: [M1, M2] where M1 M2 are the number of bins on each dimension.
+    :x_clip: lower and upper binning edges on the 0th dimension. Data outside the x_clip will be dropped.
+    :y_clip: lower and upper binning edges on the 1st dimension. Data outside the y_clip will be dropped. 
+    :which_np: can be numpy or jax.numpy, determining the returned array type.
+    """
     mask = (data[:, 0] > x_clip[0]) & (data[:, 0] < x_clip[1])
     mask &= (data[:, 1] > y_clip[0]) & (data[:, 1] < y_clip[1])
 
@@ -119,8 +147,17 @@ def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.i
 
     return which_np.array(x_bins), which_np.array(y_bins)
 
+
 @export
 def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
+    """
+    :bins_x: array with shape (M1, )
+    :bins_y: array with shape (M1-1, M2)
+    :hist: array with shape (M1-1, M2-1)
+
+    Other kwargs
+    :density: boolean.
+    """
     hist = np.asarray(hist)
     bins_x = np.asarray(bins_x)
     bins_y = np.asarray(bins_y)
