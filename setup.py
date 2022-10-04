@@ -1,11 +1,13 @@
 import setuptools
 
+
 def open_requirements(path):
     with open(path) as f:
         requires = [
             r.split('/')[-1] if r.startswith('git+') else r
             for r in f.read().splitlines()]
     return requires
+
 
 requires = open_requirements('requirements.txt')
 
@@ -31,5 +33,5 @@ setuptools.setup(
             'flake8',
         ],
     },
-    packages=setuptools.find_packages()
+    packages=setuptools.find_packages(),
 )
