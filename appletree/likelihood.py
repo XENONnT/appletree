@@ -46,25 +46,25 @@ class Likelihood:
             warn(warning)
             self.component_bins_type = 'meshgrid'
             self.data_hist = make_hist_mesh_grid(
-                self.data, 
-                bins=jnp.asarray(self.bins), 
-                weights=jnp.ones(len(self.data))
+                self.data,
+                bins=jnp.asarray(self.bins),
+                weights=jnp.ones(len(self.data)),
             )
         elif self.bins_type == 'equiprob':
             # self.bins = [num_bins_on_axis0, num_bins_on_axis1, ...]
             if self.dim != 2:
                 raise RuntimeError('only 2D equiprob binned likelihood is supported!')
-            self.bins = get_equiprob_bins_2d(self.data, 
-                                             self.bins, 
-                                             x_clip=config['x_clip'], 
-                                             y_clip=config['y_clip'], 
+            self.bins = get_equiprob_bins_2d(self.data,
+                                             self.bins,
+                                             x_clip=config['x_clip'],
+                                             y_clip=config['y_clip'],
                                              which_np=jnp)
             self.component_bins_type = 'irreg'
             self.data_hist = make_hist_irreg_bin_2d(
-                self.data, 
-                bins_x=self.bins[0], 
-                bins_y=self.bins[1], 
-                weights=jnp.ones(len(self.data))
+                self.data,
+                bins_x=self.bins[0],
+                bins_y=self.bins[1],
+                weights=jnp.ones(len(self.data)),
             )
         else:
             raise ValueError("'bins_type' should either be meshgrid or equiprob")
@@ -92,12 +92,10 @@ class Likelihood:
         # Initialize component
         component = component_cls(
             bins=self.bins,
-            bins_type=self.component_bins_type
+            bins_type=self.component_bins_type,
         )
         component.rate_name = component_name + '_rate'
-        kwargs = dict(
-            data_names=self.bins_on
-        )
+        kwargs = dict(data_names=self.bins_on)
         if isinstance(component, ComponentSim):
             kwargs['func_name'] = component_name + '_sim'
             kwargs['data_names'] = self.bins_on + ['eff']
@@ -125,7 +123,7 @@ class Likelihood:
                 _hist = component.simulate_hist(parameters)
             else:
                 raise TypeError(f'unsupported component type for {component_name}!')
-            hist = hist + _hist
+            hist += _hist
         return key, hist
 
     def get_log_likelihood(self, key, batch_size, parameters):
