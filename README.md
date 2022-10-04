@@ -6,4 +6,3 @@
   - more docstring
   - multiple-scattering
   - emcee fitting
-  - add coverage check
