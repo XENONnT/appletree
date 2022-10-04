@@ -2,7 +2,7 @@ from functools import partial
 from time import time
 
 import jax
-import jax.numpy as jnp
+from jax import numpy as jnp
 import numpy as np
 from jax import random, lax, jit, vmap
 
