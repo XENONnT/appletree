@@ -4,7 +4,6 @@ import json
 import numpy as np
 
 
-# TODO: add parameters after instantiated
 class Parameter():
     """
     Parameter handler to update parameters and calculate prior.
