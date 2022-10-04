@@ -8,7 +8,7 @@ from appletree import Parameter
 from appletree import Likelihood
 from appletree.utils import load_json
 from appletree.share import DATAPATH, PARPATH
-from appletree.components import *
+from appletree.components import ERBand, ERPeak, AC
 
 
 class Context():
@@ -16,6 +16,7 @@ class Context():
     Combine all likelihood(e.g. Rn220, Ar37),
     handle MCMC and post-fitting analysis
     """
+
     def __init__(self, parameter_config):
         """
         Create an appletree context
@@ -26,13 +27,11 @@ class Context():
         self.needed_parameters = set()
 
     def __getitem__(self, keys):
-        """
-        Get likelihood in context
-        """
+        """Get likelihood in context"""
         return self.likelihoods[keys]
 
-    def register_likelihood(self, 
-                            likelihood_name, 
+    def register_likelihood(self,
+                            likelihood_name,
                             likelihood_config):
         """
         Create an appletree likelihood
@@ -43,9 +42,9 @@ class Context():
             raise ValueError(f'Likelihood named {likelihood_name} already existed!')
         self.likelihoods[likelihood_name] = Likelihood(**likelihood_config)
 
-    def register_component(self, 
-                           likelihood_name, 
-                           component_cls, 
+    def register_component(self,
+                           likelihood_name,
+                           component_cls,
                            component_name):
         """
         Register component to likelihood
@@ -54,8 +53,8 @@ class Context():
         :param component_name: name of Component
         """
         self[likelihood_name].register_component(
-            component_cls, 
-            component_name
+            component_cls,
+            component_name,
         )
         # Update needed parameters
         self.needed_parameters |= self.likelihoods[likelihood_name].needed_parameters
@@ -73,8 +72,9 @@ class Context():
         needed = set(self.needed_parameters)
         provided = set(self.par_manager._parameter_dict.keys())
         # We will not update unneeded parameters!
-        assert needed == provided, f''
-        f'Parameter manager should provide needed parameters only, {provided - needed} not needed'
+        if needed != provided:
+            raise RuntimeError(f'Parameter manager should provide needed parameters only, '
+                               + '{provided - needed} not needed')
 
     def log_posterior(self, parameters, batch_size=int(1e6)):
         """
@@ -88,8 +88,9 @@ class Context():
         log_posterior = 0
         for likelihood in self.likelihoods.values():
             key, log_likelihood_i = likelihood.get_log_likelihood(
-                key, batch_size, 
-                self.par_manager.get_all_parameter()
+                key,
+                batch_size,
+                self.par_manager.get_all_parameter(),
             )
             log_posterior += log_likelihood_i
 
@@ -144,9 +145,7 @@ class Context():
         return result
 
     def get_post_parameters(self):
-        """
-        Get parameters correspondes to max posterior
-        """
+        """Get parameters correspondes to max posterior"""
         logp = self.sampler.get_log_prob(flat=True)
         chain = self.sampler.get_chain(flat=True)
         mpe_parameters = chain[np.argmax(logp)]
@@ -154,10 +153,10 @@ class Context():
         parameters = self.par_manager.get_all_parameter()
         return parameters
 
-    def get_template(self, 
-                     likelihood_name:str, 
-                     component_name:str, 
-                     batch_size=int(1e6), 
+    def get_template(self,
+                     likelihood_name: str,
+                     component_name: str,
+                     batch_size=int(1e6),
                      seed=None):
         """
         Get parameters correspondes to max posterior
@@ -180,6 +179,7 @@ class ContextRn220(Context):
     """
     A specified context for ER response by Rn220 fit
     """
+
     def __init__(self):
         par_config = load_json(os.path.join(PARPATH, 'apt_sr0_er.json'))
         # specify rate scale
