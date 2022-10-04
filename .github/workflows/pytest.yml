@@ -1,0 +1,63 @@
+# copied from https://github.com/XENONnT/straxen/blob/master/.github/workflows/pytest.yml
+# Test appletree on each PR.
+# We run three types of tests:
+#  - Pytest -> these are the "normal" tests and should be run for all
+#    python versions
+#  - Coveralls -> this is to see if we are covering all our lines of
+#    code with our tests. The results get uploaded to
+#    coveralls.io/github/XENONnT/appletree
+#  - pytest_no_database -> we want to make sure we can run the tests even
+#    if we don't have access to our database since this will e.g. happen
+#    when someone is pushing a PR from their own fork as we don't
+#    propagate our secrets there.
+
+name: Test package
+
+# Trigger this code when a new release is published
+on:
+  workflow_dispatch:
+  release:
+    types: [ created ]
+  pull_request:
+  push:
+    branches:
+      - master
+      - stable
+      - development
+
+jobs:
+  update:
+    name: "${{ matrix.test }}_py${{ matrix.python-version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: False
+      matrix:
+        python-version: [ 3.8, 3.9 ]
+        test: [ 'coveralls', 'pytest' ]
+
+    steps:
+      # Setup and installation
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup python
+        uses: actions/setup-python@v4.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Test package
+        # This is running a normal test
+        run: |
+          coverage run --source=appletree -m pytest --durations 0
+          coverage report
+
+      - name: Coveralls
+        # Make the coverage report and upload
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: matrix.test == 'coveralls' && (github.actor != 'dependabot[bot]')
+        run: |
+          coverage run --source=appletree -m pytest -v
+          coveralls --service=github
+      - name: goodbye
+        run: echo "tests done, bye bye"
