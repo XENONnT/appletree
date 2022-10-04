@@ -1,5 +1,6 @@
 immutabledict
 numpy
+pandas
 scipy
 sklearn
 matplotlib
