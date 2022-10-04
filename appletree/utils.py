@@ -29,6 +29,35 @@ def exporter(export_self=False):
 export, __all__ = exporter(export_self=True)
 
 @export
+def use_xenon_plot_style():
+    params = {
+        'font.family': 'serif',
+        'font.size' : 24, 'axes.titlesize' : 24,
+        'axes.labelsize' : 24, 'axes.linewidth' : 2,
+        # ticks
+        'xtick.labelsize' : 22, 'ytick.labelsize' : 22, 'xtick.major.size' : 16, 'xtick.minor.size' : 8,
+        'ytick.major.size' : 16, 'ytick.minor.size' : 8, 'xtick.major.width' : 2, 'xtick.minor.width' : 2,
+        'ytick.major.width' : 2, 'ytick.minor.width' : 2, 'xtick.direction' : 'in', 'ytick.direction' : 'in',
+        # markers
+        'lines.markersize' : 12, 'lines.markeredgewidth' : 3, 'errorbar.capsize' : 8, 'lines.linewidth' : 3,
+        #'lines.linestyle' : None, 'lines.marker' : None,
+        'savefig.bbox' : 'tight', 'legend.fontsize' : 24,
+        'backend': 'Agg', 'mathtext.fontset': 'dejavuserif', 'legend.frameon' : False,
+        # figure
+        'figure.facecolor':'w',
+        #'figure.figsize':(9,9),
+        'figure.figsize':(12,8),
+        #pad
+        'axes.labelpad':12,
+        # ticks
+        'xtick.major.pad': 6,   'xtick.minor.pad': 6,
+        'ytick.major.pad': 3.5, 'ytick.minor.pad': 3.5,
+        # colormap
+        #'image.cmap':'viridis'
+    }
+    plt.rcParams.update(params)
+
+@export
 def load_data(file_name:str):
     fmt = file_name.split('.')[-1]
     if fmt == 'csv':
