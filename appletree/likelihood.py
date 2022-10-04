@@ -9,18 +9,16 @@ from appletree.component import Component, ComponentSim, ComponentFixed
 
 
 class Likelihood:
-    """
-    Combine all components(e.g. ER, AC, Wall),
-    and calculate log posterior likelihood
-    """
-    def __init__(self, config : dict):
+    """Combine all components(e.g. ER, AC, Wall), and calculate log posterior likelihood"""
+
+    def __init__(self, config: dict):
         """
         Create an appletree likelihood
         :param config: Dictionary with configuration options that will be applied, should include:
-            - data_file_name: the data used in fitting, usually calibration data
-            - bins_type: either meshgrid or equiprob
-            - bins_on: observables where we will perform inference on, usually [cs1, cs2]
-            - x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
+        - data_file_name: the data used in fitting, usually calibration data
+        - bins_type: either meshgrid or equiprob
+        - bins_on: observables where we will perform inference on, usually [cs1, cs2]
+        - x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
         """
         self.components = {}
         self._config = config
@@ -29,7 +27,8 @@ class Likelihood:
         self.bins_on = config['bins_on']
         self.bins = config['bins']
         self.dim = len(self.bins_on)
-        assert self.dim == 2, 'Currently only support 2D fitting'
+        if self.dim != 2:
+            raise ValueError('Currently only support 2D fitting')
         self.needed_parameters = set()
         self._sanity_check()
 
@@ -53,7 +52,8 @@ class Likelihood:
             )
         elif self.bins_type == 'equiprob':
             # self.bins = [num_bins_on_axis0, num_bins_on_axis1, ...]
-            assert self.dim == 2, 'only 2D equiprob binned likelihood is supported!'
+            if self.dim != 2:
+                raise RuntimeError('only 2D equiprob binned likelihood is supported!')
             self.bins = get_equiprob_bins_2d(self.data, 
                                              self.bins, 
                                              x_clip=config['x_clip'], 
@@ -70,21 +70,17 @@ class Likelihood:
             raise ValueError("'bins_type' should either be meshgrid or equiprob")
 
     def __getitem__(self, keys):
-        """
-        Get component in likelihood
-        """
+        """Get component in likelihood"""
         return self.components[keys]
 
     def _sanity_check(self):
-        """
-        Check equality between number of bins group and observables
-        """
+        """Check equality between number of bins group and observables"""
         assert len(self.bins_on) == len(self.bins), ''
-        'Length of bins must be the same as length of bins_on!'
+        + 'Length of bins must be the same as length of bins_on!'
 
     def register_component(self, 
-                           component_cls:Component, 
-                           component_name:str):
+                           component_cls: Component, 
+                           component_name: str):
         """
         Create an appletree likelihood
         :param component_cls: class of Component
