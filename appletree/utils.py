@@ -1,15 +1,21 @@
 import os
 import re
 import json
-from time import time
+import jax
+import GOFevaluation
 
+import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+
+from time import time
+from collections import namedtuple
+from functools import partial
+from jax import jit, lax, random, vmap
 from matplotlib.patches import Rectangle
 
-import GOFevaluation
 
 def exporter(export_self=False):
     """
@@ -134,9 +140,9 @@ def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.i
     :param data: array with shape (N, 2).
     :param n_partitions: [M1, M2] where M1 M2 are the number of bins on each dimension.
     :param x_clip: lower and upper binning edges on the 0th dimension.
-        Data outside the x_clip will be dropped.
+    Data outside the x_clip will be dropped.
     :param y_clip: lower and upper binning edges on the 1st dimension.
-        Data outside the y_clip will be dropped. 
+    Data outside the y_clip will be dropped.
     :param which_np: can be numpy or jax.numpy, determining the returned array type.
     """
     mask = (data[:, 0] > x_clip[0]) & (data[:, 0] < x_clip[1])
@@ -213,7 +219,7 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
         )
         ax.add_patch(rec)
 
-    fig = plt.gcf() 
+    fig = plt.gcf()
     fig.colorbar(
         mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
         ax=ax,
@@ -228,16 +234,6 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
 
 # Copyright Contributors to the Pyro project.
 # SPDX-License-Identifier: Apache-2.0
-
-from collections import namedtuple
-from functools import partial
-
-import numpy as np
-
-import jax
-from jax import jit, lax, random, vmap
-import jax.numpy as jnp
-
 # Parameters for Transformed Rejection with Squeeze (TRS) algorithm - page 3.
 _tr_params = namedtuple(
     "tr_params", ["c", "b", "a", "alpha", "u_r", "v_r", "m", "log_p", "log1_p", "log_h"]

@@ -28,8 +28,8 @@ def map_interpolator_knn(pos, ref_pos, ref_val, k=3):
     :param pos: array with shape (N, D), as the points to be interpolated.
     :param ref_pos: array with shape (M, D), as the reference points.
     :param ref_val: array with shape (M, ), as the reference values.
-    :return: interpolated values with shape (N, ), weighted by the inverse of 
-        the distance to k nearest neighbors. 
+    :return: interpolated values with shape (N, ), weighted by the inverse of
+    the distance to k nearest neighbors.
     """
     pos = jnp.asarray(pos)
     ref_pos = jnp.asarray(ref_pos)
@@ -52,8 +52,8 @@ def curve_interpolator(pos, ref_pos, ref_val):
     :param pos: array with shape (N, ), as the points to be interpolated.
     :param ref_pos: array with shape (M, ), as the reference points.
     :param ref_val: array with shape (M, ), as the reference values.
-    :return: interpolated values with shape (N, ), weighted by the inverse of 
-        the distance to k nearest neighbors.
+    :return: interpolated values with shape (N, ), weighted by the inverse of
+    the distance to k nearest neighbors.
     """
     right = jnp.searchsorted(ref_pos, pos)
     left = right - 1
@@ -79,7 +79,7 @@ def curve_interpolator(pos, ref_pos, ref_val):
 @jit
 def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
     """
-    Inverse distance weighting average as 2D interpolation using KNN(K=4). 
+    Inverse distance weighting average as 2D interpolation using KNN(K=4).
     A uniform mesh grid binning is assumed.
     :param pos: array with shape (N, 2), positions at which the interp is calculated.
     :param ref_pos_lowers: array with shape (2, ), the lower edges of the binning on each dimension.

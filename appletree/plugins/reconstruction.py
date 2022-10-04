@@ -17,11 +17,11 @@ export, __all__ = exporter(export_self=False)
     Mapping(name='s1_bias',
         coord_type='point',
         file_name='s1_bias.json',
-        help='S1 reconstruction bias'),
+        doc='S1 reconstruction bias'),
     Mapping(name='s1_smear',
         coord_type='point',
         file_name='s1_smearing.json',
-        help='S1 reconstruction smearing')
+        doc='S1 reconstruction smearing')
 )
 class S1(Plugin):
     depends_on = ['num_s1_phd', 'num_s1_pe']
@@ -41,11 +41,11 @@ class S1(Plugin):
     Mapping(name='s2_bias',
         coord_type='point',
         file_name='s2_bias.json',
-        help='S2 reconstruction bias'),
+        doc='S2 reconstruction bias'),
     Mapping(name='s2_smear',
         coord_type='point',
         file_name='s2_smearing.json',
-        help='S2 reconstruction smearing')
+        doc='S2 reconstruction smearing')
 )
 class S2(Plugin):
     depends_on = ['num_s2_pe']

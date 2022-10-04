@@ -1,4 +1,5 @@
 from warnings import warn
+from xmlrpc.client import boolean
 
 import numpy as np
 from jax import numpy as jnp
@@ -75,6 +76,24 @@ class Likelihood:
         if len(self._bins_on) != len(self._bins):
             raise RuntimeError('Length of bins must be the same as length of bins_on!')
 
+    def _simulate_model_hist(self, key, batch_size, parameters):
+        """
+        Histogram of simulated observables
+        :param key: a pseudo-random number generator (PRNG) key
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        hist = jnp.zeros_like(self.data_hist)
+        for component_name, component in self.components.items():
+            if isinstance(component, ComponentSim):
+                key, _hist = component.simulate_hist(key, batch_size, parameters)
+            elif isinstance(component, ComponentFixed):
+                _hist = component.simulate_hist(parameters)
+            else:
+                raise TypeError(f'unsupported component type for {component_name}!')
+            hist += _hist
+        return key, hist
+
     def register_component(self,
                            component_cls: Component,
                            component_name: str):
@@ -105,24 +124,6 @@ class Likelihood:
         # Update needed parameters
         self.needed_parameters |= self.components[component_name].needed_parameters
 
-    def _simulate_model_hist(self, key, batch_size, parameters):
-        """
-        Histogram of simulated observables
-        :param key: a pseudo-random number generator (PRNG) key
-        :param batch_size: int of number of simulated events
-        :param parameters: dict of parameters used in simulation
-        """
-        hist = jnp.zeros_like(self.data_hist)
-        for component_name, component in self.components.items():
-            if isinstance(component, ComponentSim):
-                key, _hist = component.simulate_hist(key, batch_size, parameters)
-            elif isinstance(component, ComponentFixed):
-                _hist = component.simulate_hist(parameters)
-            else:
-                raise TypeError(f'unsupported component type for {component_name}!')
-            hist += _hist
-        return key, hist
-
     def get_log_likelihood(self, key, batch_size, parameters):
         """
         Get log likelihood of given parameters
@@ -132,12 +133,15 @@ class Likelihood:
         """
         key, model_hist = self._simulate_model_hist(key, batch_size, parameters)
         # Poisson likelihood
-        llh = float(jnp.sum(self.data_hist * jnp.log(model_hist) - model_hist))
+        llh = jnp.sum(self.data_hist * jnp.log(model_hist) - model_hist)
+        llh = float(llh)
         if np.isnan(llh):
             llh = -np.inf
         return key, llh
 
-    def print_likelihood_summary(self, indent:str=' '*4, short=True):
+    def print_likelihood_summary(self, 
+                                 indent:str = ' '*4, 
+                                 short:bool = True): 
         """
         Print likelihood summary: components, bins, file names
         :param indent: str of indent

@@ -17,9 +17,9 @@ class Component:
     norm_type: str = ''
     tag: str = '_'  # for instance name of the plugins
 
-    def __init__(self, 
-                 bins:list=[], 
-                 bins_type:str=''):
+    def __init__(self,
+                 bins:list = [],
+                 bins_type:str = ''): 
         self.bins = bins
         self.bins_type = bins_type
         self.needed_parameters = set()
@@ -36,7 +36,8 @@ class Component:
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
         else:
             raise ValueError(f'Unsupported bins_type {self.bins_type}!')
-        hist = jnp.clip(hist, 1., jnp.inf) # as an uncertainty to prevent blowing up
+        # as an uncertainty to prevent blowing up
+        hist = jnp.clip(hist, 1., jnp.inf)
         return hist
 
     def get_normalization(self, hist, parameters, batch_size=None):
@@ -54,6 +55,7 @@ class Component:
     def compile(self):
         pass
 
+
 @export
 class ComponentSim(Component):
     """
@@ -62,7 +64,7 @@ class ComponentSim(Component):
     old_code: str = None
 
     def __init__(self,
-                 register = None, 
+                 register = None,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._plugin_class_registry = dict()
@@ -95,23 +97,22 @@ class ComponentSim(Component):
                 continue
             already_seen.append(plugin)
 
-            for map, items in plugin.takes_map.items():
+            for map_name, items in plugin.takes_map.items():
                 # Looping over the maps of the new plugin and check if
                 # they can be found in the already registered plugins:
                 for new_map, new_items in plugin_class.takes_map.items():
-                    if not new_map == map:
+                    if new_map != map_name:
                         continue
                     if items.file_name == new_items.file_name:
                         continue
                     else:
-                        mes = (f'Two plugins have a different file name'
-                                f' for the same map. The map'
-                                f' "{new_map}" in "{plugin.__name__}" takes'
-                                f' the file name as "{new_items.file_name}"  while in'
-                                f' "{plugin_class.__name__}" the file name'
-                                f' is set to "{items.file_name}". Please change'
-                                ' one of the file names.'
-                                )
+                        mes = f'Two plugins have a different file name' + \
+                              f' for the same map. The map' + \
+                              f' "{new_map}" in "{plugin.__name__}" takes' + \
+                              f' the file name as "{new_items.file_name}"  while in' + \
+                              f' "{plugin_class.__name__}" the file name' + \
+                              f' is set to "{items.file_name}". Please change' + \
+                              f' one of the file names.'
                         raise ValueError(mes)
 
     def register_all(self, module):
@@ -132,8 +133,8 @@ class ComponentSim(Component):
             if issubclass(x, Plugin):
                 self.register(x)
 
-    def dependencies_deduce(self, 
-                            data_names: list = ['cs1', 'cs2', 'eff'], 
+    def dependencies_deduce(self,
+                            data_names: list = ['cs1', 'cs2', 'eff'],
                             dependencies: list = None) -> list:
         if dependencies is None:
             dependencies = []
@@ -143,8 +144,8 @@ class ComponentSim(Component):
             if data_name == 'batch_size':
                 continue
             try:
-                dependencies.append({'plugin': self._plugin_class_registry[data_name], 
-                                     'provides': data_name, 
+                dependencies.append({'plugin': self._plugin_class_registry[data_name],
+                                     'provides': data_name,
                                      'depends_on': self._plugin_class_registry[data_name].depends_on})
             except:
                 raise ValueError(f'Can not find dependency for {data_name}')
@@ -153,7 +154,10 @@ class ComponentSim(Component):
             # `batch_size` has no dependency
             if data_name == 'batch_size':
                 continue
-            dependencies = self.dependencies_deduce(data_names=self._plugin_class_registry[data_name].depends_on, dependencies=dependencies)
+            dependencies = self.dependencies_deduce(
+                data_names=self._plugin_class_registry[data_name].depends_on,
+                dependencies=dependencies,
+            )
 
         return dependencies
 
@@ -169,11 +173,11 @@ class ComponentSim(Component):
             already_seen.append(plugin.__name__)
             self.needed_parameters |= set(plugin.parameters)
 
-    def flush_source_code(self, 
-                          data_names:list=['cs1', 'cs2', 'eff'],
-                          func_name:str='simulate'):
+    def flush_source_code(self,
+                          data_names:list = ['cs1', 'cs2', 'eff'],
+                          func_name:str = 'simulate'): 
         self.func_name = func_name
-        
+
         if not isinstance(data_names, (list, str)):
             raise RuntimeError(f'data_names must be list or str, but given {type(data_names)}')
         if isinstance(data_names, str):
@@ -211,7 +215,8 @@ class ComponentSim(Component):
         self.code = code
 
         if func_name in cached_functions.keys():
-            warning = f'Function name {func_name} is already cached. Running compile() will overwrite it.'
+            warning = f'Function name {func_name} is already cached. ' + \
+                       'Running compile() will overwrite it.'
             warn(warning)
 
     @property
@@ -223,9 +228,9 @@ class ComponentSim(Component):
         self._code = code
         self._compile = partial(exec, self.code, cached_functions)
 
-    def deduce(self, 
-               data_names:list=['cs1', 'cs2'], 
-               func_name:str='simulate'):
+    def deduce(self,
+               data_names:list = ['cs1', 'cs2'],
+               func_name:str = 'simulate'): 
         if not isinstance(data_names, (list, tuple)):
             raise ValueError(f'Unsupported data_names type {type(data_names)}!')
         if 'eff' in data_names:
@@ -241,9 +246,9 @@ class ComponentSim(Component):
         self._compile()
         self.simulate = cached_functions[self.func_name]
 
-    def simulate_hist(self, 
-                      key, 
-                      batch_size, 
+    def simulate_hist(self,
+                      key,
+                      batch_size,
                       parameters):
         key, result = self.simulate(key, batch_size, parameters)
         mc = result[:-1]
@@ -265,15 +270,13 @@ class ComponentSim(Component):
         assert isinstance(data_name, str)
         pass
 
+
 @export
 class ComponentFixed(Component):
     file_name: str = None
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def deduce(self, 
-               data_names:list=['cs1', 'cs2']):
+    def deduce(self,
+               data_names:list = ['cs1', 'cs2']): 
         self.data = load_data(self.file_name)[data_names].to_numpy()
         self.hist = self.implement_binning(self.data, jnp.ones(len(self.data)))
         self.needed_parameters.add(self.rate_name)
@@ -281,8 +284,8 @@ class ComponentFixed(Component):
     def simulate(self):
         raise NotImplementedError
 
-    def simulate_hist(self, 
-                      parameters, 
+    def simulate_hist(self,
+                      parameters,
                       *args, **kwargs):
         normalization_factor = self.get_normalization(self.hist, parameters, len(self.data))
         return self.hist * normalization_factor

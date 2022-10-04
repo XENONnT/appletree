@@ -30,6 +30,14 @@ class Context():
         """Get likelihood in context"""
         return self.likelihoods[keys]
 
+    def _sanity_check(self):
+        needed = set(self.needed_parameters)
+        provided = set(self.par_manager._parameter_dict.keys())
+        # We will not update unneeded parameters!
+        if needed != provided:
+            raise RuntimeError(f'Parameter manager should provide needed parameters only, ' + \
+                                '{provided - needed} not needed')
+
     def register_likelihood(self,
                             likelihood_name,
                             likelihood_config):
@@ -67,14 +75,6 @@ class Context():
             print(f'LIKELIHOOD {key}')
             likelihood.print_likelihood_summary(short=short)
             print('\n'+'='*40)
-
-    def _sanity_check(self):
-        needed = set(self.needed_parameters)
-        provided = set(self.par_manager._parameter_dict.keys())
-        # We will not update unneeded parameters!
-        if needed != provided:
-            raise RuntimeError(f'Parameter manager should provide needed parameters only, '
-                               + '{provided - needed} not needed')
 
     def log_posterior(self, parameters, batch_size=int(1e6)):
         """
@@ -169,8 +169,8 @@ class Context():
         key = randgen.get_key(seed=seed)
 
         key, result = self[likelihood_name][component_name].simulate(
-            key, 
-            batch_size, parameters
+            key,
+            batch_size, parameters,
         )
         return result
 
@@ -194,9 +194,9 @@ class ContextRn220(Context):
 
         rn_config = dict(
             data_file_name = os.path.join(
-                DATAPATH, 
-                'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv'
-            ), 
+                DATAPATH,
+                'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv',
+            ),
             bins_type = 'equiprob',
             bins_on = ['cs1', 'cs2'],
             bins = [15, 15],
@@ -212,6 +212,7 @@ class ContextER(Context):
     """
     A specified context for ER response by Rn220 & Ar37 combined fit
     """
+    
     def __init__(self):
         par_config = load_json(os.path.join(PARPATH, 'apt_sr0_er.json'))
         # specify rate scale
@@ -227,9 +228,9 @@ class ContextER(Context):
 
         rn_config = dict(
             data_file_name = os.path.join(
-                DATAPATH, 
-                'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv'
-            ), 
+                DATAPATH,
+                'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv',
+            ),
             bins_type = 'equiprob',
             bins_on = ['cs1', 'cs2'],
             bins = [15, 15],
@@ -242,9 +243,9 @@ class ContextER(Context):
 
         ar_config = dict(
             data_file_name = os.path.join(
-                DATAPATH, 
-                'data_XENONnT_Ar37_v2_1e4_events_2sig_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv'
-            ), 
+                DATAPATH,
+                'data_XENONnT_Ar37_v2_1e4_events_2sig_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv',
+            ),
             bins_type = 'equiprob',
             bins_on = ['cs1', 'cs2'],
             bins = [20, 20],

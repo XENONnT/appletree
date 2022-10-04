@@ -12,8 +12,8 @@ class Parameter():
     def __init__(self, parameter_config):
         """
         :param parameter_config: can be either:
-            - str: the json file name where the config is stored.
-            - dict: config dictionary.
+        - str: the json file name where the config is stored.
+        - dict: config dictionary.
 
         Here is an example,
         
@@ -39,9 +39,9 @@ class Parameter():
         }
 
         "prior_type" can be:
-            - "fixed": "prior_args" must contain "val".
-            - "norm": "prior_args" must contain "mean", "std".
-            - "uniform": "prior_args" must contain "lower", "upper".
+        - "fixed": "prior_args" must contain "val".
+        - "norm": "prior_args" must contain "mean", "std".
+        - "uniform": "prior_args" must contain "lower", "upper".
         If "prior_type" is "fixed", then "allowed_range", "init_mean", "init_std" will all be ignored.
         """
         if isinstance(parameter_config, str):
@@ -153,7 +153,7 @@ class Parameter():
         Check whether the keys exist in parameters.
         :param keys: Parameter names. Can be a single str, or a list of str.
         :param return_not_exist: If False, function will return a bool if all keys exist.
-            If True, function will additionally return the list of the not existing keys.
+        If True, function will additionally return the list of the not existing keys.
         """
         if isinstance(keys, (set, list)):
             not_exist = []
@@ -180,9 +180,9 @@ class Parameter():
         """
         Set parameter values.
         :param keys: Parameter names. Can be either
-            - str: vals must be int or float.
-            - list: vals must have the same length.
-            - dict: vals will be overwritten as keys.values().
+        - str: vals must be int or float.
+        - list: vals must have the same length.
+        - dict: vals will be overwritten as keys.values().
         :param vals: Values to be set.
         """
         all_exist, not_exist = self.check_parameter_exist(keys, return_not_exist=True)

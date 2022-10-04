@@ -1,11 +1,10 @@
-from functools import partial
-
 import jax.numpy as jnp
 from jax import jit, vmap
 
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
+
 
 @export
 def make_hist_mesh_grid(sample, bins=10, weights=None):
@@ -14,6 +13,7 @@ def make_hist_mesh_grid(sample, bins=10, weights=None):
     """
     hist, _ = jnp.histogramdd(sample, bins=bins, weights=weights)
     return hist
+
 
 @export
 @jit
@@ -24,7 +24,6 @@ def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights):
     :param bins_y: array with shape (M1-1, M2)
     :param weights: array with shape (N, )
     """
-
     x = sample[:, 0]
     y = sample[:, 1]
 
@@ -33,7 +32,8 @@ def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights):
 
     bin_ind = jnp.stack((ind_x, ind_y))
 
-    hist = jnp.zeros((len(bins_x)+1, bins_y.shape[-1]+1))
+    output_shape = (len(bins_x)+1, bins_y.shape[-1]+1)
+    hist = jnp.zeros(output_shape)
     hist = hist.at[tuple(bin_ind)].add(weights)
 
     return hist[1:-1, 1:-1]

@@ -27,7 +27,7 @@ class S2Threshold(Plugin):
     Mapping(name='s1_eff',
         coord_type='point',
         file_name='3fold_recon_eff.json',
-        help='S1 light collation efficiency correction')
+        doc='S1 light collation efficiency correction')
 )
 class S1ReconEff(Plugin):
     depends_on = ['num_s1_phd']

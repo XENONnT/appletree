@@ -6,6 +6,7 @@ from appletree.utils import exporter
 
 export, __all__ = exporter()
 
+
 @export
 class Plugin():
     # the plugin's dependency(the arguments of `simulate`)
@@ -21,11 +22,11 @@ class Plugin():
     takes_map = immutabledict()
 
     def __init__(self):
-        if len(self.depends_on) == 0:
+        if len(self.depends_on) == []:
             raise ValueError('depends_on not provided for '
                              f'{self.__class__.__name__}')
 
-        if len(self.provides) == 0:
+        if len(self.provides) == []:
             raise ValueError('provides not provided for '
                              f'{self.__class__.__name__}')
 
