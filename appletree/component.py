@@ -15,6 +15,7 @@ export, __all__ = exporter()
 class Component:
     rate_name: str = ''
     norm_type: str = ''
+    tag: str = '_'  # for instance name of the plugins
 
     def __init__(self, 
                  bins:list=[], 
@@ -59,7 +60,6 @@ class ComponentSim(Component):
     """
     code: str = None
     old_code: str = None
-    tag = '_'  # for instance name of the plugins
 
     def __init__(self,
                  register = None, 
