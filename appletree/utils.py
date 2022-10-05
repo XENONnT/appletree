@@ -18,8 +18,7 @@ from matplotlib.patches import Rectangle
 
 
 def exporter(export_self=False):
-    """
-    Export utility modified from https://stackoverflow.com/a/41895194
+    """Export utility modified from https://stackoverflow.com/a/41895194
     Returns export decorator, __all__ list
     """
     all_ = []
@@ -36,9 +35,7 @@ export, __all__ = exporter(export_self=True)
 
 @export
 def use_xenon_plot_style():
-    """
-    Set matplotlib plot style.
-    """
+    """Set matplotlib plot style."""
     params = {
         'font.family': 'serif',
         'font.size' : 24, 'axes.titlesize' : 24,
@@ -49,12 +46,10 @@ def use_xenon_plot_style():
         'ytick.major.width' : 2, 'ytick.minor.width' : 2, 'xtick.direction' : 'in', 'ytick.direction' : 'in',
         # markers
         'lines.markersize' : 12, 'lines.markeredgewidth' : 3, 'errorbar.capsize' : 8, 'lines.linewidth' : 3,
-        #'lines.linestyle' : None, 'lines.marker' : None,
         'savefig.bbox' : 'tight', 'legend.fontsize' : 24,
         'backend': 'Agg', 'mathtext.fontset': 'dejavuserif', 'legend.frameon' : False,
         # figure
         'figure.facecolor':'w',
-        #'figure.figsize':(9,9),
         'figure.figsize':(12,8),
         #pad
         'axes.labelpad':12,
@@ -62,16 +57,13 @@ def use_xenon_plot_style():
         'xtick.major.pad': 6,   'xtick.minor.pad': 6,
         'ytick.major.pad': 3.5, 'ytick.minor.pad': 3.5,
         # colormap
-        #'image.cmap':'viridis'
     }
     plt.rcParams.update(params)
 
 
 @export
 def load_data(file_name:str):
-    """
-    Load data from file. The suffix can be ".csv", ".pkl".
-    """
+    """Load data from file. The suffix can be ".csv", ".pkl"."""
     fmt = file_name.split('.')[-1]
     if fmt == 'csv':
         data = pd.read_csv(file_name)
@@ -84,9 +76,7 @@ def load_data(file_name:str):
 
 @export
 def load_json(file_name:str):
-    """
-    Load data from json file.
-    """
+    """Load data from json file."""
     with open(file_name, 'r') as file:
         data = json.load(file)
     return data
@@ -94,8 +84,8 @@ def load_json(file_name:str):
 
 @export
 def camel_to_snake(x):
-    """
-    Convert x from CamelCase to snake_case, from https://stackoverflow.com/questions/1175208
+    """Convert x from CamelCase to snake_case,
+    from https://stackoverflow.com/questions/1175208
     """
     x = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', x)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', x).lower()
@@ -103,8 +93,8 @@ def camel_to_snake(x):
 
 @export
 def timeit(indent=""):
-    """
-    Use timeit as a decorator. It will print out the running time of the decorated function.
+    """Use timeit as a decorator.
+    It will print out the running time of the decorated function.
     """
     def _timeit(func, indent):
         name = func.__name__
@@ -123,8 +113,8 @@ def timeit(indent=""):
 
 @export
 def set_gpu_memory_usage(fraction=0.3):
-    """
-    Set GPU memory usage. See more on https://jax.readthedocs.io/en/latest/gpu_memory_allocation.html
+    """Set GPU memory usage.
+    See more on https://jax.readthedocs.io/en/latest/gpu_memory_allocation.html
     """
     if fraction > 1.:
         fraction = 1
@@ -135,8 +125,7 @@ def set_gpu_memory_usage(fraction=0.3):
 
 @export
 def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.inf], y_clip=[-np.inf, +np.inf], which_np=np):
-    """
-    Get 2D equiprobable binning edges.
+    """Get 2D equiprobable binning edges.
     :param data: array with shape (N, 2).
     :param n_partitions: [M1, M2] where M1 M2 are the number of bins on each dimension.
     :param x_clip: lower and upper binning edges on the 0th dimension.
@@ -157,7 +146,7 @@ def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.i
 
 @export
 def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
-    """
+    """Plot histogram defined by irregular binning.
     :param bins_x: array with shape (M1, )
     :param bins_y: array with shape (M1-1, M2)
     :param hist: array with shape (M1-1, M2-1)

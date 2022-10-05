@@ -18,9 +18,7 @@ ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
 
 @export
 def get_key(seed=None):
-    """
-    Generate a key for jax.random.
-    """
+    """Generate a key for jax.random."""
     if seed is None:
         seed = int(time()*1e6)
     return random.PRNGKey(seed)
@@ -29,7 +27,7 @@ def get_key(seed=None):
 @export
 @partial(jit, static_argnums=(3, ))
 def uniform(key, vmin, vmax, shape=()):
-    """
+    """Uniform random sampler.
     :param key: seed for random generator.
     :param vmin: <jnp.array>-like min in uniform distribution.
     :param vmax: <jnp.array>-like max in uniform distribution.
@@ -50,7 +48,7 @@ def uniform(key, vmin, vmax, shape=()):
 @export
 @partial(jit, static_argnums=(2, ))
 def poisson(key, lam, shape=()):
-    """
+    """Poisson random sampler.
     :param key: seed for random generator.
     :param lam: <jnp.array>-like expectation in poisson distribution.
     :param shape: output shape. If not given, output has shape jnp.shape(lam).
@@ -68,7 +66,7 @@ def poisson(key, lam, shape=()):
 @export
 @partial(jit, static_argnums=(3, ))
 def normal(key, mean, std, shape=()):
-    """
+    """Normal distribution random sampler.
     :param key: seed for random generator.
     :param mean: <jnp.array>-like mean in normal distribution.
     :param std: <jnp.array>-like std in normal distribution.
@@ -89,7 +87,7 @@ def normal(key, mean, std, shape=()):
 @export
 @partial(jit, static_argnums=(5, ))
 def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
-    """
+    """Truncated normal distribution random sampler.
     :param key: seed for random generator.
     :param mean: <jnp.array>-like mean in normal distribution.
     :param std: <jnp.array>-like std in normal distribution.
@@ -108,7 +106,7 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
 @export
 @partial(jit, static_argnums=(3, 4))
 def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_BINOM):
-    """
+    """Binomial random sampler.
     :param key: seed for random generator.
     :param p: <jnp.array>-like probability in binomial distribution.
     :param n: <jnp.array>-like count in binomial distribution.

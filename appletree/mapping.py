@@ -18,8 +18,7 @@ __all__ += 'OMITTED'.split()
 
 @export
 def takes_map(*maps):
-    """
-    Decorator for plugin classes, to specify which maps it takes.
+    """Decorator for plugin classes, to specify which maps it takes.
     :param maps: Mapping instances of maps this plugin takes.
     """
     
@@ -52,9 +51,7 @@ def takes_map(*maps):
 
 @export
 class MapType(IntEnum):
-    """
-    Identifies what type of mapping
-    """
+    """Identifies what type of mapping"""
 
     # Mapping has only discrete points
     POINT = 0
@@ -69,8 +66,13 @@ class Mapping(object):
                  name: str,
                  coord_type: ty.Union[type, tuple, list] = OMITTED,
                  file_name: ty.Union[type, tuple, list] = OMITTED,
-                 default: ty.Any = OMITTED,
                  doc: str = ''):
+        """Initialization.
+        :param name: name of the map
+        :param coord_type: how the coordination is provided. Can be point or regbin
+        :param file_name: file name of the map
+        :param doc: description of the map
+        """
         self.name = name
         self.coord_type = coord_type
         self.file_name = file_name
@@ -78,6 +80,7 @@ class Mapping(object):
         self.doc = doc
 
     def build(self, bins_type, file_name):
+        """Cache the map to jnp.array"""
         file_path = os.path.join(MAPPATH, file_name)
         if bins_type == 'point':
             self.type = MapType.POINT
@@ -89,6 +92,7 @@ class Mapping(object):
             raise ValueError("map_type must be either 'point' or 'regbin'!")
 
     def build_point(self, file_path):
+        """Cache the map to jnp.array if bins_type is point"""
         with open(file_path, 'r') as file:
             self.data = json.load(file)
         self.coordinate_name = self.data['coordinate_name']
@@ -96,6 +100,7 @@ class Mapping(object):
         self.map = jnp.asarray(self.data['map'], dtype=float)
 
     def build_regbin(self, file_path):
+        """Cache the map to jnp.array if bins_type is regbin"""
         with open(file_path, 'r') as file:
             self.data = json.load(file)
         self.coordinate_name = self.data['coordinate_name']

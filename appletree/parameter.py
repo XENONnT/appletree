@@ -5,12 +5,10 @@ import numpy as np
 
 
 class Parameter():
-    """
-    Parameter handler to update parameters and calculate prior.
-    """
+    """Parameter handler to update parameters and calculate prior."""
 
     def __init__(self, parameter_config):
-        """
+        """Initialization
         :param parameter_config: can be either:
         - str: the json file name where the config is stored.
         - dict: config dictionary.
@@ -57,8 +55,8 @@ class Parameter():
         self.init_parameter()
 
     def init_parameter(self, seed=None):
-        """
-        Initializing parameters by sampling prior. If the prior is free, then sampling from the initial guess.
+        """Initializing parameters by sampling prior. 
+        If the prior is free, then sampling from the initial guess.
         :param seed: integer, sent to np.random.seed(seed)
         """
         self._parameter_dict = {par_name : 0 for par_name in self.par_config.keys()}
@@ -74,13 +72,13 @@ class Parameter():
         self.sample_prior()
 
     def sample_prior(self):
-        """
-        Sampling parameters from prior and set self._parameter_dict. If the prior is free, then sampling from the initial guess.
+        """Sampling parameters from prior and set self._parameter_dict. 
+        If the prior is free, then sampling from the initial guess.
         """
         for par_name in self._parameter_dict:
             try:
                 setting = self.par_config[par_name]
-            except BaseException:
+            except:
                 raise RuntimeError(f'Requested parameter "{par_name}" not in given configuration')
 
             if setting['prior_type'] == 'norm':
@@ -108,8 +106,8 @@ class Parameter():
                 self._parameter_dict[par_name] = setting['prior_args']['val']
 
     def sample_init(self):
-        """
-        Samping parameters from initial guess clipped by the allowed_range and set self._parameter_dict.
+        """Samping parameters from initial guess clipped 
+        by the allowed_range and set self._parameter_dict.
         """
         for par_name in self._parameter_dict:
             setting = self.par_config[par_name]
@@ -126,9 +124,7 @@ class Parameter():
 
     @property
     def log_prior(self):
-        """
-        Return log prior. If any parameter is out of allowed_range return -np.inf.
-        """
+        """Return log prior. If any parameter is out of allowed_range return -np.inf."""
         log_prior = 0
 
         for par_name in self._parameter_fit:
@@ -149,8 +145,7 @@ class Parameter():
         return log_prior
 
     def check_parameter_exist(self, keys, return_not_exist=False):
-        """
-        Check whether the keys exist in parameters.
+        """Check whether the keys exist in parameters.
         :param keys: Parameter names. Can be a single str, or a list of str.
         :param return_not_exist: If False, function will return a bool if all keys exist.
         If True, function will additionally return the list of the not existing keys.
@@ -177,8 +172,7 @@ class Parameter():
             raise ValueError("keys must be a str or a list of str!")
 
     def set_parameter(self, keys, vals=None):
-        """
-        Set parameter values.
+        """Set parameter values.
         :param keys: Parameter names. Can be either
         - str: vals must be int or float.
         - list: vals must have the same length.
@@ -201,17 +195,14 @@ class Parameter():
             raise ValueError("keys must be a str or a list of str!")
 
     def set_parameter_fit_from_array(self, arr):
-        """
-        Set non-fixed parameters by an array. The order is given by self._parameter_fit.
-        """
+        """Set non-fixed parameters by an array. The order is given by self._parameter_fit."""
         assert len(arr) == len(self._parameter_fit), f"the length of arr must be the same as length of parameter to fit {len(self._parameter_fit)}!"
 
         update = {par_name : val for par_name, val in zip(self._parameter_fit, arr)}
         self.set_parameter(update)
 
     def get_parameter(self, keys):
-        """
-        Return parameter values.
+        """Return parameter values.
         :param keys: Parameter names. Can be a single str, or a list of str.
         """
         all_exist, not_exist = self.check_parameter_exist(keys, return_not_exist=True)
@@ -220,6 +211,7 @@ class Parameter():
         return self.__getitem__(keys)
 
     def __getitem__(self, keys):
+        """__getitem__, keys can be str/list/set"""
         if isinstance(keys, (set, list)):
             return np.array([self._parameter_dict[key] for key in keys])
         elif isinstance(keys, str):
@@ -229,13 +221,9 @@ class Parameter():
 
     @property
     def parameter_fit_array(self):
-        """
-        Return non-fixed parameters, ordered by self._parameter_fit.
-        """
+        """Return non-fixed parameters, ordered by self._parameter_fit."""
         return self.get_parameter(self._parameter_fit)
 
     def get_all_parameter(self):
-        """
-        Return all parameters as a dict.    
-        """
+        """Return all parameters as a dict."""
         return self._parameter_dict

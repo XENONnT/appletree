@@ -8,9 +8,7 @@ export, __all__ = exporter(export_self=False)
 
 @export
 def make_hist_mesh_grid(sample, bins=10, weights=None):
-    """
-    Same as jnp.histogramdd.
-    """
+    """Same as jnp.histogramdd."""
     hist, _ = jnp.histogramdd(sample, bins=bins, weights=weights)
     return hist
 
@@ -18,7 +16,7 @@ def make_hist_mesh_grid(sample, bins=10, weights=None):
 @export
 @jit
 def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights):
-    """
+    """Make a histogram with irregular binning.
     :param sample: array with shape (N, 2)
     :param bins_x: array with shape (M1, )
     :param bins_y: array with shape (M1-1, M2)

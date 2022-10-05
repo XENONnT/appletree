@@ -12,14 +12,12 @@ from appletree.components import ERBand, ERPeak, AC
 
 
 class Context():
-    """
-    Combine all likelihood(e.g. Rn220, Ar37),
+    """Combine all likelihood(e.g. Rn220, Ar37),
     handle MCMC and post-fitting analysis
     """
 
     def __init__(self, parameter_config):
-        """
-        Create an appletree context
+        """Create an appletree context
         :param parameter_config: dict or str, parameter configuration file name or dictionary
         """
         self.likelihoods = {}
@@ -31,6 +29,7 @@ class Context():
         return self.likelihoods[keys]
 
     def _sanity_check(self):
+        """Check if needed parameters are provided."""
         needed = set(self.needed_parameters)
         provided = set(self.par_manager._parameter_dict.keys())
         # We will not update unneeded parameters!
@@ -41,8 +40,7 @@ class Context():
     def register_likelihood(self,
                             likelihood_name,
                             likelihood_config):
-        """
-        Create an appletree likelihood
+        """Create an appletree likelihood
         :param likelihood_name: name of Likelihood
         :param likelihood_config: dict of likelihood configuration
         """
@@ -54,8 +52,7 @@ class Context():
                            likelihood_name,
                            component_cls,
                            component_name):
-        """
-        Register component to likelihood
+        """Register component to likelihood
         :param likelihood_name: name of Likelihood
         :param component_cls: class of Component
         :param component_name: name of Component
@@ -68,6 +65,7 @@ class Context():
         self.needed_parameters |= self.likelihoods[likelihood_name].needed_parameters
 
     def print_context_summary(self, short=True):
+        """Print summary of the context."""
         self._sanity_check()
 
         print('\n'+'='*40)
@@ -77,8 +75,7 @@ class Context():
             print('\n'+'='*40)
 
     def log_posterior(self, parameters, batch_size=int(1e6)):
-        """
-        Get log likelihood of given parameters
+        """Get log likelihood of given parameters
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
         """
@@ -99,8 +96,7 @@ class Context():
         return log_posterior
 
     def fitting(self, nwalkers=200, iteration=500):
-        """
-        Fitting posterior distribution of needed parameters
+        """Fitting posterior distribution of needed parameters
         :param nwalkers: int, number of walkers in the ensemble
         :param iteration: int, number of steps to generate
         """
@@ -118,8 +114,7 @@ class Context():
         return result
 
     def continue_fitting(self, context, iteration=500):
-        """
-        Continue a fitting of another context
+        """Continue a fitting of another context
         :param context: appletree context
         :param iteration: int, number of steps to generate
         """
@@ -158,8 +153,7 @@ class Context():
                      component_name: str,
                      batch_size=int(1e6),
                      seed=None):
-        """
-        Get parameters correspondes to max posterior
+        """Get parameters correspondes to max posterior
         :param likelihood_name: name of Likelihood
         :param component_name: name of Component
         :param batch_size: int of number of simulated events
@@ -176,11 +170,10 @@ class Context():
 
 
 class ContextRn220(Context):
-    """
-    A specified context for ER response by Rn220 fit
-    """
+    """A specified context for ER response by Rn220 fit"""
 
     def __init__(self):
+        """Initialization."""
         par_config = load_json(os.path.join(PARPATH, 'apt_sr0_er.json'))
         # specify rate scale
         # AC & ER normalization factor
@@ -209,11 +202,10 @@ class ContextRn220(Context):
 
 
 class ContextER(Context):
-    """
-    A specified context for ER response by Rn220 & Ar37 combined fit
-    """
+    """A specified context for ER response by Rn220 & Ar37 combined fit"""
     
     def __init__(self):
+        """Initialization."""
         par_config = load_json(os.path.join(PARPATH, 'apt_sr0_er.json'))
         # specify rate scale
         # AC & ER normalization factor
