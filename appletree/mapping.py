@@ -66,6 +66,7 @@ class Mapping(object):
                  name: str,
                  coord_type: ty.Union[type, tuple, list] = OMITTED,
                  file_name: ty.Union[type, tuple, list] = OMITTED,
+                 default: ty.Any = OMITTED,
                  doc: str = ''):
         """Initialization.
         :param name: name of the map
