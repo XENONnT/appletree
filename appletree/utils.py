@@ -4,7 +4,6 @@ import json
 import jax
 import GOFevaluation
 
-import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
@@ -13,6 +12,7 @@ import matplotlib.pyplot as plt
 from time import time
 from collections import namedtuple
 from functools import partial
+from jax import numpy as jnp
 from jax import jit, lax, random, vmap
 from matplotlib.patches import Rectangle
 
@@ -31,30 +31,32 @@ def exporter(export_self=False):
 
     return decorator, all_
 
+
 export, __all__ = exporter(export_self=True)
+
 
 @export
 def use_xenon_plot_style():
     """Set matplotlib plot style."""
     params = {
         'font.family': 'serif',
-        'font.size' : 24, 'axes.titlesize' : 24,
-        'axes.labelsize' : 24, 'axes.linewidth' : 2,
+        'font.size': 24, 'axes.titlesize': 24,
+        'axes.labelsize': 24, 'axes.linewidth': 2,
         # ticks
-        'xtick.labelsize' : 22, 'ytick.labelsize' : 22, 'xtick.major.size' : 16, 'xtick.minor.size' : 8,
-        'ytick.major.size' : 16, 'ytick.minor.size' : 8, 'xtick.major.width' : 2, 'xtick.minor.width' : 2,
-        'ytick.major.width' : 2, 'ytick.minor.width' : 2, 'xtick.direction' : 'in', 'ytick.direction' : 'in',
+        'xtick.labelsize': 22, 'ytick.labelsize': 22, 'xtick.major.size': 16, 'xtick.minor.size': 8,
+        'ytick.major.size': 16, 'ytick.minor.size': 8, 'xtick.major.width': 2, 'xtick.minor.width': 2,
+        'ytick.major.width': 2, 'ytick.minor.width': 2, 'xtick.direction': 'in', 'ytick.direction': 'in',
         # markers
-        'lines.markersize' : 12, 'lines.markeredgewidth' : 3, 'errorbar.capsize' : 8, 'lines.linewidth' : 3,
-        'savefig.bbox' : 'tight', 'legend.fontsize' : 24,
-        'backend': 'Agg', 'mathtext.fontset': 'dejavuserif', 'legend.frameon' : False,
+        'lines.markersize': 12, 'lines.markeredgewidth': 3, 'errorbar.capsize': 8, 'lines.linewidth': 3,
+        'savefig.bbox': 'tight', 'legend.fontsize': 24,
+        'backend': 'Agg', 'mathtext.fontset': 'dejavuserif', 'legend.frameon': False,
         # figure
-        'figure.facecolor':'w',
-        'figure.figsize':(12,8),
+        'figure.facecolor': 'w',
+        'figure.figsize': (12,8),
         #pad
-        'axes.labelpad':12,
+        'axes.labelpad': 12,
         # ticks
-        'xtick.major.pad': 6,   'xtick.minor.pad': 6,
+        'xtick.major.pad': 6, 'xtick.minor.pad': 6,
         'ytick.major.pad': 3.5, 'ytick.minor.pad': 3.5,
         # colormap
     }
@@ -62,7 +64,7 @@ def use_xenon_plot_style():
 
 
 @export
-def load_data(file_name:str):
+def load_data(file_name: str):
     """Load data from file. The suffix can be ".csv", ".pkl"."""
     fmt = file_name.split('.')[-1]
     if fmt == 'csv':
@@ -75,7 +77,7 @@ def load_data(file_name:str):
 
 
 @export
-def load_json(file_name:str):
+def load_json(file_name: str):
     """Load data from json file."""
     with open(file_name, 'r') as file:
         data = json.load(file)
@@ -98,12 +100,14 @@ def timeit(indent=""):
     """
     def _timeit(func, indent):
         name = func.__name__
+
         def _func(*args, **kwargs):
             print(indent + ' Function <%s> starts. '%name)
             start = time()
             res = func(*args, **kwargs)
             print(indent + ' Function <%s> ends! Time cost = %f msec. '%(name, (time()-start)*1e3))
             return res
+
         return _func
     if isinstance(indent, str):
         return lambda func: _timeit(func, indent)
@@ -124,7 +128,12 @@ def set_gpu_memory_usage(fraction=0.3):
 
 
 @export
-def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.inf], y_clip=[-np.inf, +np.inf], which_np=np):
+def get_equiprob_bins_2d(data,
+                         n_partitions,
+                         order = (0, 1),
+                         x_clip = (-np.inf, +np.inf),
+                         y_clip = (-np.inf, +np.inf),
+                         which_np = np):
     """Get 2D equiprobable binning edges.
     :param data: array with shape (N, 2).
     :param n_partitions: [M1, M2] where M1 M2 are the number of bins on each dimension.
@@ -137,7 +146,7 @@ def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.i
     mask = (data[:, 0] > x_clip[0]) & (data[:, 0] < x_clip[1])
     mask &= (data[:, 1] > y_clip[0]) & (data[:, 1] < y_clip[1])
 
-    x_bins, y_bins = GOFevaluation.utils._get_equiprobable_binning(data[mask], n_partitions, order=order)
+    x_bins, y_bins = GOFevaluation.utils._get_equiprobable_binning(data[mask], n_partitions, order = order)
     x_bins = np.clip(x_bins, *x_clip)
     y_bins = np.clip(y_bins, *y_clip)
 
@@ -188,13 +197,13 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
         norm = mpl.colors.Normalize(
             vmin=kwargs.get('vmin', np.min(n/area)),
             vmax=kwargs.get('vmax', np.max(n/area)),
-            clip=False
+            clip=False,
         )
     else:
         norm = mpl.colors.Normalize(
             vmin=kwargs.get('vmin', np.min(n)),
             vmax=kwargs.get('vmax', np.max(n)),
-            clip=False
+            clip=False,
         )
 
     ax = plt.subplot()
@@ -204,7 +213,7 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
             width[i],
             height[i],
             facecolor=cmap(norm(n[i]/area[i] if density else n[i])),
-            edgecolor='k'
+            edgecolor='k',
         )
         ax.add_patch(rec)
 
@@ -212,7 +221,7 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
     fig.colorbar(
         mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
         ax=ax,
-        label=('# events / bin size' if density else '# events')
+        label=('# events / bin size' if density else '# events'),
     )
 
     ax.set_xlim(np.min(bins_x), np.max(bins_x))
@@ -401,4 +410,5 @@ def _binomial(key, p, n, shape):
 
 @export
 def binomial(key, p, n=1, shape=()):
+    """Binomial random sampler using conversion method."""
     return _binomial(key, p, n, shape)

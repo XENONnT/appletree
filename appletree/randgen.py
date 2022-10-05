@@ -40,7 +40,7 @@ def uniform(key, vmin, vmax, shape=()):
     shape = shape or jnp.broadcast_shapes(jnp.shape(vmin), jnp.shape(vmax))
     vmin = jnp.broadcast_to(vmin, shape).astype(FLOAT)
     vmax = jnp.broadcast_to(vmax, shape).astype(FLOAT)
-    
+
     rvs = random.uniform(seed, shape, minval=vmin, maxval=vmax)
     return key, rvs.astype(FLOAT)
 
@@ -75,7 +75,7 @@ def normal(key, mean, std, shape=()):
     :return: an updated seed, random variables.
     """
     key, seed = random.split(key)
-    
+
     shape = shape or jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std))
     mean = jnp.broadcast_to(mean, shape).astype(FLOAT)
     std = jnp.broadcast_to(std, shape).astype(FLOAT)
@@ -126,7 +126,7 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
     def _binomial_dispatch(seed, p, n):
         use_normal_approx = (n * p >= 5.)
         return lax.cond(
-            p*n >= 5.,
+            use_normal_approx,
             (seed, p, n), lambda x: _binomial_normal_approx_dispatch(*x),
             (seed, p, n), lambda x: utils._binomial_dispatch(*x),
         )

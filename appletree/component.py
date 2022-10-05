@@ -1,7 +1,6 @@
 from warnings import warn
 from functools import partial
-
-import jax.numpy as jnp
+from jax import numpy as jnp
 
 import appletree
 from appletree.plugin import Plugin
@@ -11,14 +10,17 @@ from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 
 export, __all__ = exporter()
 
+
 @export
 class Component:
+    """Component base class"""
+
     rate_name: str = ''
     norm_type: str = ''
     tag: str = '_'  # for instance name of the plugins
 
     def __init__(self,
-                 bins: list = [],
+                 bins: list = (),
                  bins_type: str = ''):
         """Initialization."""
         self.bins = bins
@@ -32,9 +34,9 @@ class Component:
     def implement_binning(self, mc, eff):
         """Apply binning to MC data."""
         if self.bins_type == 'irreg':
-            hist = make_hist_irreg_bin_2d(mc, self.bins[0], self.bins[1], weights=eff)
+            hist = make_hist_irreg_bin_2d(mc, *self.bins, weights=eff)
         elif self.bins_type == 'meshgrid':
-            warning = f'The usage of meshgrid binning is highly discouraged.'
+            warning = 'The usage of meshgrid binning is highly discouraged.'
             warn(warning)
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
         else:
@@ -71,14 +73,14 @@ class ComponentSim(Component):
 
     def __init__(self,
                  *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._plugin_class_registry = {}
         """Initialization
         :param bins: bins to generate the histogram.
         For irreg bins_type, bins must be bin edges of the two dimensions.
         For meshgrid bins_type, bins are sent to jnp.histogramdd
         :param bins_type: binning scheme, can be either irreg or meshgrid.
         """
+        super().__init__(*args, **kwargs)
+        self._plugin_class_registry = {}
 
     def register(self, plugin_class):
         """Register a plugin to the component."""
@@ -117,12 +119,12 @@ class ComponentSim(Component):
                         continue
                     else:
                         mes = f'Two plugins have a different file name'
-                        + f' for the same map. The map'
-                        + f' "{new_map}" in "{plugin.__name__}" takes'
-                        + f' the file name as "{new_items.file_name}"  while in'
-                        + f' "{plugin_class.__name__}" the file name'
-                        + f' is set to "{items.file_name}". Please change'
-                        + f' one of the file names.'
+                        mes += f' for the same map. The map'
+                        mes += f' "{new_map}" in "{plugin.__name__}" takes'
+                        mes += f' the file name as "{new_items.file_name}"  while in'
+                        mes += f' "{plugin_class.__name__}" the file name'
+                        mes += f' is set to "{items.file_name}". Please change'
+                        mes += f' one of the file names.'
                         raise ValueError(mes)
 
     def register_all(self, module):
@@ -143,7 +145,7 @@ class ComponentSim(Component):
                 self.register(x)
 
     def dependencies_deduce(self,
-                            data_names: list = ['cs1', 'cs2', 'eff'],
+                            data_names: list = ('cs1', 'cs2', 'eff'),
                             dependencies: list = None) -> list:
         """Deduce dependencies."""
         if dependencies is None:
@@ -154,10 +156,12 @@ class ComponentSim(Component):
             if data_name == 'batch_size':
                 continue
             try:
-                dependencies.append({'plugin': self._plugin_class_registry[data_name],
-                                     'provides': data_name,
-                                     'depends_on': self._plugin_class_registry[data_name].depends_on})
-            except:
+                dependencies.append({
+                    'plugin': self._plugin_class_registry[data_name],
+                    'provides': data_name,
+                    'depends_on': self._plugin_class_registry[data_name].depends_on
+                })
+            except KeyError:
                 raise ValueError(f'Can not find dependency for {data_name}')
 
         for data_name in data_names:
@@ -185,7 +189,7 @@ class ComponentSim(Component):
             self.needed_parameters |= set(plugin.parameters)
 
     def flush_source_code(self,
-                          data_names: list = ['cs1', 'cs2', 'eff'],
+                          data_names: list = ('cs1', 'cs2', 'eff'),
                           func_name: str = 'simulate'):
         """Infer the simulation code from the dependency tree."""
         self.func_name = func_name
@@ -228,7 +232,7 @@ class ComponentSim(Component):
 
         if func_name in cached_functions.keys():
             warning = f'Function name {func_name} is already cached. '
-            + 'Running compile() will overwrite it.'
+            warning += 'Running compile() will overwrite it.'
             warn(warning)
 
     @property
@@ -242,8 +246,8 @@ class ComponentSim(Component):
         self._compile = partial(exec, self.code, cached_functions)
 
     def deduce(self,
-               data_names:list = ['cs1', 'cs2'],
-               func_name:str = 'simulate'): 
+               data_names: list = ('cs1', 'cs2'),
+               func_name: str = 'simulate'):
         """Deduce workflow and code."""
         if not isinstance(data_names, (list, tuple)):
             raise ValueError(f'Unsupported data_names type {type(data_names)}!')

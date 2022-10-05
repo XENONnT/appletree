@@ -18,7 +18,7 @@ class Plugin():
     provides = []
 
     # relevant parameters, will be fitted in MCMC
-    parameters = tuple()
+    parameters = ()
 
     # Set using the takes_map decorator
     takes_map = immutabledict()

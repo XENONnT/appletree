@@ -1,4 +1,4 @@
-import jax.numpy as jnp
+from jax import numpy as jnp
 from jax import jit
 from functools import partial
 
@@ -17,7 +17,7 @@ export, __all__ = exporter(export_self=False)
     Mapping(name='s1_lce',
         coord_type='regbin',
         file_name='s1_correction_map_regbin.json',
-        doc='S1 light collation efficiency correction')
+        doc='S1 light collation efficiency correction'),
 )
 class S1Correction(Plugin):
     depends_on = ['x', 'y', 'z']
@@ -30,7 +30,7 @@ class S1Correction(Plugin):
             pos,
             self.s1_lce.coordinate_lowers,
             self.s1_lce.coordinate_uppers,
-            self.s1_lce.map
+            self.s1_lce.map,
         )
         return key, s1_correction
 
@@ -40,7 +40,7 @@ class S1Correction(Plugin):
     Mapping(name='s2_lce',
         coord_type='regbin',
         file_name='s2_correction_map_regbin.json',
-        doc='S2 light collation efficiency correction')
+        doc='S2 light collation efficiency correction'),
 )
 class S2Correction(Plugin):
     depends_on = ['x', 'y']
@@ -53,10 +53,9 @@ class S2Correction(Plugin):
             pos,
             self.s2_lce.coordinate_lowers,
             self.s2_lce.coordinate_uppers,
-            self.s2_lce.map
+            self.s2_lce.map,
         )
         return key, s2_correction
-
 
 
 @export
@@ -72,7 +71,6 @@ class PhotonDetection(Plugin):
         return key, num_s1_phd
 
 
-
 @export
 class S1PE(Plugin):
     depends_on = ['num_s1_phd']
@@ -86,13 +84,12 @@ class S1PE(Plugin):
         return key, num_s1_pe
 
 
-
 @export
 @appletree.takes_map(
     Mapping(name='elife',
         coord_type='point',
         file_name='elife.json',
-        doc='Electron lifetime correction')
+        doc='Electron lifetime correction'),
 )
 class DriftLoss(Plugin):
     depends_on = ['z']
@@ -116,7 +113,6 @@ class ElectronDrifted(Plugin):
     def simulate(self, key, parameters, num_electron, drift_survive_prob):
         key, num_electron_drifted = randgen.binomial(key, drift_survive_prob, num_electron)
         return key, num_electron_drifted
-
 
 
 @export

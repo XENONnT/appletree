@@ -28,15 +28,6 @@ class Context():
         """Get likelihood in context"""
         return self.likelihoods[keys]
 
-    def _sanity_check(self):
-        """Check if needed parameters are provided."""
-        needed = set(self.needed_parameters)
-        provided = set(self.par_manager._parameter_dict.keys())
-        # We will not update unneeded parameters!
-        if needed != provided:
-            raise RuntimeError(f'Parameter manager should provide needed parameters only, ' + \
-                                '{provided - needed} not needed')
-
     def register_likelihood(self,
                             likelihood_name,
                             likelihood_config):
@@ -74,7 +65,7 @@ class Context():
             likelihood.print_likelihood_summary(short=short)
             print('\n'+'='*40)
 
-    def log_posterior(self, parameters, batch_size=int(1e6)):
+    def log_posterior(self, parameters, batch_size=1_000_000):
         """Get log likelihood of given parameters
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
@@ -151,8 +142,8 @@ class Context():
     def get_template(self,
                      likelihood_name: str,
                      component_name: str,
-                     batch_size=int(1e6),
-                     seed=None):
+                     batch_size:int = 1_000_000,
+                     seed:int = None):
         """Get parameters correspondes to max posterior
         :param likelihood_name: name of Likelihood
         :param component_name: name of Component
@@ -167,6 +158,16 @@ class Context():
             batch_size, parameters,
         )
         return result
+
+    def _sanity_check(self):
+        """Check if needed parameters are provided."""
+        needed = set(self.needed_parameters)
+        provided = set(self.par_manager._parameter_dict.keys())
+        # We will not update unneeded parameters!
+        if needed != provided:
+            mes = f'Parameter manager should provide needed parameters only, '
+            mes += '{provided - needed} not needed'
+            raise RuntimeError(mes)
 
 
 class ContextRn220(Context):
@@ -203,7 +204,7 @@ class ContextRn220(Context):
 
 class ContextER(Context):
     """A specified context for ER response by Rn220 & Ar37 combined fit"""
-    
+
     def __init__(self):
         """Initialization."""
         par_config = load_json(os.path.join(PARPATH, 'apt_sr0_er.json'))

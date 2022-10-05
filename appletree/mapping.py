@@ -4,7 +4,7 @@ import json
 from enum import IntEnum
 
 from immutabledict import immutabledict
-import jax.numpy as jnp
+from jax import numpy as jnp
 
 from appletree.utils import exporter
 from appletree.share import MAPPATH
@@ -21,7 +21,7 @@ def takes_map(*maps):
     """Decorator for plugin classes, to specify which maps it takes.
     :param maps: Mapping instances of maps this plugin takes.
     """
-    
+
     def wrapped(plugin_class):
         result = {}
         for mapping in maps:
@@ -60,6 +60,8 @@ class MapType(IntEnum):
 
 
 class Mapping(object):
+    """Wrapper of an input map."""
+
     taken_by: str
 
     def __init__(self,

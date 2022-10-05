@@ -1,5 +1,4 @@
 from warnings import warn
-from xmlrpc.client import boolean
 
 import numpy as np
 from jax import numpy as jnp
@@ -70,28 +69,6 @@ class Likelihood:
         """Get component in likelihood"""
         return self.components[keys]
 
-    def _sanity_check(self):
-        """Check equality between number of bins group and observables"""
-        if len(self._bins_on) != len(self._bins):
-            raise RuntimeError('Length of bins must be the same as length of bins_on!')
-
-    def _simulate_model_hist(self, key, batch_size, parameters):
-        """Histogram of simulated observables
-        :param key: a pseudo-random number generator (PRNG) key
-        :param batch_size: int of number of simulated events
-        :param parameters: dict of parameters used in simulation
-        """
-        hist = jnp.zeros_like(self.data_hist)
-        for component_name, component in self.components.items():
-            if isinstance(component, ComponentSim):
-                key, _hist = component.simulate_hist(key, batch_size, parameters)
-            elif isinstance(component, ComponentFixed):
-                _hist = component.simulate_hist(parameters)
-            else:
-                raise TypeError(f'unsupported component type for {component_name}!')
-            hist += _hist
-        return key, hist
-
     def register_component(self,
                            component_cls: Component,
                            component_name: str):
@@ -135,9 +112,9 @@ class Likelihood:
             llh = -np.inf
         return key, llh
 
-    def print_likelihood_summary(self, 
-                                 indent:str = ' '*4, 
-                                 short:bool = True): 
+    def print_likelihood_summary(self,
+                                 indent: str = ' '*4,
+                                 short: bool = True):
         """Print likelihood summary: components, bins, file names
         :param indent: str of indent
         :param short: bool, whether only print short summary
@@ -180,3 +157,25 @@ class Likelihood:
             print()
 
         print('-'*40)
+
+    def _sanity_check(self):
+        """Check equality between number of bins group and observables"""
+        if len(self._bins_on) != len(self._bins):
+            raise RuntimeError('Length of bins must be the same as length of bins_on!')
+
+    def _simulate_model_hist(self, key, batch_size, parameters):
+        """Histogram of simulated observables
+        :param key: a pseudo-random number generator (PRNG) key
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        hist = jnp.zeros_like(self.data_hist)
+        for component_name, component in self.components.items():
+            if isinstance(component, ComponentSim):
+                key, _hist = component.simulate_hist(key, batch_size, parameters)
+            elif isinstance(component, ComponentFixed):
+                _hist = component.simulate_hist(parameters)
+            else:
+                raise TypeError(f'unsupported component type for {component_name}!')
+            hist += _hist
+        return key, hist
