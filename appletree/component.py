@@ -147,7 +147,7 @@ class ComponentSim(Component):
                 dependencies.append({'plugin': self._plugin_class_registry[data_name],
                                      'provides': data_name,
                                      'depends_on': self._plugin_class_registry[data_name].depends_on})
-            except:
+            except BaseException:
                 raise ValueError(f'Can not find dependency for {data_name}')
 
         for data_name in data_names:
@@ -278,14 +278,17 @@ class ComponentFixed(Component):
     def deduce(self,
                data_names:list = ['cs1', 'cs2']): 
         self.data = load_data(self.file_name)[data_names].to_numpy()
-        self.hist = self.implement_binning(self.data, jnp.ones(len(self.data)))
+        eff = jnp.ones(len(self.data))
+        self.hist = self.implement_binning(self.data, eff)
         self.needed_parameters.add(self.rate_name)
 
     def simulate(self):
+        """"""
         raise NotImplementedError
 
     def simulate_hist(self,
                       parameters,
                       *args, **kwargs):
+        """"""
         normalization_factor = self.get_normalization(self.hist, parameters, len(self.data))
         return self.hist * normalization_factor

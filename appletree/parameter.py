@@ -80,7 +80,7 @@ class Parameter():
         for par_name in self._parameter_dict:
             try:
                 setting = self.par_config[par_name]
-            except:
+            except BaseException:
                 raise RuntimeError(f'Requested parameter "{par_name}" not in given configuration')
 
             if setting['prior_type'] == 'norm':
