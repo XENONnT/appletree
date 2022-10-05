@@ -12,33 +12,6 @@ class Parameter():
         :param parameter_config: can be either:
         - str: the json file name where the config is stored.
         - dict: config dictionary.
-        Here is an example,
-        parameter_config = {
-            "w": {
-                "prior_type": "norm",
-                "prior_args": {"mean": 0.0137, "std": 0.0002},
-                "allowed_range": [0, 1.0],
-                "init_mean": 0.0137,
-                "init_std": 0.0002,
-                "unit": "keV",
-                "doc": "Mean energy to generate a quanta in liquid xenon"
-            },
-            "fano": {
-                "prior_type": "fixed",
-                "prior_args": {"val": 0.059},
-                "allowed_range": None,
-                "init_mean": None,
-                "init_std": None,
-                "unit": "1",
-                "doc": "Fano factor which describes the fluctuation of num of quanta"
-            },
-        }
-        "prior_type" can be:
-        - "fixed": "prior_args" must contain "val".
-        - "norm": "prior_args" must contain "mean", "std".
-        - "uniform": "prior_args" must contain "lower", "upper".
-        If "prior_type" is "fixed", then "allowed_range", 
-        "init_mean", "init_std" will all be ignored.
         """
         if isinstance(parameter_config, str):
             with open(parameter_config, 'r') as file:
@@ -113,7 +86,7 @@ class Parameter():
         for par_name in self._parameter_dict:
             try:
                 setting = self.par_config[par_name]
-            except:
+            except KeyError:
                 raise RuntimeError(f'Requested parameter "{par_name}" not in given configuration')
 
             args = setting['prior_args']

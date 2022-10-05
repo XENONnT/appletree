@@ -109,7 +109,7 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
     dr3 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos3 - pos)**2, axis=-1)), a_min=1e-10)
     dr4 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos4 - pos)**2, axis=-1)), a_min=1e-10)
 
-    val = (val1/dr1+val2/dr2+val3/dr3+val4/dr4) 
+    val = (val1/dr1+val2/dr2+val3/dr3+val4/dr4)
     val /= (1./dr1+1./dr2+1./dr3+1./dr4)
 
     return val

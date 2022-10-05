@@ -7,7 +7,6 @@ import GOFevaluation
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 
 from time import time
 from collections import namedtuple
@@ -15,6 +14,7 @@ from functools import partial
 from jax import numpy as jnp
 from jax import jit, lax, random, vmap
 from matplotlib.patches import Rectangle
+from matplotlib import pyplot as plt
 
 
 def exporter(export_self=False):
@@ -52,8 +52,8 @@ def use_xenon_plot_style():
         'backend': 'Agg', 'mathtext.fontset': 'dejavuserif', 'legend.frameon': False,
         # figure
         'figure.facecolor': 'w',
-        'figure.figsize': (12,8),
-        #pad
+        'figure.figsize': (12, 8),
+        # pad
         'axes.labelpad': 12,
         # ticks
         'xtick.major.pad': 6, 'xtick.minor.pad': 6,
@@ -234,7 +234,7 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
 # SPDX-License-Identifier: Apache-2.0
 # Parameters for Transformed Rejection with Squeeze (TRS) algorithm - page 3.
 _tr_params = namedtuple(
-    "tr_params", ["c", "b", "a", "alpha", "u_r", "v_r", "m", "log_p", "log1_p", "log_h"]
+    "tr_params", ["c", "b", "a", "alpha", "u_r", "v_r", "m", "log_p", "log1_p", "log_h"],
 )
 
 
@@ -271,7 +271,7 @@ def stirling_approx_tail(k):
             0.01041126526197209,
             0.009255462182712733,
             0.008330563433362871,
-        ]
+        ],
     )
     kp1 = k + 1
     kp1sq = (k + 1) ** 2
@@ -301,7 +301,7 @@ def _binomial_btrs(key, p, n):
         v = random.uniform(key_v)
         u = u - 0.5
         k = jnp.floor(
-            (2 * tr_params.a / (0.5 - jnp.abs(u)) + tr_params.b) * u + tr_params.c
+            (2 * tr_params.a / (0.5 - jnp.abs(u)) + tr_params.b) * u + tr_params.c,
         ).astype(n.dtype)
         return k, key, u, v
 
@@ -342,7 +342,7 @@ def _binomial_btrs(key, p, n):
 
     tr_params = _get_tr_params(n, p)
     ret = lax.while_loop(
-        _btrs_cond_fn, _btrs_body_fn, (-1, key, 1.0, 1.0)
+        _btrs_cond_fn, _btrs_body_fn, (-1, key, 1.0, 1.0),
     )  # use k=-1 initially so that cond_fn returns True
     return ret[0]
 
@@ -365,7 +365,7 @@ def _binomial_inversion(key, p, n):
         return cond_exclude_large_mu & (geom_acc <= n)
 
     log1_p = jnp.log1p(-p)
-    ret = lax.while_loop(_binom_inv_cond_fn, _binom_inv_body_fn, (-1, key, 0.0))
+    ret = lax.while_loop(_binom_inv_cond_fn, _binom_inv_body_fn, (-1, key, 0))
     return ret[0]
 
 

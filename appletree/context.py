@@ -142,8 +142,8 @@ class Context():
     def get_template(self,
                      likelihood_name: str,
                      component_name: str,
-                     batch_size:int = 1_000_000,
-                     seed:int = None):
+                     batch_size: int = 1_000_000,
+                     seed: int = None):
         """Get parameters correspondes to max posterior
         :param likelihood_name: name of Likelihood
         :param component_name: name of Component

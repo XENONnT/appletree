@@ -159,7 +159,7 @@ class ComponentSim(Component):
                 dependencies.append({
                     'plugin': self._plugin_class_registry[data_name],
                     'provides': data_name,
-                    'depends_on': self._plugin_class_registry[data_name].depends_on
+                    'depends_on': self._plugin_class_registry[data_name].depends_on,
                 })
             except KeyError:
                 raise ValueError(f'Can not find dependency for {data_name}')
