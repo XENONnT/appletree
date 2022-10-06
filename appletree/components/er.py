@@ -1,4 +1,5 @@
-from appletree import plugins
+import appletree as apt
+
 from appletree.plugins import UniformEnergySpectra, MonoEnergySpectra
 from appletree import ComponentSim
 
@@ -10,7 +11,7 @@ class ERBand(ComponentSim):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.register_all(plugins)
+        self.register_all(apt.plugins)
         self.register(UniformEnergySpectra)
 
 
@@ -21,5 +22,5 @@ class ERPeak(ComponentSim):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.register_all(plugins)
+        self.register_all(apt.plugins)
         self.register(MonoEnergySpectra)

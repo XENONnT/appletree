@@ -6,8 +6,11 @@ from appletree.utils import exporter
 
 export, __all__ = exporter()
 
+
 @export
 class Plugin():
+    """Plugin, which is the smallest simulation unit."""
+
     # the plugin's dependency(the arguments of `simulate`)
     depends_on = []
 
@@ -15,17 +18,18 @@ class Plugin():
     provides = []
 
     # relevant parameters, will be fitted in MCMC
-    parameters = tuple()
+    parameters = ()
 
     # Set using the takes_map decorator
     takes_map = immutabledict()
 
     def __init__(self):
-        if len(self.depends_on) == 0:
+        """Initialization."""
+        if not self.depends_on:
             raise ValueError('depends_on not provided for '
                              f'{self.__class__.__name__}')
 
-        if len(self.provides) == 0:
+        if not self.provides:
             raise ValueError('provides not provided for '
                              f'{self.__class__.__name__}')
 
@@ -34,15 +38,15 @@ class Plugin():
             mapping.build(mapping.coord_type, mapping.file_name)
 
     def __call__(self, *args, **kwargs):
+        """Calls self.simulate"""
         return self.simulate(*args, **kwargs)
 
     def simulate(self, *args, **kwargs):
+        """Simulate."""
         raise NotImplementedError
 
     def sanity_check(self):
-        """
-        Check the consistency between `depends_on`, `provides` and in(out)put of `simulation`
-        """
+        """Check the consistency between `depends_on`, `provides` and in(out)put of `simulation`"""
         arguments = inspect.getfullargspec(self.simulate)[0]
         assert arguments[1] == 'key' and arguments[1] == 'parameters'
         for i, depend in enumerate(self.depends_on, start=2):
