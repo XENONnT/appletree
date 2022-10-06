@@ -1,19 +1,24 @@
 import os
 import re
 import json
-from time import time
+import jax
+import GOFevaluation
 
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
 
-import GOFevaluation
+from time import time
+from collections import namedtuple
+from functools import partial
+from jax import numpy as jnp
+from jax import jit, lax, random, vmap
+from matplotlib.patches import Rectangle
+from matplotlib import pyplot as plt
+
 
 def exporter(export_self=False):
-    """
-    Export utility modified from https://stackoverflow.com/a/41895194
+    """Export utility modified from https://stackoverflow.com/a/41895194
     Returns export decorator, __all__ list
     """
     all_ = []
@@ -26,46 +31,41 @@ def exporter(export_self=False):
 
     return decorator, all_
 
+
 export, __all__ = exporter(export_self=True)
+
 
 @export
 def use_xenon_plot_style():
-    """
-    Set matplotlib plot style.
-    """
+    """Set matplotlib plot style."""
     params = {
         'font.family': 'serif',
-        'font.size' : 24, 'axes.titlesize' : 24,
-        'axes.labelsize' : 24, 'axes.linewidth' : 2,
+        'font.size': 24, 'axes.titlesize': 24,
+        'axes.labelsize': 24, 'axes.linewidth': 2,
         # ticks
-        'xtick.labelsize' : 22, 'ytick.labelsize' : 22, 'xtick.major.size' : 16, 'xtick.minor.size' : 8,
-        'ytick.major.size' : 16, 'ytick.minor.size' : 8, 'xtick.major.width' : 2, 'xtick.minor.width' : 2,
-        'ytick.major.width' : 2, 'ytick.minor.width' : 2, 'xtick.direction' : 'in', 'ytick.direction' : 'in',
+        'xtick.labelsize': 22, 'ytick.labelsize': 22, 'xtick.major.size': 16, 'xtick.minor.size': 8,
+        'ytick.major.size': 16, 'ytick.minor.size': 8, 'xtick.major.width': 2, 'xtick.minor.width': 2,
+        'ytick.major.width': 2, 'ytick.minor.width': 2, 'xtick.direction': 'in', 'ytick.direction': 'in',
         # markers
-        'lines.markersize' : 12, 'lines.markeredgewidth' : 3, 'errorbar.capsize' : 8, 'lines.linewidth' : 3,
-        #'lines.linestyle' : None, 'lines.marker' : None,
-        'savefig.bbox' : 'tight', 'legend.fontsize' : 24,
-        'backend': 'Agg', 'mathtext.fontset': 'dejavuserif', 'legend.frameon' : False,
+        'lines.markersize': 12, 'lines.markeredgewidth': 3, 'errorbar.capsize': 8, 'lines.linewidth': 3,
+        'savefig.bbox': 'tight', 'legend.fontsize': 24,
+        'backend': 'Agg', 'mathtext.fontset': 'dejavuserif', 'legend.frameon': False,
         # figure
-        'figure.facecolor':'w',
-        #'figure.figsize':(9,9),
-        'figure.figsize':(12,8),
-        #pad
-        'axes.labelpad':12,
+        'figure.facecolor': 'w',
+        'figure.figsize': (12, 8),
+        # pad
+        'axes.labelpad': 12,
         # ticks
-        'xtick.major.pad': 6,   'xtick.minor.pad': 6,
+        'xtick.major.pad': 6, 'xtick.minor.pad': 6,
         'ytick.major.pad': 3.5, 'ytick.minor.pad': 3.5,
         # colormap
-        #'image.cmap':'viridis'
     }
     plt.rcParams.update(params)
 
 
 @export
-def load_data(file_name:str):
-    """
-    Load data from file. The suffix can be ".csv", ".pkl".
-    """
+def load_data(file_name: str):
+    """Load data from file. The suffix can be ".csv", ".pkl"."""
     fmt = file_name.split('.')[-1]
     if fmt == 'csv':
         data = pd.read_csv(file_name)
@@ -77,10 +77,8 @@ def load_data(file_name:str):
 
 
 @export
-def load_json(file_name:str):
-    """
-    Load data from json file.
-    """
+def load_json(file_name: str):
+    """Load data from json file."""
     with open(file_name, 'r') as file:
         data = json.load(file)
     return data
@@ -88,8 +86,8 @@ def load_json(file_name:str):
 
 @export
 def camel_to_snake(x):
-    """
-    Convert x from CamelCase to snake_case, from https://stackoverflow.com/questions/1175208
+    """Convert x from CamelCase to snake_case,
+    from https://stackoverflow.com/questions/1175208
     """
     x = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', x)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', x).lower()
@@ -97,17 +95,20 @@ def camel_to_snake(x):
 
 @export
 def timeit(indent=""):
-    """
-    Use timeit as a decorator. It will print out the running time of the decorated function.
+    """Use timeit as a decorator.
+    It will print out the running time of the decorated function.
     """
     def _timeit(func, indent):
         name = func.__name__
+
         def _func(*args, **kwargs):
-            print(indent + ' Function <%s> starts. '%name)
+            print(indent + f' Function <{name}> starts.')
             start = time()
             res = func(*args, **kwargs)
-            print(indent + ' Function <%s> ends! Time cost = %f msec. '%(name, (time()-start)*1e3))
+            time = (time() - start) * 1e3
+            print(indent + f' Function <{name}> ends! Time cost = {time} msec.')
             return res
+
         return _func
     if isinstance(indent, str):
         return lambda func: _timeit(func, indent)
@@ -117,10 +118,10 @@ def timeit(indent=""):
 
 @export
 def set_gpu_memory_usage(fraction=0.3):
+    """Set GPU memory usage.
+    See more on https://jax.readthedocs.io/en/latest/gpu_memory_allocation.html
     """
-    Set GPU memory usage. See more on https://jax.readthedocs.io/en/latest/gpu_memory_allocation.html
-    """
-    if fraction > 1.:
+    if fraction > 1:
         fraction = 1
     if fraction <= 0:
         raise ValueError("fraction must be positive!")
@@ -128,20 +129,31 @@ def set_gpu_memory_usage(fraction=0.3):
 
 
 @export
-def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.inf], y_clip=[-np.inf, +np.inf], which_np=np):
+def get_equiprob_bins_2d(data,
+                         n_partitions,
+                         order = (0, 1),
+                         x_clip = (-np.inf, +np.inf),
+                         y_clip = (-np.inf, +np.inf),
+                         which_np = np):
+    """Get 2D equiprobable binning edges.
+    :param data: array with shape (N, 2).
+    :param n_partitions: [M1, M2] where M1 M2 are the number of bins on each dimension.
+    :param x_clip: lower and upper binning edges on the 0th dimension.
+    Data outside the x_clip will be dropped.
+    :param y_clip: lower and upper binning edges on the 1st dimension.
+    Data outside the y_clip will be dropped.
+    :param which_np: can be numpy or jax.numpy, determining the returned array type.
     """
-    Get 2D equiprobable binning edges.
+    mask = (data[:, 0] > x_clip[0])
+    mask &= (data[:, 0] < x_clip[1])
+    mask &= (data[:, 1] > y_clip[0])
+    mask &= (data[:, 1] < y_clip[1])
 
-    :data: array with shape (N, 2).
-    :n_partitions: [M1, M2] where M1 M2 are the number of bins on each dimension.
-    :x_clip: lower and upper binning edges on the 0th dimension. Data outside the x_clip will be dropped.
-    :y_clip: lower and upper binning edges on the 1st dimension. Data outside the y_clip will be dropped. 
-    :which_np: can be numpy or jax.numpy, determining the returned array type.
-    """
-    mask = (data[:, 0] > x_clip[0]) & (data[:, 0] < x_clip[1])
-    mask &= (data[:, 1] > y_clip[0]) & (data[:, 1] < y_clip[1])
-
-    x_bins, y_bins = GOFevaluation.utils._get_equiprobable_binning(data[mask], n_partitions, order=order)
+    x_bins, y_bins = GOFevaluation.utils._get_equiprobable_binning(
+        data[mask],
+        n_partitions,
+        order = order,
+    )
     x_bins = np.clip(x_bins, *x_clip)
     y_bins = np.clip(y_bins, *y_clip)
 
@@ -150,13 +162,11 @@ def get_equiprob_bins_2d(data, n_partitions, order=[0,1], x_clip=[-np.inf, +np.i
 
 @export
 def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
-    """
-    :bins_x: array with shape (M1, )
-    :bins_y: array with shape (M1-1, M2)
-    :hist: array with shape (M1-1, M2-1)
-
-    Other kwargs
-    :density: boolean.
+    """Plot histogram defined by irregular binning.
+    :param bins_x: array with shape (M1, )
+    :param bins_y: array with shape (M1-1, M2)
+    :param hist: array with shape (M1-1, M2-1)
+    :param density: boolean.
     """
     hist = np.asarray(hist)
     bins_x = np.asarray(bins_x)
@@ -171,8 +181,8 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
     area = []
     n = []
 
-    for i in range(len(hist)):
-        for j in range(len(hist[i])):
+    for i, _ in enumerate(hist):
+        for j, _ in enumerate(hist[i]):
             x_lower = bins_x[i]
             x_upper = bins_x[i+1]
             y_lower = bins_y[i, j]
@@ -194,31 +204,32 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
         norm = mpl.colors.Normalize(
             vmin=kwargs.get('vmin', np.min(n/area)),
             vmax=kwargs.get('vmax', np.max(n/area)),
-            clip=False
+            clip=False,
         )
     else:
         norm = mpl.colors.Normalize(
             vmin=kwargs.get('vmin', np.min(n)),
             vmax=kwargs.get('vmax', np.max(n)),
-            clip=False
+            clip=False,
         )
 
     ax = plt.subplot()
-    for i in range(len(loc)):
+    for i, _ in enumerate(loc):
+        c = n[i]/area[i] if density else n[i]
         rec = Rectangle(
             loc[i],
             width[i],
             height[i],
-            facecolor=cmap(norm(n[i]/area[i] if density else n[i])),
-            edgecolor='k'
+            facecolor=cmap(norm(c)),
+            edgecolor='k',
         )
         ax.add_patch(rec)
 
-    fig = plt.gcf() 
+    fig = plt.gcf()
     fig.colorbar(
         mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
         ax=ax,
-        label=('# events / bin size' if density else '# events')
+        label=('# events / bin size' if density else '# events'),
     )
 
     ax.set_xlim(np.min(bins_x), np.max(bins_x))
@@ -229,19 +240,9 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
 
 # Copyright Contributors to the Pyro project.
 # SPDX-License-Identifier: Apache-2.0
-
-from collections import namedtuple
-from functools import partial
-
-import numpy as np
-
-import jax
-from jax import jit, lax, random, vmap
-import jax.numpy as jnp
-
 # Parameters for Transformed Rejection with Squeeze (TRS) algorithm - page 3.
 _tr_params = namedtuple(
-    "tr_params", ["c", "b", "a", "alpha", "u_r", "v_r", "m", "log_p", "log1_p", "log_h"]
+    "tr_params", ["c", "b", "a", "alpha", "u_r", "v_r", "m", "log_p", "log1_p", "log_h"],
 )
 
 
@@ -278,7 +279,7 @@ def stirling_approx_tail(k):
             0.01041126526197209,
             0.009255462182712733,
             0.008330563433362871,
-        ]
+        ],
     )
     kp1 = k + 1
     kp1sq = (k + 1) ** 2
@@ -308,7 +309,7 @@ def _binomial_btrs(key, p, n):
         v = random.uniform(key_v)
         u = u - 0.5
         k = jnp.floor(
-            (2 * tr_params.a / (0.5 - jnp.abs(u)) + tr_params.b) * u + tr_params.c
+            (2 * tr_params.a / (0.5 - jnp.abs(u)) + tr_params.b) * u + tr_params.c,
         ).astype(n.dtype)
         return k, key, u, v
 
@@ -349,7 +350,7 @@ def _binomial_btrs(key, p, n):
 
     tr_params = _get_tr_params(n, p)
     ret = lax.while_loop(
-        _btrs_cond_fn, _btrs_body_fn, (-1, key, 1.0, 1.0)
+        _btrs_cond_fn, _btrs_body_fn, (-1, key, 1.0, 1.0),
     )  # use k=-1 initially so that cond_fn returns True
     return ret[0]
 
@@ -372,7 +373,7 @@ def _binomial_inversion(key, p, n):
         return cond_exclude_large_mu & (geom_acc <= n)
 
     log1_p = jnp.log1p(-p)
-    ret = lax.while_loop(_binom_inv_cond_fn, _binom_inv_body_fn, (-1, key, 0.0))
+    ret = lax.while_loop(_binom_inv_cond_fn, _binom_inv_body_fn, (-1, key, 0))
     return ret[0]
 
 
@@ -417,4 +418,5 @@ def _binomial(key, p, n, shape):
 
 @export
 def binomial(key, p, n=1, shape=()):
+    """Binomial random sampler using conversion method."""
     return _binomial(key, p, n, shape)
