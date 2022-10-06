@@ -69,18 +69,18 @@ class Mapping(object):
                  coord_type: ty.Union[type, tuple, list] = OMITTED,
                  file_name: ty.Union[type, tuple, list] = OMITTED,
                  default: ty.Any = OMITTED,
-                 doc: str = ''):
+                 help: str = ''):
         """Initialization.
         :param name: name of the map
         :param coord_type: how the coordination is provided. Can be point or regbin
         :param file_name: file name of the map
-        :param doc: description of the map
+        :param help: description of the map
         """
         self.name = name
         self.coord_type = coord_type
         self.file_name = file_name
         self.default = default
-        self.doc = doc
+        self.help = help
 
     def build(self, bins_type, file_name):
         """Cache the map to jnp.array"""

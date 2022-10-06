@@ -17,7 +17,7 @@ export, __all__ = exporter(export_self=False)
     Mapping(name='s1_lce',
         coord_type='regbin',
         file_name='s1_correction_map_regbin.json',
-        doc='S1 light collation efficiency correction'),
+        help='S1 light collation efficiency correction'),
 )
 class S1Correction(Plugin):
     depends_on = ['x', 'y', 'z']
@@ -40,7 +40,7 @@ class S1Correction(Plugin):
     Mapping(name='s2_lce',
         coord_type='regbin',
         file_name='s2_correction_map_regbin.json',
-        doc='S2 light collation efficiency correction'),
+        help='S2 light collation efficiency correction'),
 )
 class S2Correction(Plugin):
     depends_on = ['x', 'y']
@@ -89,7 +89,7 @@ class S1PE(Plugin):
     Mapping(name='elife',
         coord_type='point',
         file_name='elife.json',
-        doc='Electron lifetime correction'),
+        help='Electron lifetime correction'),
 )
 class DriftLoss(Plugin):
     depends_on = ['z']

@@ -25,11 +25,11 @@ class Plugin():
 
     def __init__(self):
         """Initialization."""
-        if len(self.depends_on) == []:
+        if not self.depends_on:
             raise ValueError('depends_on not provided for '
                              f'{self.__class__.__name__}')
 
-        if len(self.provides) == []:
+        if not self.provides:
             raise ValueError('provides not provided for '
                              f'{self.__class__.__name__}')
 

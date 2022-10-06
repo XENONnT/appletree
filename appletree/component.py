@@ -76,7 +76,7 @@ class ComponentSim(Component):
         """Initialization
         :param bins: bins to generate the histogram.
         For irreg bins_type, bins must be bin edges of the two dimensions.
-        For meshgrid bins_type, bins are sent to jnp.histogramdd
+        For meshgrid bins_type, bins are sent to jnp.histogramdd.
         :param bins_type: binning scheme, can be either irreg or meshgrid.
         """
         super().__init__(*args, **kwargs)

@@ -102,10 +102,11 @@ def timeit(indent=""):
         name = func.__name__
 
         def _func(*args, **kwargs):
-            print(indent + ' Function <%s> starts. '%name)
+            print(indent + f' Function <{name}> starts.')
             start = time()
             res = func(*args, **kwargs)
-            print(indent + ' Function <%s> ends! Time cost = %f msec. '%(name, (time()-start)*1e3))
+            time = (time() - start) * 1e3
+            print(indent + f' Function <{name}> ends! Time cost = {time} msec.')
             return res
 
         return _func
@@ -120,7 +121,7 @@ def set_gpu_memory_usage(fraction=0.3):
     """Set GPU memory usage.
     See more on https://jax.readthedocs.io/en/latest/gpu_memory_allocation.html
     """
-    if fraction > 1.:
+    if fraction > 1:
         fraction = 1
     if fraction <= 0:
         raise ValueError("fraction must be positive!")
@@ -143,10 +144,16 @@ def get_equiprob_bins_2d(data,
     Data outside the y_clip will be dropped.
     :param which_np: can be numpy or jax.numpy, determining the returned array type.
     """
-    mask = (data[:, 0] > x_clip[0]) & (data[:, 0] < x_clip[1])
-    mask &= (data[:, 1] > y_clip[0]) & (data[:, 1] < y_clip[1])
+    mask = (data[:, 0] > x_clip[0])
+    mask &= (data[:, 0] < x_clip[1])
+    mask &= (data[:, 1] > y_clip[0])
+    mask &= (data[:, 1] < y_clip[1])
 
-    x_bins, y_bins = GOFevaluation.utils._get_equiprobable_binning(data[mask], n_partitions, order = order)
+    x_bins, y_bins = GOFevaluation.utils._get_equiprobable_binning(
+        data[mask],
+        n_partitions,
+        order = order
+    )
     x_bins = np.clip(x_bins, *x_clip)
     y_bins = np.clip(y_bins, *y_clip)
 
@@ -174,8 +181,8 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
     area = []
     n = []
 
-    for i in range(len(hist)):
-        for j in range(len(hist[i])):
+    for i, _ in enumerate(hist):
+        for j, _ in enumerate(hist[i]):
             x_lower = bins_x[i]
             x_upper = bins_x[i+1]
             y_lower = bins_y[i, j]
@@ -207,12 +214,13 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
         )
 
     ax = plt.subplot()
-    for i in range(len(loc)):
+    for i, _ in enumerate(loc):
+        c = n[i]/area[i] if density else n[i]
         rec = Rectangle(
             loc[i],
             width[i],
             height[i],
-            facecolor=cmap(norm(n[i]/area[i] if density else n[i])),
+            facecolor=cmap(norm(c)),
             edgecolor='k',
         )
         ax.add_patch(rec)
