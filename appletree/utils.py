@@ -152,7 +152,7 @@ def get_equiprob_bins_2d(data,
     x_bins, y_bins = GOFevaluation.utils._get_equiprobable_binning(
         data[mask],
         n_partitions,
-        order = order
+        order = order,
     )
     x_bins = np.clip(x_bins, *x_clip)
     y_bins = np.clip(y_bins, *y_clip)
