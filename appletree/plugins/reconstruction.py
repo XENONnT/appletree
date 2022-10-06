@@ -1,4 +1,3 @@
-import jax.numpy as jnp
 from jax import jit
 from functools import partial
 
@@ -21,7 +20,7 @@ export, __all__ = exporter(export_self=False)
     Mapping(name='s1_smear',
         coord_type='point',
         file_name='s1_smearing.json',
-        help='S1 reconstruction smearing')
+        help='S1 reconstruction smearing'),
 )
 class S1(Plugin):
     depends_on = ['num_s1_phd', 'num_s1_pe']
@@ -29,8 +28,12 @@ class S1(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s1_phd, num_s1_pe):
-        mean = interpolation.curve_interpolator(num_s1_phd, self.s1_bias.coordinate_system, self.s1_bias.map)
-        std = interpolation.curve_interpolator(num_s1_phd, self.s1_smear.coordinate_system, self.s1_smear.map)
+        mean = interpolation.curve_interpolator(num_s1_phd,
+                                                self.s1_bias.coordinate_system,
+                                                self.s1_bias.map)
+        std = interpolation.curve_interpolator(num_s1_phd,
+                                               self.s1_smear.coordinate_system,
+                                               self.s1_smear.map)
         key, bias = randgen.normal(key, mean, std)
         s1 = num_s1_pe * (1. + bias)
         return key, s1
@@ -45,7 +48,7 @@ class S1(Plugin):
     Mapping(name='s2_smear',
         coord_type='point',
         file_name='s2_smearing.json',
-        help='S2 reconstruction smearing')
+        help='S2 reconstruction smearing'),
 )
 class S2(Plugin):
     depends_on = ['num_s2_pe']
@@ -53,8 +56,12 @@ class S2(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s2_pe):
-        mean = interpolation.curve_interpolator(num_s2_pe, self.s2_bias.coordinate_system, self.s2_bias.map)
-        std = interpolation.curve_interpolator(num_s2_pe, self.s2_smear.coordinate_system, self.s2_smear.map)
+        mean = interpolation.curve_interpolator(num_s2_pe,
+                                                self.s2_bias.coordinate_system,
+                                                self.s2_bias.map)
+        std = interpolation.curve_interpolator(num_s2_pe,
+                                               self.s2_smear.coordinate_system,
+                                               self.s2_smear.map)
         key, bias = randgen.normal(key, mean, std)
         s2 = num_s2_pe * (1. + bias)
         return key, s2

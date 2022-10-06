@@ -1,4 +1,4 @@
-import jax.numpy as jnp
+from jax import numpy as jnp
 from jax import jit
 from functools import partial
 
@@ -27,7 +27,7 @@ class S2Threshold(Plugin):
     Mapping(name='s1_eff',
         coord_type='point',
         file_name='3fold_recon_eff.json',
-        help='S1 light collation efficiency correction')
+        help='S1 light collation efficiency correction'),
 )
 class S1ReconEff(Plugin):
     depends_on = ['num_s1_phd']
@@ -35,7 +35,7 @@ class S1ReconEff(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s1_phd):
-        acc_s1_recon_eff = interpolation.curve_interpolator(num_s1_phd, 
+        acc_s1_recon_eff = interpolation.curve_interpolator(num_s1_phd,
             self.s1_eff.coordinate_system, self.s1_eff.map)
         return key, acc_s1_recon_eff
 
