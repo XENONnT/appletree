@@ -11,7 +11,10 @@ par_manager.sample_init()
 parameters = par_manager.get_all_parameter()
 
 # Define bins
-data_file_name = os.path.join(apt.DATAPATH, 'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv')
+data_file_name = os.path.join(
+    apt.DATAPATH,
+    'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv'
+)
 data = pd.read_csv(data_file_name)
 data = data[['cs1', 'cs2']].to_numpy()
 
@@ -35,7 +38,7 @@ ac_hist = ac.simulate_hist(parameters)
 # Simulation component
 er = apt.components.ERBand(
     bins = [bins_cs1, bins_cs2],
-    bins_type='irreg',
+    bins_type = 'irreg',
 )
 er.deduce(
     data_names = ('cs1', 'cs2'), 
