@@ -164,7 +164,7 @@ class Context():
         needed = set(self.needed_parameters)
         provided = set(self.par_manager._parameter_dict.keys())
         # We will not update unneeded parameters!
-        if needed != provided:
+        if not needed.issubset(provided):
             mes = f'Parameter manager should provide needed parameters only, '
             mes += '{provided - needed} not needed'
             raise RuntimeError(mes)
