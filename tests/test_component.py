@@ -23,10 +23,11 @@ bins_cs1, bins_cs2 = apt.utils.get_equiprob_bins_2d(
     x_clip = [0, 100],
     y_clip = [1e2, 1e4],
     which_np = jnp,
-    )
+)
+
 
 def test_fixed_component():
-    # Fixed component
+    """Test ComponentFixed"""
     ac = apt.components.AC(
         bins = [bins_cs1, bins_cs2],
         bins_type = 'irreg',
@@ -34,8 +35,9 @@ def test_fixed_component():
     ac.deduce(data_names = ('cs1', 'cs2'))
     ac.simulate_hist(parameters)
 
+
 def test_sim_component():
-    # Simulation component
+    """Test ComponentSim"""
     er = apt.components.ERBand(
         bins = [bins_cs1, bins_cs2],
         bins_type = 'irreg',
