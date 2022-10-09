@@ -20,7 +20,7 @@ class Component:
     tag: str = '_'  # for instance name of the plugins
 
     def __init__(self,
-                 bins: list = (),
+                 bins: list = [],
                  bins_type: str = ''):
         """Initialization."""
         self.bins = bins
@@ -302,7 +302,7 @@ class ComponentFixed(Component):
     def deduce(self,
                data_names: list = ('cs1', 'cs2')):
         """Deduce the needed parameters and make the fixed histogram."""
-        self.data = load_data(self.file_name)[data_names].to_numpy()
+        self.data = load_data(self.file_name)[list(data_names)].to_numpy()
         eff = jnp.ones(len(self.data))
         self.hist = self.implement_binning(self.data, eff)
         self.needed_parameters.add(self.rate_name)
