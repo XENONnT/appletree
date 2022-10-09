@@ -86,7 +86,7 @@ class Context():
 
         return log_posterior
 
-    def fitting(self, nwalkers=200, iteration=500):
+    def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000):
         """Fitting posterior distribution of needed parameters
         :param nwalkers: int, number of walkers in the ensemble
         :param iteration: int, number of steps to generate
@@ -99,7 +99,10 @@ class Context():
             p0.append(self.par_manager.parameter_fit_array)
 
         ndim = len(self.par_manager.parameter_fit_array)
-        self.sampler = emcee.EnsembleSampler(nwalkers, ndim, self.log_posterior)
+        self.sampler = emcee.EnsembleSampler(nwalkers,
+                                             ndim,
+                                             self.log_posterior,
+                                             kwargs = {'batch_size': batch_size})
 
         result = self.sampler.run_mcmc(p0, iteration, progress=True)
         return result
