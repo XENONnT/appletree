@@ -38,4 +38,4 @@ def test_context():
     context.register_component('rn220_llh', apt.components.AC, 'rn220_ac')
 
     context.print_context_summary()
-    context.fitting(nwalkers=10, iteration=5)
+    context.fitting(nwalkers=200, iteration=5)
