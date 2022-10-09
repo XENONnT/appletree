@@ -3,6 +3,7 @@ import appletree as apt
 
 
 def test_context():
+    """Test Context"""
     par_config_file_name = os.path.join(
         apt.share.PARPATH,
         'apt_sr0_er.json',
@@ -38,4 +39,4 @@ def test_context():
     context.register_component('rn220_llh', apt.components.AC, 'rn220_ac')
 
     context.print_context_summary()
-    context.fitting(nwalkers=200, iteration=5, batch_size=int(1e6))
+    context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
