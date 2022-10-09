@@ -1,7 +1,5 @@
 import os
-import pandas as pd
 import appletree as apt
-from jax import numpy as jnp
 
 # Get parameters
 par_config_file_name = os.path.join(apt.PARPATH, 'apt_sr0_er.json')
@@ -15,7 +13,7 @@ def test_likelihood():
     config = dict(
         data_file_name = os.path.join(
             apt.share.DATAPATH,
-            'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv'
+            'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv',
         ),
         bins_type = 'equiprob',
         bins_on = ['cs1', 'cs2'],
