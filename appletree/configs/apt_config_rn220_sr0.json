@@ -12,7 +12,7 @@
         "s2_smear": "apt_s2_smearing_sr0.json"
     },
 
-    "likelihood": {
+    "likelihoods": {
         "rn220_llh": {
             "components": {
                 "ERBand": "rn220_er",
