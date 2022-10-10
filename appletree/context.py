@@ -33,8 +33,15 @@ class Context():
         self.needed_parameters = set()
 
         self.register_all_likelihood(config)
-        self.update_url_base(config['url_base'])
-        self.set_config(config['configs'])
+
+        # url_base and configs are not mandatory
+        if 'url_base' in config:
+            self.update_url_base(config['url_base'])
+        else:
+            self.update_url_base(CONFPATH)
+
+        if 'configs' in config:
+            self.set_config(config['configs'])
 
     def __getitem__(self, keys):
         """Get likelihood in context"""
