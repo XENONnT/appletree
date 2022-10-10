@@ -62,6 +62,7 @@ def takes_config(*configs):
 
     return wrapped
 
+
 @export
 class Config():
     """Configuration option taken by a appletree plugin"""
