@@ -209,8 +209,8 @@ class Context():
         else:
             par_config = load_json(os.path.join(PARPATH, 'apt_er_sr0.json'))
 
-        for likelihood in config['likelihood'].value():
-            for component in likelihood.value():
+        for likelihood in config['likelihood'].values():
+            for component in likelihood.values():
                 for k, v in component['copy_parameters']:
                     # specify rate scale
                     # normalization factor, for AC & ER, etc.
