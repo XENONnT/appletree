@@ -126,9 +126,9 @@ class Map(Config):
 
         data = load_json(file_path)
 
-        if data['coord_type'] == 'point':
+        if data['coordinate_type'] == 'point':
             self.build_point(data)
-        elif data['coord_type'] == 'regbin':
+        elif data['coordinate_type'] == 'regbin':
             self.build_regbin(data)
         else:
             raise ValueError("map_type must be either 'point' or 'regbin'!")
