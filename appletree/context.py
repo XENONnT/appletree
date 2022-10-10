@@ -28,9 +28,9 @@ class Context():
                 config = json.load(file)
         parameter_config = self.get_parameter_config(config)
         self.par_manager = Parameter(parameter_config)
+        self.needed_parameters = set()
 
         self.register_all_likelihood(config)
-        self.needed_parameters = set()
 
     def __getitem__(self, keys):
         """Get likelihood in context"""
@@ -40,7 +40,7 @@ class Context():
         """Create all appletree likelihoods
         :param config: dict, configuration file name or dictionary
         """
-        for key, value in config['likelihood']:
+        for key, value in config['likelihood'].items():
             likelihood = copy.deepcopy(value)
 
             # update data file path
@@ -53,7 +53,7 @@ class Context():
 
             self.register_likelihood(key, likelihood)
 
-            for k, v in likelihood['components']:
+            for k, v in likelihood['components'].items():
                 self.register_component(key, globals()[k], v)
 
     def register_likelihood(self,
@@ -210,11 +210,10 @@ class Context():
             par_config = load_json(os.path.join(PARPATH, 'apt_er_sr0.json'))
 
         for likelihood in config['likelihood'].values():
-            for component in likelihood.values():
-                for k, v in component['copy_parameters']:
-                    # specify rate scale
-                    # normalization factor, for AC & ER, etc.
-                    par_config.update({k: par_config[v]})
+            for k, v in likelihood['copy_parameters'].items():
+                # specify rate scale
+                # normalization factor, for AC & ER, etc.
+                par_config.update({k: par_config[v]})
         return par_config
 
     def set_config(self, config):
