@@ -4,7 +4,7 @@ import appletree as apt
 from jax import numpy as jnp
 
 # Get parameters
-par_config_file_name = os.path.join(apt.PARPATH, 'apt_sr0_er.json')
+par_config_file_name = os.path.join(apt.PARPATH, 'apt_er_sr0.json')
 par_manager = apt.Parameter(par_config_file_name)
 par_manager.sample_init()
 parameters = par_manager.get_all_parameter()
