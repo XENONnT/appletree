@@ -12,7 +12,7 @@ parameters = par_manager.get_all_parameter()
 # Define bins
 data_file_name = os.path.join(
     apt.DATAPATH,
-    'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv',
+    'data_Rn220.csv',
 )
 data = pd.read_csv(data_file_name)
 data = data[['cs1', 'cs2']].to_numpy()
