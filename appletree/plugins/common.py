@@ -29,7 +29,8 @@ class UniformEnergySpectra(Plugin):
 
     @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
-        key, energy = randgen.uniform(key, 
+        key, energy = randgen.uniform(
+            key,
             self.lower_energy.value,
             self.upper_energy.value,
             shape=(batch_size, ),
