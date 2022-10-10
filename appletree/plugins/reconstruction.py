@@ -4,7 +4,7 @@ from functools import partial
 import appletree
 from appletree import randgen
 from appletree import interpolation
-from appletree.mapping import Mapping
+from appletree.config import Map
 from appletree.plugin import Plugin
 from appletree.utils import exporter
 
@@ -12,14 +12,12 @@ export, __all__ = exporter(export_self=False)
 
 
 @export
-@appletree.takes_map(
-    Mapping(name='s1_bias',
-        coord_type='point',
-        file_name='s1_bias.json',
+@appletree.takes_config(
+    Map(name='s1_bias',
+        default='s1_bias.json',
         help='S1 reconstruction bias'),
-    Mapping(name='s1_smear',
-        coord_type='point',
-        file_name='s1_smearing.json',
+    Map(name='s1_smear',
+        default='s1_smearing.json',
         help='S1 reconstruction smearing'),
 )
 class S1(Plugin):
@@ -40,14 +38,12 @@ class S1(Plugin):
 
 
 @export
-@appletree.takes_map(
-    Mapping(name='s2_bias',
-        coord_type='point',
-        file_name='s2_bias.json',
+@appletree.takes_config(
+    Map(name='s2_bias',
+        default='s2_bias.json',
         help='S2 reconstruction bias'),
-    Mapping(name='s2_smear',
-        coord_type='point',
-        file_name='s2_smearing.json',
+    Map(name='s2_smear',
+        default='s2_smearing.json',
         help='S2 reconstruction smearing'),
 )
 class S2(Plugin):

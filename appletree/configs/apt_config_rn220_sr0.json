@@ -1,18 +1,16 @@
 {
-    "url_base": "https://raw.githubusercontent.com/XENONnT/private_nt_aux_files/master/sim_files",
-
-    "maps": {
-        "s1_lce":   "apt_s1_xyz_sr0.json",
-        "s2_lce":   "apt_s2_xy_sr0.json",
-        "elife":    "apt_elife_sr0.json",
-        "s1_eff":   "apt_3fold_recon_eff_sr0.json",
-        "s1_bias":  "apt_s1_bias_sr0.json",
-        "s1_smear": "apt_s1_smearing_sr0.json",
-        "s2_bias":  "apt_s2_bias_sr0.json",
-        "s2_smear": "apt_s2_smearing_sr0.json"
+    "configs": {
+        "s1_lce":   "s1_correction_map_regbin.json",
+        "s2_lce":   "s2_correction_map_regbin.json",
+        "elife":    "elife.json",
+        "s1_eff":   "3fold_recon_eff.json",
+        "s1_bias":  "s1_bias.json",
+        "s1_smear": "s1_smearing.json",
+        "s2_bias":  "s2_bias.json",
+        "s2_smear": "s2_smearing.json"
     },
 
-    "likelihood": {
+    "likelihoods": {
         "rn220_llh": {
             "components": {
                 "ERBand": "rn220_er",
