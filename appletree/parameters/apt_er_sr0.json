@@ -216,8 +216,8 @@
     "ac_rate": {
         "prior_type": "norm",
         "prior_args": {
-            "mean": 11.2,
-            "std": 2.24
+            "mean": 10.,
+            "std": 2.
         },
         "allowed_range": [
             0,
