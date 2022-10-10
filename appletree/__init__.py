@@ -9,8 +9,8 @@ from .hist import *
 from . import interpolation
 from .interpolation import *
 
-from . import mapping
-from .mapping import *
+from . import config
+from .config import *
 
 from . import parameter
 from .parameter import *
@@ -23,6 +23,9 @@ from .plugin import *
 
 from . import component
 from .component import *
+
+from . import components
+from .components import *
 
 from . import share
 from .share import *

@@ -4,7 +4,7 @@ from jax import numpy as jnp
 
 import appletree
 from appletree.plugin import Plugin
-from appletree.share import cached_functions
+from appletree.share import _cached_functions
 from appletree.utils import exporter, load_data
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 
@@ -109,21 +109,21 @@ class ComponentSim(Component):
                 continue
             already_seen.append(plugin)
 
-            for map_name, items in plugin.takes_map.items():
-                # Looping over the maps of the new plugin and check if
+            for config_name, items in plugin.takes_config.items():
+                # Looping over the configs of the new plugin and check if
                 # they can be found in the already registered plugins:
-                for new_map, new_items in plugin_class.takes_map.items():
-                    if new_map != map_name:
+                for new_config, new_items in plugin_class.takes_config.items():
+                    if new_config != config_name:
                         continue
-                    if items.file_name == new_items.file_name:
+                    if items.default == new_items.default:
                         continue
                     else:
                         mes = f'Two plugins have a different file name'
-                        mes += f' for the same map. The map'
-                        mes += f' "{new_map}" in "{plugin.__name__}" takes'
-                        mes += f' the file name as "{new_items.file_name}"  while in'
+                        mes += f' for the same config. The config'
+                        mes += f' "{new_config}" in "{plugin.__name__}" takes'
+                        mes += f' the file name as "{new_items.default}"  while in'
                         mes += f' "{plugin_class.__name__}" the file name'
-                        mes += f' is set to "{items.file_name}". Please change'
+                        mes += f' is set to "{items.default}". Please change'
                         mes += f' one of the file names.'
                         raise ValueError(mes)
 
@@ -230,7 +230,7 @@ class ComponentSim(Component):
 
         self.code = code
 
-        if func_name in cached_functions.keys():
+        if func_name in _cached_functions.keys():
             warning = f'Function name {func_name} is already cached. '
             warning += 'Running compile() will overwrite it.'
             warn(warning)
@@ -243,7 +243,7 @@ class ComponentSim(Component):
     @code.setter
     def code(self, code):
         self._code = code
-        self._compile = partial(exec, self.code, cached_functions)
+        self._compile = partial(exec, self.code, _cached_functions)
 
     def deduce(self,
                data_names: list = ('cs1', 'cs2'),
@@ -261,9 +261,9 @@ class ComponentSim(Component):
         self.flush_source_code(data_names, func_name)
 
     def compile(self):
-        """Build simulation function and cache it to share.cached_functions."""
+        """Build simulation function and cache it to share._cached_functions."""
         self._compile()
-        self.simulate = cached_functions[self.func_name]
+        self.simulate = _cached_functions[self.func_name]
 
     def simulate_hist(self,
                       key,

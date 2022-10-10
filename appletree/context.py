@@ -1,16 +1,15 @@
 import os
 import copy
-import json
+import importlib
 import numpy as np
-
 import emcee
 
 from appletree import randgen
 from appletree import Parameter
 from appletree import Likelihood
 from appletree.utils import load_json
-from appletree.share import DATAPATH, PARPATH, CONFPATH
-from appletree.components import ERBand, ERPeak, AC
+from appletree.config import get_file_path
+from appletree.share import _cached_configs, DATAPATH, PARPATH, CONFPATH
 
 
 class Context():
@@ -24,13 +23,22 @@ class Context():
         """
         self.likelihoods = {}
         if isinstance(config, str):
-            with open(config, 'r') as file:
-                config = json.load(file)
-        parameter_config = self.get_parameter_config(config)
-        self.par_manager = Parameter(parameter_config)
+            config = load_json(config)
+
+        self.par_config = self.get_parameter_config(config['par_config'])
+        self.update_parameter_config(config['likelihoods'])
+
+        self.par_manager = Parameter(self.par_config)
         self.needed_parameters = set()
 
         self.register_all_likelihood(config)
+
+        # url_base and configs are not mandatory
+        if 'url_base' in config:
+            self.update_url_base(config['url_base'])
+
+        if 'configs' in config:
+            self.set_config(config['configs'])
 
     def __getitem__(self, keys):
         """Get likelihood in context"""
@@ -40,7 +48,9 @@ class Context():
         """Create all appletree likelihoods
         :param config: dict, configuration file name or dictionary
         """
-        for key, value in config['likelihood'].items():
+        components = importlib.import_module('appletree.components')
+
+        for key, value in config['likelihoods'].items():
             likelihood = copy.deepcopy(value)
 
             # update data file path
@@ -54,7 +64,8 @@ class Context():
             self.register_likelihood(key, likelihood)
 
             for k, v in likelihood['components'].items():
-                self.register_component(key, globals()[k], v)
+                # dynamically import components
+                self.register_component(key, getattr(components, k), v)
 
     def register_likelihood(self,
                             likelihood_name,
@@ -200,43 +211,42 @@ class Context():
             mes += '{provided - needed} not needed'
             raise RuntimeError(mes)
 
-    def get_parameter_config(self, config):
+    def update_url_base(self, url_base):
+        print(f'Updated url_base to {url_base}')
+        _cached_configs.updte({'url_base': url_base})
+
+    def get_parameter_config(self, par_config):
         """Get configuration for parameter manager
-        :param config: dict, configuration file name or dictionary
+        :param par_config: str, parameters configuration file
         """
-        if os.path.exists(config['par_config']):
-            par_config = load_json(config['par_config'])
+        if os.path.exists(par_config):
+            par_config = load_json(par_config)
         else:
             par_config = load_json(os.path.join(PARPATH, 'apt_er_sr0.json'))
+        return par_config
 
-        for likelihood in config['likelihood'].values():
+    def update_parameter_config(self, likelihoods):
+        for likelihood in likelihoods.values():
             for k, v in likelihood['copy_parameters'].items():
                 # specify rate scale
                 # normalization factor, for AC & ER, etc.
-                par_config.update({k: par_config[v]})
-        return par_config
+                self.par_config.update({k: self.par_config[v]})
+        return self.par_config
 
-    def set_config(self, config):
+    def set_config(self, configs):
         """Set new configuration options
-        :param config: dict, configuration file name or dictionary
+        :param configs: dict, configuration file name or dictionary
         """
         if not hasattr(self, 'config'):
             self.config = dict()
 
-        self.config.update(config)
+        # update configuration only in this Context
+        self.config.update(configs)
 
-    def get_single_plugin(self, run_id, data_name):
-        """
-        Return a single fully initialized plugin that produces
-        data_name for run_id. For use in custom processing.
-        """
-        plugin = self._get_plugins((data_name,), run_id)[data_name]
-        self._set_plugin_config(plugin, run_id, tolerant=False)
-        plugin.setup()
-        return plugin
-
-    def _set_plugin_config(self, plugin):
-        pass
+        # also store required configurations to appletree.share
+        for k, v in configs.items():
+            file_path = get_file_path(_cached_configs['url_base'], v)
+            _cached_configs.update({k: file_path})
 
     def show_config(self):
         pass

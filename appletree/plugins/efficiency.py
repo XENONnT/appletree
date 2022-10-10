@@ -3,9 +3,9 @@ from jax import jit
 from functools import partial
 
 import appletree
-from appletree.plugin import Plugin
 from appletree import interpolation
-from appletree.mapping import Mapping
+from appletree.plugin import Plugin
+from appletree.config import Map
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
@@ -23,10 +23,9 @@ class S2Threshold(Plugin):
 
 
 @export
-@appletree.takes_map(
-    Mapping(name='s1_eff',
-        coord_type='point',
-        file_name='3fold_recon_eff.json',
+@appletree.takes_config(
+    Map(name='s1_eff',
+        default='3fold_recon_eff.json',
         help='S1 light collation efficiency correction'),
 )
 class S1ReconEff(Plugin):

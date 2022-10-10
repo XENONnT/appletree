@@ -20,8 +20,8 @@ class Plugin():
     # relevant parameters, will be fitted in MCMC
     parameters = ()
 
-    # Set using the takes_map decorator
-    takes_map = immutabledict()
+    # Set using the takes_config decorator
+    takes_config = immutabledict()
 
     def __init__(self):
         """Initialization."""
@@ -33,9 +33,9 @@ class Plugin():
             raise ValueError('provides not provided for '
                              f'{self.__class__.__name__}')
 
-        # Maps are loaded when a plugin is initialized
-        for mapping in self.takes_map.values():
-            mapping.build(mapping.coord_type, mapping.file_name)
+        # configs are loaded when a plugin is initialized
+        for config in self.takes_config.values():
+            config.build()
 
     def __call__(self, *args, **kwargs):
         """Calls self.simulate"""
