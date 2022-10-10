@@ -1,7 +1,7 @@
 {
     "configs": {
-        "s1_lce":   "s1_correction_map_regbin.json",
-        "s2_lce":   "s2_correction_map_regbin.json",
+        "s1_lce":   "s1_correction_map.json",
+        "s2_lce":   "s2_correction_map.json",
         "elife":    "elife.json",
         "s1_eff":   "3fold_recon_eff.json",
         "s1_bias":  "s1_bias.json",
@@ -21,7 +21,7 @@
                 "rn220_ac_rate": "ac_rate"
             },
 
-            "data_file_name": "data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv",
+            "data_file_name": "data_Rn220.csv",
             "bins_type": "equiprob",
             "bins_on": ["cs1", "cs2"],
             "bins": [15, 15],
@@ -37,7 +37,7 @@
                 "ar37_er_rate": "er_rate"
             },
 
-            "data_file_name": "data_XENONnT_Ar37_v2_1e4_events_2sig_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv",
+            "data_file_name": "data_Ar37.csv",
             "bins_type": "equiprob",
             "bins_on": ["cs1", "cs2"],
             "bins": [20, 20],
