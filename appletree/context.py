@@ -1,5 +1,6 @@
 import os
 import copy
+import json
 import numpy as np
 
 import emcee
@@ -19,9 +20,12 @@ class Context():
 
     def __init__(self, config):
         """Create an appletree context
-        :param config: dict, configuration file name or dictionary
+        :param config: dict or str, configuration file name or dictionary
         """
         self.likelihoods = {}
+        if isinstance(config, str):
+            with open(config, 'r') as file:
+                config = json.load(file)
         parameter_config = self.get_parameter_config(config)
         self.par_manager = Parameter(parameter_config)
 
