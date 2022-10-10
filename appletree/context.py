@@ -19,7 +19,7 @@ class Context():
 
     def __init__(self, config):
         """Create an appletree context
-        :param config: dict or str, configuration file name or dictionary
+        :param config: dict, configuration file name or dictionary
         """
         self.likelihoods = {}
         parameter_config = self.get_parameter_config(config)
@@ -33,12 +33,15 @@ class Context():
         return self.likelihoods[keys]
 
     def register_all_likelihood(self, config):
+        """Create all appletree likelihoods
+        :param config: dict, configuration file name or dictionary
+        """
         for key, value in config['likelihood']:
             likelihood = copy.deepcopy(value)
 
             # update data file path
             data_file_name = likelihood["data_file_name"]
-            if not os.path.exist(data_file_name):
+            if not os.path.exists(data_file_name):
                 likelihood["data_file_name"] = os.path.join(
                     DATAPATH,
                     data_file_name,
@@ -194,7 +197,10 @@ class Context():
             raise RuntimeError(mes)
 
     def get_parameter_config(self, config):
-        if os.path.exist(config['par_config']):
+        """Get configuration for parameter manager
+        :param config: dict, configuration file name or dictionary
+        """
+        if os.path.exists(config['par_config']):
             par_config = load_json(config['par_config'])
         else:
             par_config = load_json(os.path.join(PARPATH, 'apt_er_sr0.json'))
@@ -208,6 +214,9 @@ class Context():
         return par_config
 
     def set_config(self, config):
+        """Set new configuration options
+        :param config: dict, configuration file name or dictionary
+        """
         if not hasattr(self, 'config'):
             self.config = dict()
 
