@@ -24,6 +24,9 @@ from .plugin import *
 from . import component
 from .component import *
 
+from . import components
+from .components import *
+
 from . import share
 from .share import *
 

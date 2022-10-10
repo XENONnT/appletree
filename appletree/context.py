@@ -1,6 +1,5 @@
 import os
 import copy
-import json
 import importlib
 import numpy as np
 import emcee
@@ -37,8 +36,6 @@ class Context():
         # url_base and configs are not mandatory
         if 'url_base' in config:
             self.update_url_base(config['url_base'])
-        else:
-            self.update_url_base(CONFPATH)
 
         if 'configs' in config:
             self.set_config(config['configs'])
@@ -248,7 +245,7 @@ class Context():
 
         # also store required configurations to appletree.share
         for k, v in configs.items():
-            file_path = get_file_path(_cached_configs.pop('url_base'), v)
+            file_path = get_file_path(_cached_configs['url_base'], v)
             _cached_configs.update({k: file_path})
 
     def show_config(self):

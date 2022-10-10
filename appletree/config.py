@@ -82,8 +82,6 @@ class Config():
         self.default = default
         self.help = help
 
-        self.build()
-
     def get_default(self):
         """Get default value of configuration"""
         if self.default is not OMITTED:
@@ -123,7 +121,7 @@ class Map(Config):
         if self.name in _cached_configs:
             file_path = _cached_configs[self.name]
         else:
-            file_path = get_file_path(_cached_configs.pop('url_base'), self.get_default())
+            file_path = get_file_path(_cached_configs['url_base'], self.get_default())
             _cached_configs.update({self.name: file_path})
 
         data = load_json(file_path)
