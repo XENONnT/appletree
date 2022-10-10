@@ -1,7 +1,7 @@
 {
     "url_base": "https://raw.githubusercontent.com/XENONnT/private_nt_aux_files/master/sim_files",
 
-    "maps": {
+    "configs": {
         "s1_lce":   "apt_s1_xyz_sr0.json",
         "s2_lce":   "apt_s2_xy_sr0.json",
         "elife":    "apt_elife_sr0.json",
@@ -12,7 +12,7 @@
         "s2_smear": "apt_s2_smearing_sr0.json"
     },
 
-    "likelihood": {
+    "likelihoods": {
         "rn220_llh": {
             "components": {
                 "ERBand": "rn220_er",
