@@ -212,6 +212,7 @@ class Context():
             raise RuntimeError(mes)
 
     def update_url_base(self, url_base):
+        """Update url_base in appletree.share"""
         print(f'Updated url_base to {url_base}')
         _cached_configs.updte({'url_base': url_base})
 
