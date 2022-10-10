@@ -9,8 +9,8 @@ from .hist import *
 from . import interpolation
 from .interpolation import *
 
-from . import mapping
-from .mapping import *
+from . import config
+from .config import *
 
 from . import parameter
 from .parameter import *
