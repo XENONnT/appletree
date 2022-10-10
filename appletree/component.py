@@ -109,21 +109,21 @@ class ComponentSim(Component):
                 continue
             already_seen.append(plugin)
 
-            for map_name, items in plugin.takes_map.items():
-                # Looping over the maps of the new plugin and check if
+            for config_name, items in plugin.takes_config.items():
+                # Looping over the configs of the new plugin and check if
                 # they can be found in the already registered plugins:
-                for new_map, new_items in plugin_class.takes_map.items():
-                    if new_map != map_name:
+                for new_config, new_items in plugin_class.takes_config.items():
+                    if new_config != config_name:
                         continue
-                    if items.file_name == new_items.file_name:
+                    if items.default == new_items.default:
                         continue
                     else:
                         mes = f'Two plugins have a different file name'
-                        mes += f' for the same map. The map'
-                        mes += f' "{new_map}" in "{plugin.__name__}" takes'
-                        mes += f' the file name as "{new_items.file_name}"  while in'
+                        mes += f' for the same config. The config'
+                        mes += f' "{new_config}" in "{plugin.__name__}" takes'
+                        mes += f' the file name as "{new_items.default}"  while in'
                         mes += f' "{plugin_class.__name__}" the file name'
-                        mes += f' is set to "{items.file_name}". Please change'
+                        mes += f' is set to "{items.default}". Please change'
                         mes += f' one of the file names.'
                         raise ValueError(mes)
 
