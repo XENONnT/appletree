@@ -1,4 +1,5 @@
 import os
+import copy
 import numpy as np
 
 import emcee
@@ -7,7 +8,7 @@ from appletree import randgen
 from appletree import Parameter
 from appletree import Likelihood
 from appletree.utils import load_json
-from appletree.share import DATAPATH, PARPATH
+from appletree.share import DATAPATH, PARPATH, CONFPATH
 from appletree.components import ERBand, ERPeak, AC
 
 
@@ -16,17 +17,37 @@ class Context():
     handle MCMC and post-fitting analysis
     """
 
-    def __init__(self, parameter_config):
+    def __init__(self, config):
         """Create an appletree context
-        :param parameter_config: dict or str, parameter configuration file name or dictionary
+        :param config: dict or str, configuration file name or dictionary
         """
         self.likelihoods = {}
+        parameter_config = self.get_parameter_config(config)
         self.par_manager = Parameter(parameter_config)
+
+        self.register_all_likelihood(config)
         self.needed_parameters = set()
 
     def __getitem__(self, keys):
         """Get likelihood in context"""
         return self.likelihoods[keys]
+
+    def register_all_likelihood(self, config):
+        for key, value in config['likelihood']:
+            likelihood = copy.deepcopy(value)
+
+            # update data file path
+            data_file_name = likelihood["data_file_name"]
+            if not os.path.exist(data_file_name):
+                likelihood["data_file_name"] = os.path.join(
+                    DATAPATH,
+                    data_file_name,
+                )
+
+            self.register_likelihood(key, likelihood)
+
+            for k, v in likelihood['components']:
+                self.register_component(key, globals()[k], v)
 
     def register_likelihood(self,
                             likelihood_name,
@@ -172,81 +193,59 @@ class Context():
             mes += '{provided - needed} not needed'
             raise RuntimeError(mes)
 
+    def get_parameter_config(self, config):
+        if os.path.exist(config['par_config']):
+            par_config = load_json(config['par_config'])
+        else:
+            par_config = load_json(os.path.join(PARPATH, 'apt_er_sr0.json'))
+
+        for likelihood in config['likelihood'].value():
+            for component in likelihood.value():
+                for k, v in component['copy_parameters']:
+                    # specify rate scale
+                    # normalization factor, for AC & ER, etc.
+                    par_config.update({k: par_config[v]})
+        return par_config
+
+    def set_config(self, config):
+        if not hasattr(self, 'config'):
+            self.config = dict()
+
+        self.config.update(config)
+
+    def get_single_plugin(self, run_id, data_name):
+        """
+        Return a single fully initialized plugin that produces
+        data_name for run_id. For use in custom processing.
+        """
+        plugin = self._get_plugins((data_name,), run_id)[data_name]
+        self._set_plugin_config(plugin, run_id, tolerant=False)
+        plugin.setup()
+        return plugin
+
+    def _set_plugin_config(self, plugin):
+        pass
+
+    def show_config(self):
+        pass
+
+    def lineage(self):
+        pass
+
 
 class ContextRn220(Context):
     """A specified context for ER response by Rn220 fit"""
 
     def __init__(self):
-        """Initialization."""
-        par_config = load_json(os.path.join(PARPATH, 'apt_sr0_er.json'))
-        # specify rate scale
-        # AC & ER normalization factor
-        par_config.update({'rn220_er_rate': par_config['er_rate']})
-        par_config.update({'rn220_ac_rate': par_config['ac_rate']})
-        # deactivate used parameters
-        par_config.pop('er_rate')
-        par_config.pop('ac_rate')
-
-        super().__init__(par_config)
-
-        rn_config = dict(
-            data_file_name = os.path.join(
-                DATAPATH,
-                'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv',
-            ),
-            bins_type = 'equiprob',
-            bins_on = ['cs1', 'cs2'],
-            bins = [15, 15],
-            x_clip = [0, 100],
-            y_clip = [2e2, 1e4],
-        )
-        self.register_likelihood('rn220_llh', rn_config)
-        self.register_component('rn220_llh', ERBand, 'rn220_er')
-        self.register_component('rn220_llh', AC, 'rn220_ac')
+        """Initialization"""
+        config = os.path.join(CONFPATH, 'apt_config_rn220_sr0.json')
+        super().__init__(config)
 
 
 class ContextER(Context):
     """A specified context for ER response by Rn220 & Ar37 combined fit"""
 
     def __init__(self):
-        """Initialization."""
-        par_config = load_json(os.path.join(PARPATH, 'apt_sr0_er.json'))
-        # specify rate scale
-        # AC & ER normalization factor
-        par_config.update({'rn220_er_rate': par_config['er_rate']})
-        par_config.update({'rn220_ac_rate': par_config['ac_rate']})
-        par_config.update({'ar37_er_rate': par_config['er_rate']})
-        # deactivate used parameters
-        par_config.pop('er_rate')
-        par_config.pop('ac_rate')
-
-        super().__init__(par_config)
-
-        rn_config = dict(
-            data_file_name = os.path.join(
-                DATAPATH,
-                'data_XENONnT_Rn220_v8_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv',
-            ),
-            bins_type = 'equiprob',
-            bins_on = ['cs1', 'cs2'],
-            bins = [15, 15],
-            x_clip = [0, 100],
-            y_clip = [2e2, 1e4],
-        )
-        self.register_likelihood('rn220_llh', rn_config)
-        self.register_component('rn220_llh', ERBand, 'rn220_er')
-        self.register_component('rn220_llh', AC, 'rn220_ac')
-
-        ar_config = dict(
-            data_file_name = os.path.join(
-                DATAPATH,
-                'data_XENONnT_Ar37_v2_1e4_events_2sig_strax_v1.2.2_straxen_v1.7.1_cutax_v1.9.0.csv',
-            ),
-            bins_type = 'equiprob',
-            bins_on = ['cs1', 'cs2'],
-            bins = [20, 20],
-            x_clip = [0, 50],
-            y_clip = [1250, 2200],
-        )
-        self.register_likelihood('ar37_llh', ar_config)
-        self.register_component('ar37_llh', ERPeak, 'ar37_er')
+        """Initialization"""
+        config = os.path.join(CONFPATH, 'apt_config_rn220_ar37_sr0.json')
+        super().__init__(config)
