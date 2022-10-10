@@ -226,6 +226,7 @@ class Context():
             par_config = load_json(par_config)
         else:
             par_config = load_json(os.path.join(PARPATH, 'apt_er_sr0.json'))
+        return par_config
 
     def update_parameter_config(self, likelihoods):
         for likelihood in likelihoods.values():
