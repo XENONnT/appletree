@@ -57,21 +57,28 @@ class MonoEnergySpectra(Plugin):
 
 
 @export
+@appletree.takes_config(
+    Constant(name='z_min',
+        type=float,
+        default=-133.97,
+        help='Z lower limit simulated in uniformly distribution'),
+    Constant(name='z_max',
+        type=float,
+        default=-13.35,
+        help='Z upper limit simulated in uniformly distribution'),
+    Constant(name='r_max',
+        type=float,
+        default=60.,
+        help='Radius upper limit simulated in uniformly distribution'),
+)
 class PositionSpectra(Plugin):
     depends_on = ['batch_size']
     provides = ['x', 'y', 'z']
 
-    def __init__(self, z_sim_min=-133.97, z_sim_max=-13.35, r_sim_max=60.):
-        super().__init__()
-
-        self.z_lower = z_sim_min
-        self.z_upper = z_sim_max
-        self.r_upper = r_sim_max
-
     @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
-        key, z = randgen.uniform(key, self.z_lower, self.z_upper, shape=(batch_size, ))
-        key, r2 = randgen.uniform(key, 0, self.r_upper**2, shape=(batch_size, ))
+        key, z = randgen.uniform(key, self.z_min.value, self.z_max.value, shape=(batch_size, ))
+        key, r2 = randgen.uniform(key, 0, self.r_max.value**2, shape=(batch_size, ))
         key, theta = randgen.uniform(key, 0, 2*jnp.pi, shape=(batch_size, ))
 
         r = jnp.sqrt(r2)

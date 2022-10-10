@@ -106,8 +106,8 @@ class Constant(Config):
         """Set value of Constant"""
         if not self.name in _cached_configs:
             _cached_configs.update({self.name: self.get_default()})
-        else:
-            self.value = _cached_configs[self.name]
+
+        self.value = _cached_configs[self.name]
 
 
 @export
