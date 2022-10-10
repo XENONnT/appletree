@@ -7,7 +7,7 @@ from jax import numpy as jnp
 
 import straxen
 from appletree.utils import exporter, load_json
-from appletree.share import _cached_configs, MAPPATH
+from appletree.share import _cached_configs
 
 export, __all__ = exporter()
 
@@ -118,7 +118,6 @@ class Map(Config):
         """Cache the map to jnp.array"""
         print(f'Building {self.name} map')
 
-        # file_path = os.path.join(MAPPATH, self.file_name)
         if self.name in _cached_configs:
             file_path = _cached_configs[self.name]
         else:
