@@ -4,7 +4,7 @@ from jax import numpy as jnp
 
 import appletree
 from appletree.plugin import Plugin
-from appletree.share import cached_functions
+from appletree.share import _cached_functions
 from appletree.utils import exporter, load_data
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 
@@ -230,7 +230,7 @@ class ComponentSim(Component):
 
         self.code = code
 
-        if func_name in cached_functions.keys():
+        if func_name in _cached_functions.keys():
             warning = f'Function name {func_name} is already cached. '
             warning += 'Running compile() will overwrite it.'
             warn(warning)
@@ -243,7 +243,7 @@ class ComponentSim(Component):
     @code.setter
     def code(self, code):
         self._code = code
-        self._compile = partial(exec, self.code, cached_functions)
+        self._compile = partial(exec, self.code, _cached_functions)
 
     def deduce(self,
                data_names: list = ('cs1', 'cs2'),
@@ -261,9 +261,9 @@ class ComponentSim(Component):
         self.flush_source_code(data_names, func_name)
 
     def compile(self):
-        """Build simulation function and cache it to share.cached_functions."""
+        """Build simulation function and cache it to share._cached_functions."""
         self._compile()
-        self.simulate = cached_functions[self.func_name]
+        self.simulate = _cached_functions[self.func_name]
 
     def simulate_hist(self,
                       key,
