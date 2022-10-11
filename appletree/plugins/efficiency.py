@@ -40,11 +40,45 @@ class S1ReconEff(Plugin):
 
 
 @export
+@appletree.takes_config(
+    Map(name='s1_cut_acc',
+        default='s1_cut_acc.json',
+        help='S1 cut acceptance'),
+)
+class S1CutAccept(Plugin):
+    depends_on = ['s1']
+    provides = ['cut_acc_s1']
+
+    @partial(jit, static_argnums=(0, ))
+    def simulate(self, key, parameters, s1):
+        cut_acc_s1 = interpolation.curve_interpolator(s1,
+            self.s1_cut_acc.coordinate_system, self.s1_cut_acc.map)
+        return key, cut_acc_s1
+
+
+@export
+@appletree.takes_config(
+    Map(name='s2_cut_acc',
+        default='s2_cut_acc.json',
+        help='S2 cut acceptance'),
+)
+class S2CutAccept(Plugin):
+    depends_on = ['s2']
+    provides = ['cut_acc_s2']
+
+    @partial(jit, static_argnums=(0, ))
+    def simulate(self, key, parameters, s2):
+        cut_acc_s2 = interpolation.curve_interpolator(s2,
+            self.s2_cut_acc.coordinate_system, self.s2_cut_acc.map)
+        return key, cut_acc_s2
+
+
+@export
 class Eff(Plugin):
-    depends_on = ['acc_s2_threshold', 'acc_s1_recon_eff']
+    depends_on = ['acc_s2_threshold', 'acc_s1_recon_eff', 'cut_acc_s1', 'cut_acc_s2']
     provides = ['eff']
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, acc_s2_threshold, acc_s1_recon_eff):
-        eff = acc_s2_threshold * acc_s1_recon_eff
+    def simulate(self, key, parameters, acc_s2_threshold, acc_s1_recon_eff, cut_acc_s1, cut_acc_s2):
+        eff = acc_s2_threshold * acc_s1_recon_eff * cut_acc_s1 * cut_acc_s2
         return key, eff

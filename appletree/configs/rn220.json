@@ -7,7 +7,9 @@
         "s1_bias":  "s1_bias.json",
         "s1_smear": "s1_smearing.json",
         "s2_bias":  "s2_bias.json",
-        "s2_smear": "s2_smearing.json"
+        "s2_smear": "s2_smearing.json",
+        "s1_cut_acc": "s1_cut_acc.json",
+        "s2_cut_acc": "s2_cut_acc.json"
     },
 
     "likelihoods": {
