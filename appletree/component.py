@@ -1,10 +1,11 @@
 from warnings import warn
 from functools import partial
 from jax import numpy as jnp
+import pandas as pd
 
 import appletree
 from appletree.plugin import Plugin
-from appletree.share import _cached_functions
+from appletree.share import _cached_configs, _cached_functions
 from appletree.utils import exporter, load_data
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 
@@ -291,6 +292,44 @@ class ComponentSim(Component):
         """Return lineage of plugins."""
         assert isinstance(data_name, str)
         pass
+
+    def show_config(self, data_names: list = ('cs1', 'cs2', 'eff')):
+        """
+        Return configuration options that affect data_names.
+        :param data_names: Data type name
+        """
+        dependencies = self.dependencies_deduce(data_names)
+        r = []
+        seen = []
+
+        for dep in dependencies:
+            p = dep['plugin']
+            # Track plugins we already saw, so options from
+            # multi-output plugins don't come up several times
+            if p in seen:
+                continue
+            seen.append(p)
+
+            for config in p.takes_config.values():
+                try:
+                    default = config.get_default()
+                except:
+                    default = appletree.OMITTED
+                current = _cached_configs.get(config.name, None)
+                r.append(dict(
+                    option=config.name,
+                    default=default,
+                    current=current,
+                    applies_to=p.provides,
+                    help=config.help))
+        if len(r):
+            df = pd.DataFrame(r, columns=r[0].keys())
+        else:
+            df = pd.DataFrame([])
+
+        # Then you can print the dataframe like:
+        # straxen.dataframe_to_wiki(df, title=f'{data_names}', float_digits=1)
+        return df
 
 
 @export
