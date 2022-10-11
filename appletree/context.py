@@ -21,9 +21,17 @@ class Context():
         """Create an appletree context
         :param config: dict or str, configuration file name or dictionary
         """
-        self.likelihoods = {}
         if isinstance(config, str):
             config = load_json(config)
+
+        # url_base and configs are not mandatory
+        if 'url_base' in config.keys():
+            self.update_url_base(config['url_base'])
+
+        if 'configs' in config.keys():
+            self.set_config(config['configs'])
+
+        self.likelihoods = {}
 
         self.par_config = self.get_parameter_config(config['par_config'])
         self.update_parameter_config(config['likelihoods'])
@@ -32,13 +40,6 @@ class Context():
         self.needed_parameters = set()
 
         self.register_all_likelihood(config)
-
-        # url_base and configs are not mandatory
-        if 'url_base' in config:
-            self.update_url_base(config['url_base'])
-
-        if 'configs' in config:
-            self.set_config(config['configs'])
 
     def __getitem__(self, keys):
         """Get likelihood in context"""
