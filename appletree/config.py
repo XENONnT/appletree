@@ -116,7 +116,6 @@ class Map(Config):
 
     def build(self):
         """Cache the map to jnp.array"""
-        print(f'Building {self.name} map')
 
         if self.name in _cached_configs:
             file_path = _cached_configs[self.name]
@@ -169,13 +168,13 @@ def get_file_path(base, fname):
         return
 
     if fname.startswith('/'):
-        log.warning(f"Using local file {fname} for a resource. "
-                    f"Do not set this as a default or TravisCI tests will break")
+        # log.warning(f"Using local file {fname} for a resource. "
+        #             f"Do not set this as a default or TravisCI tests will break")
         return fname
     
     if base.startswith('/'):
-        log.warning(f"Using local folder {base} for all resources. "
-                    f"Do not set this as a default or TravisCI tests will break")
+        # log.warning(f"Using local folder {base} for all resources. "
+        #             f"Do not set this as a default or TravisCI tests will break")
         return os.path.join(base, fname)
 
     if NT_AUX_INSTALLED:

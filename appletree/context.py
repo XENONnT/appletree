@@ -249,8 +249,7 @@ class Context():
             file_path = get_file_path(_cached_configs['url_base'], v)
             _cached_configs.update({k: file_path})
 
-    def show_config(self):
-        pass
-
-    def lineage(self):
+    def lineage(self, data_name: str = 'cs2'):
+        """Return lineage of plugins."""
+        assert isinstance(data_name, str)
         pass
