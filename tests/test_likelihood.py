@@ -1,8 +1,8 @@
-import os
 import appletree as apt
+from appletree.utils import get_file_path
 
 # Get parameters
-par_config_file_name = os.path.join(apt.PARPATH, 'apt_er_sr0.json')
+par_config_file_name = get_file_path('er_sr0.json')
 par_manager = apt.Parameter(par_config_file_name)
 par_manager.sample_init()
 parameters = par_manager.get_all_parameter()
@@ -11,10 +11,7 @@ parameters = par_manager.get_all_parameter()
 def test_likelihood():
     """Test Likelihood"""
     config = dict(
-        data_file_name = os.path.join(
-            apt.share.DATAPATH,
-            'data_Rn220.csv',
-        ),
+        data_file_name = get_file_path('data_Rn220.csv'),
         bins_type = 'equiprob',
         bins_on = ['cs1', 'cs2'],
         bins = [15, 15],
@@ -22,7 +19,7 @@ def test_likelihood():
         y_clip = [2e2, 1e4],
     )
     llh = apt.Likelihood(**config)
-    llh.register_component(apt.components.AC, 'rn220_ac')
+    llh.register_component(apt.components.AC, 'rn220_ac', 'AC_Rn220.pkl')
     llh.register_component(apt.components.ERBand, 'rn220_er')
     llh.print_likelihood_summary(short=True)
 

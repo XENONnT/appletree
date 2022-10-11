@@ -1,30 +1,16 @@
-import os
 import typing as ty
-import logging
 
 from immutabledict import immutabledict
 from jax import numpy as jnp
 
-import straxen
-from appletree.utils import exporter, load_json
 from appletree.share import _cached_configs
+from appletree.utils import exporter, load_json, get_file_path
 
 export, __all__ = exporter()
 
 OMITTED = '<OMITTED>'
 
 __all__ += 'OMITTED'.split()
-
-logging.basicConfig(handlers=[logging.StreamHandler()])
-log = logging.getLogger('appletree.config')
-log.setLevel('WARNING')
-
-NT_AUX_INSTALLED = False
-try:
-    import ntauxfiles
-    NT_AUX_INSTALLED = True
-except (ModuleNotFoundError, ImportError):
-    pass
 
 
 @export
@@ -120,7 +106,7 @@ class Map(Config):
         if self.name in _cached_configs:
             file_path = _cached_configs[self.name]
         else:
-            file_path = get_file_path(_cached_configs['url_base'], self.get_default())
+            file_path = get_file_path(self.get_default())
             _cached_configs.update({self.name: file_path})
 
         data = load_json(file_path)
@@ -146,64 +132,3 @@ class Map(Config):
         self.coordinate_lowers = jnp.asarray(data['coordinate_lowers'], dtype=float)
         self.coordinate_uppers = jnp.asarray(data['coordinate_uppers'], dtype=float)
         self.map = jnp.asarray(data['map'], dtype=float)
-
-
-# Copied from https://github.com/XENONnT/WFSim/blob/master/wfsim/load_resource.py
-@export
-def get_file_path(base, fname):
-    """Find the full path to the resource file
-    Try 4 methods in the following order
-    1. The base is not url, return base + name
-    2. If ntauxfiles (straxauxfiles) is installed, return will be package dir + name
-        pip install won't work, try python setup.py in the packages
-    3. Download the latest version using straxen mongo downloader from database,
-        return the cached file path + md5
-    4. Download using straxen get_resource from the url (github raw)
-        simply return base + name
-        Be careful with the forth options, straxen creates
-        cache files that might not be updated with the latest github commit.
-    """
-    if not fname:
-        log.warning(f"A file has value False, assuming this is intentional.")
-        return
-
-    if fname.startswith('/'):
-        # log.warning(f"Using local file {fname} for a resource. "
-        #             f"Do not set this as a default or TravisCI tests will break")
-        return fname
-    
-    if base.startswith('/'):
-        # log.warning(f"Using local folder {base} for all resources. "
-        #             f"Do not set this as a default or TravisCI tests will break")
-        return os.path.join(base, fname)
-
-    if NT_AUX_INSTALLED:
-        # You might want to use this, for example if you are a developer
-        if fname in ntauxfiles.list_private_files():
-            log.warning(f"Using the private repo to load {fname} locally")
-            fpath = ntauxfiles.get_abspath(fname)
-            log.info(f"Loading {fname} is successfully from {fpath}")
-            return fpath
-
-    try:
-        # https://straxen.readthedocs.io/en/latest/config_storage.html
-        # downloading-xenonnt-files-from-the-database  # noqa
-
-        # we need to add the straxen.MongoDownloader() in this
-        # try: except NameError: logic because the NameError
-        # gets raised if we don't have access to utilix.
-        downloader = straxen.MongoDownloader()
-        # FileNotFoundError, ValueErrors can be raised if we
-        # cannot load the requested config
-        fpath = downloader.download_single(fname)
-        log.warning(f"Loading {fname} from mongo downloader to {fpath}")
-        return fname  # Keep the name and let get_resource do its thing
-
-    except (FileNotFoundError, ValueError, NameError, AttributeError):
-        log.info(f"Mongo downloader not possible or does not have {fname}")
-
-    # We cannot download the file from the database. We need to
-    # try to get a placeholder file from a URL.
-    furl = os.path.join(base, fname)
-    log.warning(f'{fname} did not download, trying download from {base}')
-    return furl
