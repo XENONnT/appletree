@@ -28,7 +28,7 @@ NT_AUX_INSTALLED = False
 try:
     import ntauxfiles
     NT_AUX_INSTALLED = True
-except (ModuleNotFoundError, ImportError):
+except ImportError:
     pass
 
 
@@ -145,7 +145,7 @@ def get_file_path(fname):
     # 2. From appletree internal files
     try:
         return _get_abspath(fname)
-    except:
+    except FileNotFoundError:
         pass
 
     # 3. From local folder

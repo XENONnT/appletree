@@ -29,6 +29,7 @@ def test_fixed_component():
     ac = apt.components.AC(
         bins = [bins_cs1, bins_cs2],
         bins_type = 'irreg',
+        file_name = 'AC_Rn220.pkl',
     )
     ac.deduce(data_names = ('cs1', 'cs2'))
     ac.simulate_hist(parameters)

@@ -340,14 +340,12 @@ class ComponentFixed(Component):
 
     def __init__(self,
                  *args, **kwargs):
-        """Initialization
-        :param bins: bins to generate the histogram.
-        For irreg bins_type, bins must be bin edges of the two dimensions.
-        For meshgrid bins_type, bins are sent to jnp.histogramdd.
-        :param bins_type: binning scheme, can be either irreg or meshgrid.
-        """
+        """Initialization"""
         super().__init__(*args, **kwargs)
-        self._file_name = kwargs.get('file_name', None)
+        if kwargs.get('file_name', None):
+            raise ValueError('Should provide file_name for ComponentFixed!')
+        else:
+            self._file_name = kwargs.get('file_name', None)
 
     def deduce(self,
                data_names: list = ('cs1', 'cs2')):

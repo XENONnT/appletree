@@ -69,7 +69,7 @@ class Context():
                         key,
                         getattr(components, v['component_cls']),
                         k,
-                        v.get('file_name', None)
+                        v.get('file_name', None),
                     )
 
     def register_likelihood(self,
