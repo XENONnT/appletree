@@ -9,7 +9,7 @@ from appletree import Parameter
 from appletree import Likelihood
 from appletree.utils import load_json
 from appletree.config import get_file_path
-from appletree.share import _cached_configs, DATAPATH, PARPATH, CONFPATH
+from appletree.share import _cached_configs, DATAPATH, PARPATH
 
 
 class Context():
@@ -253,21 +253,3 @@ class Context():
         """Return lineage of plugins."""
         assert isinstance(data_name, str)
         pass
-
-
-class ContextRn220(Context):
-    """A specified context for ER response by Rn220 fit"""
-
-    def __init__(self):
-        """Initialization"""
-        config = os.path.join(CONFPATH, 'apt_config_rn220_sr0.json')
-        super().__init__(config)
-
-
-class ContextER(Context):
-    """A specified context for ER response by Rn220 & Ar37 combined fit"""
-
-    def __init__(self):
-        """Initialization"""
-        config = os.path.join(CONFPATH, 'apt_config_rn220_ar37_sr0.json')
-        super().__init__(config)
