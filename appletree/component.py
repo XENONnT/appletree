@@ -2,6 +2,7 @@ from warnings import warn
 from functools import partial
 import pandas as pd
 from jax import numpy as jnp
+import pandas as pd
 
 import appletree
 from appletree.plugin import Plugin
