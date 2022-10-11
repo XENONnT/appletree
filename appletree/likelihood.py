@@ -72,7 +72,7 @@ class Likelihood:
     def register_component(self,
                            component_cls: Component,
                            component_name: str,
-                           file_name: str):
+                           file_name: str = None):
         """Create an appletree likelihood
         :param component_cls: class of Component
         :param component_name: name of Component
