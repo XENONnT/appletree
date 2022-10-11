@@ -19,7 +19,7 @@ export, __all__ = exporter(export_self=False)
         help='S1 light collation efficiency correction'),
 )
 class S1Correction(Plugin):
-    depends_on = ['x', 'y', 'z']
+    depends_on = ['rec_x', 'rec_y', 'rec_z']
     provides = ['s1_correction']
 
     @partial(jit, static_argnums=(0, ))
@@ -41,7 +41,7 @@ class S1Correction(Plugin):
         help='S2 light collation efficiency correction'),
 )
 class S2Correction(Plugin):
-    depends_on = ['x', 'y']
+    depends_on = ['rec_x', 'rec_y']
     provides = ['s2_correction']
 
     @partial(jit, static_argnums=(0, ))

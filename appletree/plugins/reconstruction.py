@@ -12,6 +12,16 @@ export, __all__ = exporter(export_self=False)
 
 
 @export
+class PositionRecon(Plugin):
+    depends_on = ['x', 'y', 'z']
+    provides = ['rec_x', 'rec_y', 'rec_z']
+
+    @partial(jit, static_argnums=(0, ))
+    def simulate(self, key, parameters, x, y, z):
+        return key, x, y, z
+
+
+@export
 @appletree.takes_config(
     Map(name='s1_bias',
         default='s1_bias.json',
