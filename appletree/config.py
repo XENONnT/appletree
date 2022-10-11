@@ -116,7 +116,6 @@ class Map(Config):
 
     def build(self):
         """Cache the map to jnp.array"""
-        # print(f'Building {self.name} map')
 
         if self.name in _cached_configs:
             file_path = _cached_configs[self.name]

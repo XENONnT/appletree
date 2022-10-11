@@ -3,7 +3,6 @@ from functools import partial
 from jax import numpy as jnp
 import pandas as pd
 
-import straxen
 import appletree
 from appletree.plugin import Plugin
 from appletree.share import _cached_configs, _cached_functions
@@ -299,7 +298,6 @@ class ComponentSim(Component):
         Return configuration options that affect data_names.
         :param data_names: Data type name
         """
-
         dependencies = self.dependencies_deduce(data_names)
         r = []
         seen = []
@@ -329,7 +327,8 @@ class ComponentSim(Component):
         else:
             df = pd.DataFrame([])
 
-        straxen.dataframe_to_wiki(df, title=f'{data_names}', float_digits=1)
+        # Then you can print the dataframe like:
+        # straxen.dataframe_to_wiki(df, title=f'{data_names}', float_digits=1)
         return df
 
 
