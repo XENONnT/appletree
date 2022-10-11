@@ -13,8 +13,11 @@
     "likelihoods": {
         "rn220_llh": {
             "components": {
-                "ERBand": "rn220_er",
-                "AC": "rn220_ac"
+                "rn220_er": "ERBand",
+                "rn220_ac": {
+                    "component_cls": "AC",
+                    "file_name": "AC_Rn220.pkl"
+                }
             },
             "copy_parameters": {
                 "rn220_er_rate": "er_rate",
@@ -31,7 +34,7 @@
 
         "ar37_llh": {
             "components": {
-                "ERPeak": "ar37_er"
+                "ar37_er": "ERPeak"
             },
             "copy_parameters": {
                 "ar37_er_rate": "er_rate"
@@ -46,5 +49,5 @@
         }
     },
 
-    "par_config": "apt_er_sr0.json"
+    "par_config": "er_sr0.json"
 }

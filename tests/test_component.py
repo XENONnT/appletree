@@ -1,19 +1,17 @@
-import os
 import pandas as pd
-import appletree as apt
 from jax import numpy as jnp
 
+import appletree as apt
+from appletree.utils import get_file_path
+
 # Get parameters
-par_config_file_name = os.path.join(apt.PARPATH, 'apt_er_sr0.json')
+par_config_file_name = get_file_path('er_sr0.json')
 par_manager = apt.Parameter(par_config_file_name)
 par_manager.sample_init()
 parameters = par_manager.get_all_parameter()
 
 # Define bins
-data_file_name = os.path.join(
-    apt.DATAPATH,
-    'data_Rn220.csv',
-)
+data_file_name = get_file_path('data_Rn220.csv',)
 data = pd.read_csv(data_file_name)
 data = data[['cs1', 'cs2']].to_numpy()
 bins_cs1, bins_cs2 = apt.utils.get_equiprob_bins_2d(

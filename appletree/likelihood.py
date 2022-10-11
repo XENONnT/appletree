@@ -4,7 +4,7 @@ import numpy as np
 from jax import numpy as jnp
 
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
-from appletree.utils import load_data, get_equiprob_bins_2d
+from appletree.utils import load_data, get_equiprob_bins_2d, get_file_path
 from appletree.component import Component, ComponentSim, ComponentFixed
 
 
@@ -71,10 +71,12 @@ class Likelihood:
 
     def register_component(self,
                            component_cls: Component,
-                           component_name: str):
+                           component_name: str,
+                           file_name: str):
         """Create an appletree likelihood
         :param component_cls: class of Component
         :param component_name: name of Component
+        :param file_name: file used in ComponentFixed
         """
         if component_name in self.components:
             raise ValueError(f'Component named {component_name} already existed!')
@@ -83,6 +85,7 @@ class Likelihood:
         component = component_cls(
             bins=self._bins,
             bins_type=self.component_bins_type,
+            file_name=get_file_path(file_name),
         )
         component.rate_name = component_name + '_rate'
         kwargs = {'data_names': self._bins_on}

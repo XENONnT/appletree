@@ -6,5 +6,5 @@ DATAPATH = os.path.join(os.path.abspath(os.path.dirname(inspect.getfile(inspect.
 PARPATH = os.path.join(os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe()))), 'parameters')
 CONFPATH = os.path.join(os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe()))), 'configs')
 
-_cached_configs = {'url_base': MAPPATH}
+_cached_configs = dict()
 _cached_functions = dict()

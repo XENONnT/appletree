@@ -9,7 +9,7 @@ from appletree import Parameter
 from appletree import Likelihood
 from appletree.utils import load_json
 from appletree.config import get_file_path
-from appletree.share import _cached_configs, DATAPATH, PARPATH
+from appletree.share import _cached_configs
 
 
 class Context():
@@ -56,16 +56,21 @@ class Context():
             # update data file path
             data_file_name = likelihood["data_file_name"]
             if not os.path.exists(data_file_name):
-                likelihood["data_file_name"] = os.path.join(
-                    DATAPATH,
-                    data_file_name,
-                )
+                likelihood["data_file_name"] = get_file_path(data_file_name)
 
             self.register_likelihood(key, likelihood)
 
             for k, v in likelihood['components'].items():
                 # dynamically import components
-                self.register_component(key, getattr(components, k), v)
+                if isinstance(v, str):
+                    self.register_component(key, getattr(components, v), k)
+                else:
+                    self.register_component(
+                        key,
+                        getattr(components, v['component_cls']),
+                        k,
+                        v.get('file_name', None)
+                    )
 
     def register_likelihood(self,
                             likelihood_name,
@@ -81,7 +86,8 @@ class Context():
     def register_component(self,
                            likelihood_name,
                            component_cls,
-                           component_name):
+                           component_name,
+                           file_name=None):
         """Register component to likelihood
         :param likelihood_name: name of Likelihood
         :param component_cls: class of Component
@@ -90,6 +96,7 @@ class Context():
         self[likelihood_name].register_component(
             component_cls,
             component_name,
+            file_name,
         )
         # Update needed parameters
         self.needed_parameters |= self.likelihoods[likelihood_name].needed_parameters
@@ -221,9 +228,9 @@ class Context():
         :param par_config: str, parameters configuration file
         """
         if os.path.exists(par_config):
-            par_config = load_json(par_config)
+            par_config = load_json(get_file_path(par_config))
         else:
-            par_config = load_json(os.path.join(PARPATH, 'apt_er_sr0.json'))
+            par_config = load_json(get_file_path('er_sr0.json'))
         return par_config
 
     def update_parameter_config(self, likelihoods):
@@ -246,7 +253,7 @@ class Context():
 
         # also store required configurations to appletree.share
         for k, v in configs.items():
-            file_path = get_file_path(_cached_configs['url_base'], v)
+            file_path = get_file_path(v)
             _cached_configs.update({k: file_path})
 
     def lineage(self, data_name: str = 'cs2'):

@@ -1,20 +1,35 @@
 import os
 import re
 import json
-import jax
-import GOFevaluation
+import pkg_resources
+from time import time
+import logging
+from collections import namedtuple
+from functools import partial
 
 import numpy as np
 import pandas as pd
-import matplotlib as mpl
-
-from time import time
-from collections import namedtuple
-from functools import partial
+import jax
 from jax import numpy as jnp
 from jax import jit, lax, random, vmap
+import matplotlib as mpl
 from matplotlib.patches import Rectangle
 from matplotlib import pyplot as plt
+
+import straxen
+import GOFevaluation
+from appletree.share import _cached_configs
+
+logging.basicConfig(handlers=[logging.StreamHandler()])
+log = logging.getLogger('appletree.config')
+log.setLevel('WARNING')
+
+NT_AUX_INSTALLED = False
+try:
+    import ntauxfiles
+    NT_AUX_INSTALLED = True
+except (ModuleNotFoundError, ImportError):
+    pass
 
 
 def exporter(export_self=False):
@@ -91,6 +106,84 @@ def camel_to_snake(x):
     """
     x = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', x)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', x).lower()
+
+
+@export
+def _get_abspath(file_name):
+    """Get the abspath of the file. Raise FileNotFoundError when not found in any subfolder"""
+    for sub_dir in ('maps', 'data', 'parameters', 'configs'):
+        p = os.path.join(_package_path(sub_dir), file_name)
+        if os.path.exists(p):
+            return p
+    raise FileNotFoundError(f'Cannot find {file_name}')
+
+
+def _package_path(sub_directory):
+    """Get the abs path of the requested sub folder"""
+    return pkg_resources.resource_filename('appletree', f'{sub_directory}')
+
+
+@export
+def get_file_path(fname):
+    """Find the full path to the resource file
+    Try 5 methods in the following order
+    1. fname begin with '/', return absolute path
+    2. can get file from _get_abspath, return appletree internal file path
+    3. url_base begin with '/', return url_base + name
+    4. can be found in local installed ntauxfiles, return ntauxfiles absolute path
+    5. can be downloaded from MongoDB, download and return cached path
+    """
+    if not fname:
+        log.warning(f'A file has value False, assuming this is intentional.')
+        return
+
+    # 1. From absolute path
+    # Usually Config.default is a absolute path
+    if fname.startswith('/'):
+        return fname
+
+    # 2. From appletree internal files
+    try:
+        return _get_abspath(fname)
+    except:
+        pass
+
+    # 3. From local folder
+    # Use url_base as prefix
+    if 'url_base' in _cached_configs.keys():
+        url_base = _cached_configs['url_base']
+
+        if url_base.startswith('/'):
+            return os.path.join(url_base, fname)
+
+    # 4. From local installed ntauxfiles
+    if NT_AUX_INSTALLED:
+        # You might want to use this, for example if you are a developer
+        if fname in ntauxfiles.list_private_files():
+            log.warning(f'Using the private repo to load {fname} locally')
+            fpath = ntauxfiles._get_abspath(fname)
+            log.info(f'Loading {fname} is successfully from {fpath}')
+            return fpath
+
+    # 5. From MongoDB
+    try:
+        # https://straxen.readthedocs.io/en/latest/config_storage.html
+        # downloading-xenonnt-files-from-the-database  # noqa
+
+        # we need to add the straxen.MongoDownloader() in this
+        # try: except NameError: logic because the NameError
+        # gets raised if we don't have access to utilix.
+        downloader = straxen.MongoDownloader()
+        # FileNotFoundError, ValueErrors can be raised if we
+        # cannot load the requested config
+        fpath = downloader.download_single(fname)
+        log.warning(f'Loading {fname} from mongo downloader to {fpath}')
+        return fname  # Keep the name and let get_resource do its thing
+
+    except (FileNotFoundError, ValueError, NameError, AttributeError):
+        log.info(f'Mongo downloader not possible or does not have {fname}')
+
+    log.info(f'I can not find {fname}!')
 
 
 @export

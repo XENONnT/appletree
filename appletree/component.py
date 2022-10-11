@@ -1,7 +1,7 @@
 from warnings import warn
 from functools import partial
-from jax import numpy as jnp
 import pandas as pd
+from jax import numpy as jnp
 
 import appletree
 from appletree.plugin import Plugin
@@ -22,8 +22,14 @@ class Component:
 
     def __init__(self,
                  bins: list = [],
-                 bins_type: str = ''):
-        """Initialization."""
+                 bins_type: str = '',
+                 **kwargs):
+        """Initialization.
+        :param bins: bins to generate the histogram.
+        For irreg bins_type, bins must be bin edges of the two dimensions.
+        For meshgrid bins_type, bins are sent to jnp.histogramdd.
+        :param bins_type: binning scheme, can be either irreg or meshgrid.
+        """
         self.bins = bins
         self.bins_type = bins_type
         self.needed_parameters = set()
@@ -74,12 +80,7 @@ class ComponentSim(Component):
 
     def __init__(self,
                  *args, **kwargs):
-        """Initialization
-        :param bins: bins to generate the histogram.
-        For irreg bins_type, bins must be bin edges of the two dimensions.
-        For meshgrid bins_type, bins are sent to jnp.histogramdd.
-        :param bins_type: binning scheme, can be either irreg or meshgrid.
-        """
+        """Initialization"""
         super().__init__(*args, **kwargs)
         self._plugin_class_registry = {}
 
@@ -336,12 +337,21 @@ class ComponentSim(Component):
 class ComponentFixed(Component):
     """Component whose shape is fixed."""
 
-    file_name: str = None
+    def __init__(self,
+                 *args, **kwargs):
+        """Initialization
+        :param bins: bins to generate the histogram.
+        For irreg bins_type, bins must be bin edges of the two dimensions.
+        For meshgrid bins_type, bins are sent to jnp.histogramdd.
+        :param bins_type: binning scheme, can be either irreg or meshgrid.
+        """
+        super().__init__(*args, **kwargs)
+        self._file_name = kwargs.get('file_name', None)
 
     def deduce(self,
                data_names: list = ('cs1', 'cs2')):
         """Deduce the needed parameters and make the fixed histogram."""
-        self.data = load_data(self.file_name)[list(data_names)].to_numpy()
+        self.data = load_data(self._file_name)[list(data_names)].to_numpy()
         eff = jnp.ones(len(self.data))
         self.hist = self.implement_binning(self.data, eff)
         self.needed_parameters.add(self.rate_name)
