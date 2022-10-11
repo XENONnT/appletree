@@ -56,7 +56,7 @@ class Context():
             # update data file path
             data_file_name = likelihood["data_file_name"]
             if not os.path.exists(data_file_name):
-                likelihood["data_file_name"] = get_file_path(data_file_name)
+                likelihood["data_file_name"] = data_file_name
 
             self.register_likelihood(key, likelihood)
 
@@ -228,9 +228,9 @@ class Context():
         :param par_config: str, parameters configuration file
         """
         if os.path.exists(par_config):
-            par_config = load_json(get_file_path(par_config))
+            par_config = load_json(par_config)
         else:
-            par_config = load_json(get_file_path('er_sr0.json'))
+            par_config = load_json('er_sr0.json')
         return par_config
 
     def update_parameter_config(self, likelihoods):

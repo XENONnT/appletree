@@ -16,7 +16,6 @@ import matplotlib as mpl
 from matplotlib.patches import Rectangle
 from matplotlib import pyplot as plt
 
-import straxen
 import GOFevaluation
 from appletree.share import _cached_configs
 
@@ -81,6 +80,7 @@ def use_xenon_plot_style():
 @export
 def load_data(file_name: str):
     """Load data from file. The suffix can be ".csv", ".pkl"."""
+    file_name = get_file_path(file_name)
     fmt = file_name.split('.')[-1]
     if fmt == 'csv':
         data = pd.read_csv(file_name)
@@ -94,7 +94,7 @@ def load_data(file_name: str):
 @export
 def load_json(file_name: str):
     """Load data from json file."""
-    with open(file_name, 'r') as file:
+    with open(get_file_path(file_name), 'r') as file:
         data = json.load(file)
     return data
 
@@ -167,6 +167,7 @@ def get_file_path(fname):
 
     # 5. From MongoDB
     try:
+        import straxen
         # https://straxen.readthedocs.io/en/latest/config_storage.html
         # downloading-xenonnt-files-from-the-database  # noqa
 

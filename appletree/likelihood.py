@@ -85,7 +85,7 @@ class Likelihood:
         component = component_cls(
             bins=self._bins,
             bins_type=self.component_bins_type,
-            file_name=get_file_path(file_name),
+            file_name=file_name,
         )
         component.rate_name = component_name + '_rate'
         kwargs = {'data_names': self._bins_on}

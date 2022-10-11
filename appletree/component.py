@@ -341,11 +341,11 @@ class ComponentFixed(Component):
     def __init__(self,
                  *args, **kwargs):
         """Initialization"""
-        super().__init__(*args, **kwargs)
-        if kwargs.get('file_name', None):
+        if not kwargs.get('file_name', None):
             raise ValueError('Should provide file_name for ComponentFixed!')
         else:
             self._file_name = kwargs.get('file_name', None)
+        super().__init__(*args, **kwargs)
 
     def deduce(self,
                data_names: list = ('cs1', 'cs2')):
