@@ -4,7 +4,7 @@ import numpy as np
 from jax import numpy as jnp
 
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
-from appletree.utils import load_data, get_equiprob_bins_2d, get_file_path
+from appletree.utils import load_data, get_equiprob_bins_2d
 from appletree.component import Component, ComponentSim, ComponentFixed
 
 
@@ -151,6 +151,7 @@ class Likelihood:
                     print(f'{indent*2}worksheet: {component.worksheet}')
             elif isinstance(component, ComponentFixed):
                 print(f'{indent*2}type: fixed')
+                print(f'{indent*2}file_name: {component._file_name}')
                 print(f'{indent*2}rate_par: {component.rate_name}')
                 print(f'{indent*2}pars: {need}')
                 if not short:
