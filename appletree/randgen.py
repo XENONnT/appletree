@@ -148,3 +148,15 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
     else:
         ret = vmap(lambda *x: dispatch(*x))(seed, p, n)
     return key, jnp.reshape(ret, shape).astype(INT)
+
+
+@export
+@jit
+def uniform_key_vectorized(key):
+    """Uniform(0,1) distribution sampler, vectorized by key.
+    Note: key won't be updated!
+    :param key: seed for random generator, with shape (N, 2)
+    :return: random varibles with shape (N, )
+    """
+    sampler = vmap(jax.random.uniform, (0, ), 0)
+    return sampler(key)
