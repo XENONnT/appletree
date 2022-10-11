@@ -35,3 +35,6 @@ from .likelihood import *
 
 from . import context
 from .context import *
+
+from . import contexts
+from .contexts import *
