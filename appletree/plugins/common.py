@@ -5,8 +5,9 @@ from jax import numpy as jnp
 
 import appletree
 from appletree import randgen
+from appletree import interpolation
 from appletree.plugin import Plugin
-from appletree.config import Constant
+from appletree.config import Constant, Map
 from appletree.utils import exporter
 
 export, __all__ = exporter()
@@ -34,6 +35,27 @@ class UniformEnergySpectra(Plugin):
             self.lower_energy.value,
             self.upper_energy.value,
             shape=(batch_size, ),
+        )
+        return key, energy
+
+
+@export
+@appletree.takes_config(
+    Map(name='energy_spectrum',
+        default='nr_spectrum.json',
+        help='Recoil energy spectrum'),
+)
+class FixedEnergySpectra(Plugin):
+    depends_on = ['batch_size']
+    provides = ['energy']
+
+    @partial(jit, static_argnums=(0, 3))
+    def simulate(self, key, parameters, batch_size):
+        key, p = randgen.uniform(key, 0, 1., shape=(batch_size, ))
+        energy = interpolation.curve_interpolator(
+            p,
+            self.energy_spectrum.coordinate_system,
+            self.energy_spectrum.map,
         )
         return key, energy
 

@@ -1,0 +1,137 @@
+{
+    "gas_gain": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 31.3
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "PE/electron",
+        "doc": "Gas gain"
+    },
+    "drift_velocity": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.0677
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "cm/us",
+        "doc": "Gas gain"
+    },
+    "s2_threshold": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 500.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "PE",
+        "doc": "S2 threshold"
+    },
+    "g1": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.1515,
+            "std": 0.0014
+        },
+        "allowed_range": [
+            0,
+            1.0
+        ],
+        "init_mean": 0.1515,
+        "init_std": 0.0014,
+        "unit": "PE/photon",
+        "doc": "g1"
+    },
+    "g2": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 16.45,
+            "std": 0.64
+        },
+        "allowed_range": [
+            0,
+            100.0
+        ],
+        "init_mean": 16.45,
+        "init_std": 0.64,
+        "unit": "PE/electron",
+        "doc": "g2"
+    },
+    "p_dpe": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.227,
+            "std": 0.024
+        },
+        "allowed_range": [
+            0,
+            1.0
+        ],
+        "init_mean": 0.227,
+        "init_std": 0.024,
+        "unit": "1",
+        "doc": "DPE probability"
+    },
+    "t_ly": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -10.0,
+            10.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "light yield shaper"
+    },
+    "t_qy": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -10.0,
+            10.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "charge yield shaper"
+    },
+    "ac_rate": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 10.0,
+            "std": 2.0
+        },
+        "allowed_range": [
+            0,
+            10000000000.0
+        ],
+        "init_mean": 11.2,
+        "init_std": 2.24,
+        "unit": "1",
+        "doc": "ac_rate"
+    },
+    "nr_rate": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            0,
+            10000000000.0
+        ],
+        "init_mean": 2000,
+        "init_std": 100,
+        "unit": "1",
+        "doc": "nr_rate"
+    }
+}
