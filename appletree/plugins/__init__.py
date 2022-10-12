@@ -12,3 +12,6 @@ from .reconstruction import *
 
 from . import efficiency
 from .efficiency import *
+
+from . import multiscatter
+from .multiscatter import *

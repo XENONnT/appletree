@@ -1,6 +1,6 @@
 import appletree as apt
 
-from appletree import ComponentSim
+from appletree.component import ComponentSim
 
 
 class ERBand(ComponentSim):
