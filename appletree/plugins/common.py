@@ -86,3 +86,13 @@ class PositionSpectra(Plugin):
         x = r * jnp.cos(theta)
         y = r * jnp.sin(theta)
         return key, x, y, z
+
+
+@export
+class BootstrapMS(Plugin):
+    depends_on = ['batch_size']
+    provides = ['energy', 'x', 'y', 'z', 's2_tag', 'event_id']
+
+    @partial(jit, static_argnums=(0, 3))
+    def simulate(self, key, parameters, batch_size):
+        raise NotImplementedError
