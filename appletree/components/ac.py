@@ -1,6 +1,6 @@
 import os
 
-from appletree import ComponentFixed
+from appletree.component import ComponentFixed
 
 
 class AC(ComponentFixed):
