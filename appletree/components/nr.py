@@ -1,6 +1,5 @@
 import appletree as apt
 
-from appletree.plugins import FixedEnergySpectra
 from appletree import ComponentSim
 
 
@@ -10,6 +9,9 @@ class NRBand(ComponentSim):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.register_all(apt.plugins)
-        self.register(FixedEnergySpectra)
+        self.register(apt.plugins.common.FixedEnergySpectra)
+        self.register(apt.plugins.common.PositionSpectra)
         self.register_all(apt.plugins.nr_microphys)
+        self.register_all(apt.plugins.detector)
+        self.register_all(apt.plugins.reconstruction)
+        self.register_all(apt.plugins.efficiency)
