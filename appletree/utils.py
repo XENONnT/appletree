@@ -161,7 +161,7 @@ def get_file_path(fname):
         # You might want to use this, for example if you are a developer
         if fname in ntauxfiles.list_private_files():
             log.warning(f'Using the private repo to load {fname} locally')
-            fpath = ntauxfiles._get_abspath(fname)
+            fpath = ntauxfiles.get_abspath(fname)
             log.info(f'Loading {fname} is successfully from {fpath}')
             return fpath
 
