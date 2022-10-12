@@ -12,6 +12,7 @@ from appletree.plugins import detector, reconstruction, efficiency
 # Plugins that handle merging
 class MSPhotonMerge(Plugin):
     """For MS, photon will always be merged."""
+
     depends_on = ['num_photon', 'event_id']
     provides = ['num_photon_sum']
 
@@ -25,6 +26,7 @@ class MSPhotonMerge(Plugin):
 
 class MSDriftLoss(Plugin):
     """Different from SS-version, since we want same event has same surival probability"""
+
     depends_on = ['z', 'event_id']
     provides = ['drift_survive_prob']
     parameters = ('drift_velocity', )
@@ -42,6 +44,7 @@ class MSDriftLoss(Plugin):
 
 class MSElectronDrifted(detector.ElectronDrifted):
     """Same as SS, ['num_electron', 'drift_survive_prob'] -> ['num_electron_drifted']"""
+
     pass
 
 
@@ -51,6 +54,7 @@ class MSElectronMerge(Plugin):
     event_id: different id's mean different events, max of which should be < batch_size
     The reconstructed xyz are modeled as the weighted averge of true xyz
     """
+
     depends_on = [
         'num_electron_drifted',
         'x', 'y', 'z', 'drift_survive_prob',
@@ -206,5 +210,3 @@ class MSEff(Plugin):
     def simulate(self, key, parameters, acc_s2_threshold, acc_s1_recon_eff, cut_acc_s1, cut_acc_s2, acc_ss_cut):
         eff = acc_s2_threshold * acc_s1_recon_eff * cut_acc_s1 * cut_acc_s2 * acc_ss_cut
         return key, eff
-
-
