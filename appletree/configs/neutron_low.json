@@ -22,23 +22,18 @@
     "likelihoods": {
         "rn220_llh": {
             "components": {
-                "neutron_nr": "NRband",
-                "neutron_ac": {
-                    "component_cls": "AC",
-                    "file_name": "AC_Neutron.pkl"
-                }
+                "neutron_nr": "NRband"
             },
             "copy_parameters": {
-                "neutron_nr_rate": "er_rate",
-                "neutron_ac_rate": "ac_rate"
+                "neutron_nr_rate": "nr_rate"
             },
 
             "data_file_name": "data_Neutron.csv",
             "bins_type": "equiprob",
             "bins_on": ["num_s1_phd", "cs2"],
-            "bins": [8, 15],
+            "bins": [8, 10],
             "x_clip": [1.5, 9.5],
-            "y_clip": [2e2, 1e4]
+            "y_clip": [1e2, 1e4]
         }
     },
 

@@ -5,7 +5,6 @@ from appletree import ComponentSim
 
 
 class ERBand(ComponentSim):
-    rate_name = 'er_band_rate'
     norm_type = 'on_pdf'
 
     def __init__(self, *args, **kwargs):
@@ -13,10 +12,10 @@ class ERBand(ComponentSim):
 
         self.register_all(apt.plugins)
         self.register(UniformEnergySpectra)
+        self.register_all(apt.plugins.microphys)
 
 
 class ERPeak(ComponentSim):
-    rate_name = 'er_peak_rate'
     norm_type = 'on_pdf'
 
     def __init__(self, *args, **kwargs):
@@ -24,3 +23,4 @@ class ERPeak(ComponentSim):
 
         self.register_all(apt.plugins)
         self.register(MonoEnergySpectra)
+        self.register_all(apt.plugins.microphys)
