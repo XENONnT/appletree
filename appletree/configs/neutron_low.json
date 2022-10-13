@@ -1,0 +1,41 @@
+{
+    "configs": {
+        "s1_lce":     "s1_correction_map.json",
+        "s2_lce":     "s2_correction_map.json",
+        "elife":      "elife.json",
+        "s1_eff":     "3fold_recon_eff.json",
+        "s1_bias":    "s1_bias.json",
+        "s1_smear":   "s1_smearing.json",
+        "s2_bias":    "s2_bias.json",
+        "s2_smear":   "s2_smearing.json",
+        "s1_cut_acc": "s1_cut_acc.json",
+        "s2_cut_acc": "s2_cut_acc.json",
+        "ly_lower":   "nr_ly_lower.json",
+        "ly_median":  "nr_ly_median.json",
+        "ly_upper":   "nr_ly_upper.json",
+        "qy_lower":   "nr_qy_lower.json",
+        "qy_median":  "nr_qy_median.json",
+        "qy_upper":   "nr_qy_upper.json",
+        "energy_spectrum": "nr_spectrum.json"
+    },
+
+    "likelihoods": {
+        "neutron_llh": {
+            "components": {
+                "neutron_nr": "NRBand"
+            },
+            "copy_parameters": {
+                "neutron_nr_rate": "nr_rate"
+            },
+
+            "data_file_name": "data_Neutron.csv",
+            "bins_type": "equiprob",
+            "bins_on": ["num_s1_phd", "cs2"],
+            "bins": [8, 10],
+            "x_clip": [1.5, 9.5],
+            "y_clip": [1e2, 1e3]
+        }
+    },
+
+    "par_config": "nr_low.json"
+}

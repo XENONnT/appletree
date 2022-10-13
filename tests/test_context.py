@@ -18,3 +18,12 @@ def test_rn220_context():
 
     context.print_context_summary()
     context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
+
+
+def test_neutron_context():
+    """Test Context of neutron combine fitting"""
+    config = get_file_path('neutron_low.json')
+    context = apt.Context(config)
+
+    context.print_context_summary()
+    context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
