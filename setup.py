@@ -30,8 +30,22 @@ setuptools.setup(
     extras_require={
         'doc': [],
         'test': [
+            'pytest',
             'flake8',
         ],
     },
+    url="https://github.com/XENONnT/appletree",
+    python_requires='>=3.8',
     packages=setuptools.find_packages(),
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'License :: OSI Approved :: BSD License',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Intended Audience :: Science/Research',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Topic :: Scientific/Engineering :: Physics',
+    ],
+    zip_safe=False,
 )
