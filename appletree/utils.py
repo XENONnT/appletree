@@ -343,21 +343,31 @@ def add_spaces(x):
 
 @export
 def tree_to_svg(graph_tree, save_as='data_types', view=True):
-    # Where to save this node
+    """
+    Where to save this node
+    :param graph_tree: Digraph instance
+    :param save_as: str, file name
+    :param view: bool, Open the rendered result with the default application.
+    """
     graph_tree.render(save_as, view=view)
     with open(f'{save_as}.svg', mode='r') as f:
         svg = add_spaces(f.readlines()[5:])
-    # os.remove(f'{save_as}.svg')
     os.remove(save_as)
     return svg
 
 
 @export
-def add_deps_to_graph_tree(context, 
-                           graph_tree, 
-                           data_names: list = ['cs1', 'cs2', 'eff'], 
+def add_deps_to_graph_tree(context,
+                           graph_tree,
+                           data_names: list = ['cs1', 'cs2', 'eff'],
                            _seen = None):
-    """Recursively add nodes to graph base on plugin.deps"""
+    """
+    Recursively add nodes to graph base on plugin.deps
+    :param context: Context instance
+    :param graph_tree: Digraph instance
+    :param data_names: Data type name
+    :param _seen: list or None, the seen data_name should not be plot
+    """
     if _seen is None:
         _seen = []
     for data_name in data_names:
@@ -383,12 +393,19 @@ def add_deps_to_graph_tree(context,
 
 
 @export
-def add_plugins_to_graph_tree(context, 
-                              graph_tree, 
-                              data_names: list = ['cs1', 'cs2', 'eff'], 
+def add_plugins_to_graph_tree(context,
+                              graph_tree,
+                              data_names: list = ['cs1', 'cs2', 'eff'],
                               _seen = None,
                               with_data_names=False):
-    """Recursively add nodes to graph base on plugin.deps"""
+    """
+    Recursively add nodes to graph base on plugin.deps
+    :param context: Context instance
+    :param graph_tree: Digraph instance
+    :param data_names: Data type name
+    :param _seen: list or None, the seen data_name should not be plot
+    :param with_data_names: bool, whether plot even with messy data_names
+    """
     if _seen is None:
         _seen = []
     for data_name in data_names:
@@ -416,10 +433,10 @@ def add_plugins_to_graph_tree(context,
             dep_plugin = context._plugin_class_registry[dep]
             graph_tree.edge(plugin_name, dep_plugin.__name__)
             graph_tree, _seen = add_plugins_to_graph_tree(
-                context, 
+                context,
                 graph_tree,
                 plugin.depends_on,
-                _seen
+                _seen,
             )
         _seen.append(data_name)
     return graph_tree, _seen
