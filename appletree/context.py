@@ -228,10 +228,7 @@ class Context():
         """Get configuration for parameter manager
         :param par_config: str, parameters configuration file
         """
-        if os.path.exists(par_config):
-            par_config = load_json(par_config)
-        else:
-            par_config = load_json('er_sr0.json')
+        par_config = load_json(par_config)
         return par_config
 
     def update_parameter_config(self, likelihoods):

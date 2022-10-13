@@ -20,9 +20,9 @@
     },
 
     "likelihoods": {
-        "rn220_llh": {
+        "neutron_llh": {
             "components": {
-                "neutron_nr": "NRband"
+                "neutron_nr": "NRBand"
             },
             "copy_parameters": {
                 "neutron_nr_rate": "nr_rate"

@@ -1,9 +1,9 @@
 import os
 import re
 import json
+from warnings import warn
 import pkg_resources
 from time import time
-import logging
 from collections import namedtuple
 from functools import partial
 
@@ -18,10 +18,6 @@ from matplotlib import pyplot as plt
 
 import GOFevaluation
 from appletree.share import _cached_configs
-
-logging.basicConfig(handlers=[logging.StreamHandler()])
-log = logging.getLogger('appletree.config')
-log.setLevel('WARNING')
 
 NT_AUX_INSTALLED = False
 try:
@@ -134,7 +130,7 @@ def get_file_path(fname):
     5. can be downloaded from MongoDB, download and return cached path
     """
     if not fname:
-        log.warning(f'A file has value False, assuming this is intentional.')
+        warn(f'A file has value False, assuming this is intentional.')
         return
 
     # 1. From absolute path
@@ -160,9 +156,9 @@ def get_file_path(fname):
     if NT_AUX_INSTALLED:
         # You might want to use this, for example if you are a developer
         if fname in ntauxfiles.list_private_files():
-            log.warning(f'Using the private repo to load {fname} locally')
+            warn(f'Using the private repo to load {fname} locally')
             fpath = ntauxfiles.get_abspath(fname)
-            log.info(f'Loading {fname} is successfully from {fpath}')
+            warn(f'Loading {fname} is successfully from {fpath}')
             return fpath
 
     # 5. From MongoDB
@@ -178,13 +174,13 @@ def get_file_path(fname):
         # FileNotFoundError, ValueErrors can be raised if we
         # cannot load the requested config
         fpath = downloader.download_single(fname)
-        log.warning(f'Loading {fname} from mongo downloader to {fpath}')
+        warn(f'Loading {fname} from mongo downloader to {fpath}')
         return fname  # Keep the name and let get_resource do its thing
 
     except (FileNotFoundError, ValueError, NameError, AttributeError):
-        log.info(f'Mongo downloader not possible or does not have {fname}')
+        warn(f'Mongo downloader not possible or does not have {fname}')
 
-    log.info(f'I can not find {fname}!')
+    warn(f'I can not find {fname}!')
 
 
 @export

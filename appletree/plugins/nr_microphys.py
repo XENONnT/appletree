@@ -31,10 +31,11 @@ class LightYield(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
-        if parameters['t_ly'] >= 0:
-            add_map = parameters['t_ly'] * (self.ly_upper.map - self.ly_median.map)
-        else:
-            add_map = parameters['t_ly'] * (self.ly_median.map - self.ly_lower.map)
+        add_map = jnp.where(
+            parameters['t_ly'] >= 0,
+            parameters['t_ly'] * (self.ly_upper.map - self.ly_median.map),
+            parameters['t_ly'] * (self.ly_median.map - self.ly_lower.map)
+        )
         light_yield = interpolation.curve_interpolator(
             energy,
             self.ly_median.coordinate_system,
@@ -50,7 +51,7 @@ class NumberPhoton(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy, light_yield):
-        num_photon = randgen.poisson(key, light_yield * energy)
+        key, num_photon = randgen.poisson(key, light_yield * energy)
         return key, num_photon
 
 
@@ -73,10 +74,11 @@ class ChargeYield(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
-        if parameters['t_qy'] >= 0:
-            add_map = parameters['t_qy'] * (self.qy_upper.map - self.qy_median.map)
-        else:
-            add_map = parameters['t_qy'] * (self.qy_median.map - self.qy_lower.map)
+        add_map = jnp.where(
+            parameters['t_qy'] >= 0,
+            parameters['t_qy'] * (self.qy_upper.map - self.qy_median.map),
+            parameters['t_qy'] * (self.qy_median.map - self.qy_lower.map)
+        )
         charge_yield = interpolation.curve_interpolator(
             energy,
             self.qy_median.coordinate_system,
@@ -92,5 +94,5 @@ class NumberElectron(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy, charge_yield):
-        num_electron = randgen.poisson(key, charge_yield * energy)
+        key, num_electron = randgen.poisson(key, charge_yield * energy)
         return key, num_electron

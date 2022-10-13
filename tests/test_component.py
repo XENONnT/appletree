@@ -31,6 +31,7 @@ def test_fixed_component():
         bins_type = 'irreg',
         file_name = 'AC_Rn220.pkl',
     )
+    ac.rate_name = 'ac_rate'
     ac.deduce(data_names = ('cs1', 'cs2'))
     ac.simulate_hist(parameters)
 
