@@ -38,7 +38,7 @@ def test_nr_likelihood():
         bins_on = ['num_s1_phd', 'cs2'],
         bins = [8, 15],
         x_clip = [1.5, 9.5],
-        y_clip = [2e2, 1e4]
+        y_clip = [1e2, 1e3]
     )
     llh = apt.Likelihood(**config)
     llh.register_component(apt.components.NRBand, 'neutron_nr')

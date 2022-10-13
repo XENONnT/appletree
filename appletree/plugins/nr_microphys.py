@@ -34,7 +34,7 @@ class LightYield(Plugin):
         add_map = jnp.where(
             parameters['t_ly'] >= 0,
             parameters['t_ly'] * (self.ly_upper.map - self.ly_median.map),
-            parameters['t_ly'] * (self.ly_median.map - self.ly_lower.map)
+            parameters['t_ly'] * (self.ly_median.map - self.ly_lower.map),
         )
         light_yield = interpolation.curve_interpolator(
             energy,
@@ -77,7 +77,7 @@ class ChargeYield(Plugin):
         add_map = jnp.where(
             parameters['t_qy'] >= 0,
             parameters['t_qy'] * (self.qy_upper.map - self.qy_median.map),
-            parameters['t_qy'] * (self.qy_median.map - self.qy_lower.map)
+            parameters['t_qy'] * (self.qy_median.map - self.qy_lower.map),
         )
         charge_yield = interpolation.curve_interpolator(
             energy,

@@ -33,7 +33,7 @@
             "bins_on": ["num_s1_phd", "cs2"],
             "bins": [8, 10],
             "x_clip": [1.5, 9.5],
-            "y_clip": [1e2, 1e4]
+            "y_clip": [1e2, 1e3]
         }
     },
 
