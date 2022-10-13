@@ -128,7 +128,7 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
         return lax.cond(
             use_normal_approx,
             (seed, p, n), lambda x: _binomial_normal_approx_dispatch(*x),
-            (seed, p, n), lambda x: utils._binomial_dispatch(*x),
+            (seed, p, n), lambda x: utils._binomial_dispatch_numpyro(*x),
         )
 
     key, seed = random.split(key)
