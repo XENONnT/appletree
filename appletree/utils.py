@@ -195,8 +195,8 @@ def timeit(indent=""):
             print(indent + f' Function <{name}> starts.')
             start = time()
             res = func(*args, **kwargs)
-            time = (time() - start) * 1e3
-            print(indent + f' Function <{name}> ends! Time cost = {time} msec.')
+            time_ = (time() - start) * 1e3
+            print(indent + f' Function <{name}> ends! Time cost = {time_:.2f} msec.')
             return res
 
         return _func
@@ -328,7 +328,104 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
     return ax
 
 
-# Copyright Contributors to the Pyro project.
+@export
+def add_spaces(x):
+    """Add four spaces to every line in x
+    This is needed to make html raw blocks in rst format correctly
+    """
+    y = ''
+    if isinstance(x, str):
+        x = x.split('\n')
+    for q in x:
+        y += '    ' + q
+    return y
+
+
+@export
+def tree_to_svg(graph_tree, save_as='data_types', view=True):
+    # Where to save this node
+    graph_tree.render(save_as, view=view)
+    with open(f'{save_as}.svg', mode='r') as f:
+        svg = add_spaces(f.readlines()[5:])
+    # os.remove(f'{save_as}.svg')
+    os.remove(save_as)
+    return svg
+
+
+@export
+def add_deps_to_graph_tree(context, 
+                           graph_tree, 
+                           data_names: list = ['cs1', 'cs2', 'eff'], 
+                           _seen = None):
+    """Recursively add nodes to graph base on plugin.deps"""
+    if _seen is None:
+        _seen = []
+    for data_name in data_names:
+        if data_name in _seen:
+            continue
+
+        # Add new one
+        graph_tree.node(data_name,
+                        style='filled',
+                        href='#' + data_name.replace('_', '-'),
+                        fillcolor='white')
+        if data_name == 'batch_size':
+            continue
+        dep_plugin = context._plugin_class_registry[data_name]
+        for dep in dep_plugin.depends_on:
+            graph_tree.edge(data_name, dep)
+            graph_tree, _seen = add_deps_to_graph_tree(context, 
+                                                       graph_tree,
+                                                       dep_plugin.depends_on,
+                                                       _seen)
+        _seen.append(data_name)
+    return graph_tree, _seen
+
+
+@export
+def add_plugins_to_graph_tree(context, 
+                              graph_tree, 
+                              data_names: list = ['cs1', 'cs2', 'eff'], 
+                              _seen = None,
+                              with_data_names=False):
+    """Recursively add nodes to graph base on plugin.deps"""
+    if _seen is None:
+        _seen = []
+    for data_name in data_names:
+        if data_name == 'batch_size':
+            continue
+
+        plugin = context._plugin_class_registry[data_name]
+        plugin_name = plugin.__name__
+        if plugin_name in _seen:
+            continue
+
+        # Add new one
+        label = f'{plugin_name}'
+        if with_data_names:
+            label += f"\n{', '.join(plugin.depends_on)}\n{', '.join(plugin.provides)}"
+        graph_tree.node(plugin_name,
+                        label=label,
+                        style='filled',
+                        href='#' + plugin_name.replace('_', '-'),
+                        fillcolor='white')
+
+        for dep in plugin.depends_on:
+            if dep == 'batch_size':
+                continue
+            dep_plugin = context._plugin_class_registry[dep]
+            graph_tree.edge(plugin_name, dep_plugin.__name__)
+            graph_tree, _seen = add_plugins_to_graph_tree(
+                context, 
+                graph_tree,
+                plugin.depends_on,
+                _seen
+            )
+        _seen.append(data_name)
+    return graph_tree, _seen
+
+
+# Copyright Contributors to the NumPyro project.
 # SPDX-License-Identifier: Apache-2.0
 # Parameters for Transformed Rejection with Squeeze (TRS) algorithm - page 3.
 _tr_params = namedtuple(
