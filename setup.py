@@ -34,9 +34,8 @@ setuptools.setup(
             'flake8',
         ],
     },
-    url="https://github.com/XENONnT/appletree",
-    python_requires='>=3.8',
     packages=setuptools.find_packages(),
+    url="https://github.com/XENONnT/appletree",
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: BSD License',
