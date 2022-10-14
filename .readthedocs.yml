@@ -12,7 +12,7 @@ build:
 python:
   version: "3.8"
   install:
-    - requirements: extra_requirements/requirements-tests.txt
+    - requirements: docs/requirements-docs.txt
     - method: pip
       path: .
       extra_requirements:
