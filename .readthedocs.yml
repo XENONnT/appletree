@@ -19,6 +19,3 @@ python:
         - docs
     - method: setuptools
       path: .
-
-formats:
-  - pdf
