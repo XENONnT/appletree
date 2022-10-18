@@ -245,6 +245,7 @@ def get_equiprob_bins_2d(data,
         n_partitions,
         order = order,
     )
+    # To be strict, clip the inf(s)
     x_bins = np.clip(x_bins, *x_clip)
     y_bins = np.clip(y_bins, *y_clip)
 
