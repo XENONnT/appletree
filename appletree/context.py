@@ -11,6 +11,8 @@ from appletree.utils import load_json
 from appletree.config import get_file_path
 from appletree.share import _cached_configs
 
+os.environ['OMP_NUM_THREADS'] = '1'
+
 
 class Context():
     """Combine all likelihood(e.g. Rn220, Ar37),
@@ -30,6 +32,8 @@ class Context():
 
         if 'configs' in config.keys():
             self.set_config(config['configs'])
+
+        self.backend_h5 = config.get('backend_h5', None)
 
         self.likelihoods = {}
 
@@ -129,9 +133,20 @@ class Context():
             )
             log_posterior += log_likelihood_i
 
-        log_posterior += self.par_manager.log_prior
+        log_prior = self.par_manager.log_prior
+        log_posterior += log_prior
 
-        return log_posterior
+        return log_posterior, log_prior
+
+    def _get_backend(self, nwalkers, ndim):
+        if self.backend_h5 is None:
+            backend = None
+            print('With no backend')
+        else:
+            backend = emcee.backends.HDFBackend(self.backend_h5)
+            backend.reset(nwalkers, ndim)
+            print(f'With h5 backend {self.backend_h5}')
+        return backend
 
     def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000):
         """Fitting posterior distribution of needed parameters
@@ -146,15 +161,25 @@ class Context():
             p0.append(self.par_manager.parameter_fit_array)
 
         ndim = len(self.par_manager.parameter_fit_array)
-        self.sampler = emcee.EnsembleSampler(nwalkers,
-                                             ndim,
-                                             self.log_posterior,
-                                             kwargs = {'batch_size': batch_size})
 
-        result = self.sampler.run_mcmc(p0, iteration, progress=True)
+        backend = self._get_backend(nwalkers, ndim)
+        self.sampler = emcee.EnsembleSampler(
+            nwalkers,
+            ndim,
+            self.log_posterior,
+            backend=backend,
+            kwargs = {'batch_size': batch_size},
+        )
+
+        result = self.sampler.run_mcmc(
+            p0,
+            iteration,
+            store=True,
+            progress=True,
+        )
         return result
 
-    def continue_fitting(self, context, iteration=500):
+    def continue_fitting(self, context, iteration=500, batch_size=1_000_000):
         """Continue a fitting of another context
         :param context: appletree context
         :param iteration: int, number of steps to generate
@@ -175,9 +200,22 @@ class Context():
 
         ndim = len(self.par_manager.parameter_fit_array)
         # Init sampler for current context
-        self.sampler = emcee.EnsembleSampler(len(final_iteration), ndim, self.log_posterior)
+        backend = self._get_backend(len(final_iteration), ndim)
+        self.sampler = emcee.EnsembleSampler(
+            len(final_iteration),
+            ndim,
+            self.log_posterior,
+            backend=backend,
+            kwargs = {'batch_size': batch_size},
+        )
 
-        result = self.sampler.run_mcmc(p0, iteration, progress=True, skip_initial_state_check=True)
+        result = self.sampler.run_mcmc(
+            p0,
+            iteration,
+            store=True,
+            progress=True,
+            skip_initial_state_check=True,
+        )
         return result
 
     def get_post_parameters(self):
