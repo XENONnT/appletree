@@ -5,6 +5,7 @@ import jax
 from jax import numpy as jnp
 import numpy as np
 from jax import random, lax, jit, vmap
+from numpyro.distributions.util import _binomial_dispatch as _binomial_dispatch_numpyro
 
 from appletree import utils
 from appletree.utils import exporter
@@ -128,7 +129,7 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
         return lax.cond(
             use_normal_approx,
             (seed, p, n), lambda x: _binomial_normal_approx_dispatch(*x),
-            (seed, p, n), lambda x: utils._binomial_dispatch_numpyro(*x),
+            (seed, p, n), lambda x: _binomial_dispatch_numpyro(*x),
         )
 
     key, seed = random.split(key)

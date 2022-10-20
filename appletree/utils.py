@@ -9,13 +9,9 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
-import jax
-from jax import numpy as jnp
-from jax import jit, lax, random, vmap
 import matplotlib as mpl
 from matplotlib.patches import Rectangle
 from matplotlib import pyplot as plt
-from numpyro.distributions.util import _binomial_dispatch as _binomial_dispatch_numpyro
 
 import GOFevaluation
 from appletree.share import _cached_configs
@@ -440,5 +436,5 @@ def add_plugins_to_graph_tree(context,
                 plugin.depends_on,
                 _seen,
             )
-        _seen.append(data_name)
+        _seen.append(plugin_name)
     return graph_tree, _seen
