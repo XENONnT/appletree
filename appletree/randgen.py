@@ -162,12 +162,21 @@ def uniform_key_vectorized(key):
     return sampler(key)
 
 
-class twohalfnorm:
-    """
-    Continuous distribution, two half Normal
-    """
+class TwoHalfNorm:
+    """Continuous distribution, two half Normal"""
+
     @staticmethod
     def rvs(mu=0, sigma_pos=1, sigma_neg=1, size=1):
+        """
+        Get random variables
+        :param mu: float, 'center' value of the distribution
+        :param sigma_pos: 
+        Standard deviation of the distribution when variable larger than mu. Must be non-negative. 
+        :param sigma_neg: 
+        Standard deviation of the distribution when variable smaller than mu. Must be non-negative. 
+        :param size: int or tuple of ints, Output shape. 
+        :return: random samples
+        """
         pos_half_prob = sigma_pos / (sigma_pos + sigma_neg)
 
         use_pos_half = np.random.uniform(size=size) < pos_half_prob
@@ -180,5 +189,18 @@ class twohalfnorm:
 
     @staticmethod
     def logpdf(x, mu=0, sigma_pos=1, sigma_neg=1):
+        """
+        Log of the probability density function.
+        :param x: array, input variables
+        :param mu: float, 'center' value of the distribution
+        :param sigma_pos: 
+        Standard deviation of the distribution when variable larger than mu. Must be non-negative. 
+        :param sigma_neg: 
+        Standard deviation of the distribution when variable smaller than mu. Must be non-negative. 
+        :param size: int or tuple of ints, Output shape. 
+        :return: log probability density function
+        """
         norm = 2 / (sigma_pos + sigma_neg) / np.sqrt(2 * np.pi)
-        return np.log(norm) + np.where(x < mu, -(x - mu)**2 / sigma_neg**2 / 2, -(x - mu)**2 / sigma_pos**2 / 2)
+        logpdf = np.where(x < mu, -(x - mu)**2 / sigma_neg**2 / 2, -(x - mu)**2 / sigma_pos**2 / 2)
+        logpdf += np.log(norm)
+        return logpdf
