@@ -170,11 +170,11 @@ class TwoHalfNorm:
         """
         Get random variables
         :param mu: float, 'center' value of the distribution
-        :param sigma_pos: 
-        Standard deviation of the distribution when variable larger than mu. Must be non-negative. 
-        :param sigma_neg: 
-        Standard deviation of the distribution when variable smaller than mu. Must be non-negative. 
-        :param size: int or tuple of ints, Output shape. 
+        :param sigma_pos:
+        Standard deviation of the distribution when variable larger than mu. Must be non-negative.
+        :param sigma_neg:
+        Standard deviation of the distribution when variable smaller than mu. Must be non-negative.
+        :param size: int or tuple of ints, Output shape.
         :return: random samples
         """
         pos_half_prob = sigma_pos / (sigma_pos + sigma_neg)
@@ -193,11 +193,11 @@ class TwoHalfNorm:
         Log of the probability density function.
         :param x: array, input variables
         :param mu: float, 'center' value of the distribution
-        :param sigma_pos: 
-        Standard deviation of the distribution when variable larger than mu. Must be non-negative. 
-        :param sigma_neg: 
-        Standard deviation of the distribution when variable smaller than mu. Must be non-negative. 
-        :param size: int or tuple of ints, Output shape. 
+        :param sigma_pos:
+        Standard deviation of the distribution when variable larger than mu. Must be non-negative.
+        :param sigma_neg:
+        Standard deviation of the distribution when variable smaller than mu. Must be non-negative.
+        :param size: int or tuple of ints, Output shape.
         :return: log probability density function
         """
         norm = 2 / (sigma_pos + sigma_neg) / np.sqrt(2 * np.pi)
