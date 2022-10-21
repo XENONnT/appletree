@@ -7,7 +7,6 @@ import numpy as np
 from jax import random, lax, jit, vmap
 from numpyro.distributions.util import _binomial_dispatch as _binomial_dispatch_numpyro
 
-from appletree import utils
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
@@ -161,3 +160,25 @@ def uniform_key_vectorized(key):
     """
     sampler = vmap(jax.random.uniform, (0, ), 0)
     return sampler(key)
+
+
+class twohalfnorm:
+    """
+    Continuous distribution, two half Normal
+    """
+    @staticmethod
+    def rvs(mu=0, sigma_pos=1, sigma_neg=1, size=1):
+        pos_half_prob = sigma_pos / (sigma_pos + sigma_neg)
+
+        use_pos_half = np.random.uniform(size=size) < pos_half_prob
+        use_neg_half = ~use_pos_half
+
+        n_sigma = np.random.normal(size=size)
+        offset = use_pos_half * n_sigma * sigma_pos - use_neg_half * n_sigma * sigma_neg
+
+        return offset + mu
+
+    @staticmethod
+    def logpdf(x, mu=0, sigma_pos=1, sigma_neg=1):
+        norm = 2 / (sigma_pos + sigma_neg) / np.sqrt(2 * np.pi)
+        return np.log(norm) + np.where(x < mu, -(x - mu)**2 / sigma_neg**2 / 2, -(x - mu)**2 / sigma_pos**2 / 2)

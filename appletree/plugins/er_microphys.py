@@ -10,7 +10,7 @@ export, __all__ = exporter(export_self=False)
 
 
 @export
-class Quenching(Plugin):
+class Quanta(Plugin):
     depends_on = ['energy']
     provides = ['num_quanta']
     parameters = ('fano',)
