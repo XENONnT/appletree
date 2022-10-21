@@ -183,7 +183,7 @@ class TwoHalfNorm:
         use_pos_half = np.random.uniform(size=size) < pos_half_prob
         use_neg_half = ~use_pos_half
 
-        n_sigma = np.random.normal(size=size)
+        n_sigma = np.abs(np.random.normal(size=size))
         offset = use_pos_half * n_sigma * sigma_pos - use_neg_half * n_sigma * sigma_neg
 
         return offset + mu
