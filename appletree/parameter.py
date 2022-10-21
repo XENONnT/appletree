@@ -3,6 +3,8 @@ import json
 
 import numpy as np
 
+from appletree.randgen import TwoHalfNorm
+
 
 class Parameter():
     """Parameter handler to update parameters and calculate prior."""
@@ -62,6 +64,14 @@ class Parameter():
                 }
                 val = np.random.normal(**kwargs)
                 self._parameter_dict[par_name] = np.clip(val, *setting['allowed_range'])
+            elif prior_type == 'TwoHalfNorm':
+                kwargs = {
+                    'mu': args['mu'],
+                    'sigma_pos': args['sigma_pos'],
+                    'sigma_neg': args['sigma_neg'],
+                }
+                val = TwoHalfNorm.rvs(**kwargs)
+                self._parameter_dict[par_name] = np.clip(val, *setting['allowed_range'])
             elif prior_type == 'uniform':
                 kwargs = {
                     'low': args['lower'],
@@ -120,6 +130,16 @@ class Parameter():
                 mean = args['mean']
                 std = args['std']
                 log_prior += - (val - mean)**2 / 2 / std**2
+            elif prior_type == 'TwoHalfNorm':
+                mu = args['mu']
+                sigma_pos = args['sigma_pos']
+                sigma_neg = args['sigma_neg']
+                log_prior += TwoHalfNorm.logpdf(
+                    x=val,
+                    mu=mu,
+                    sigma_pos=sigma_pos,
+                    sigma_neg=sigma_neg,
+                )
             elif prior_type == 'free':
                 pass
             elif prior_type == 'uniform':
