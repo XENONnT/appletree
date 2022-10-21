@@ -1,6 +1,5 @@
-========
 Appletree
-========
+=========================
 
 Github page: https://github.com/XENONnT/appletree
 
@@ -11,13 +10,13 @@ using `emcee <https://emcee.readthedocs.io/en/stable/>`_.
 
 .. toctree::
     :maxdepth: 1
-    :caption Installation
+    :caption: Installation
 
     installation.rst
 
 .. toctree::
     :maxdepth: 1
-    :caption Basics
+    :caption: Basics
 
     basics/general.rst
     basics/plugin.rst
@@ -27,13 +26,9 @@ using `emcee <https://emcee.readthedocs.io/en/stable/>`_.
 
 .. toctree::
     :maxdepth: 1
-    :caption Features
+    :caption: Features
 
 .. toctree::
     :caption: Example notebooks
 
     notebooks/component.ipynb
-    notebooks/likelihood.ipynb
-    notebooks/context.ipynb
-    notebooks/benchmark.ipynb
-    notebooks/datastructure.ipynb
