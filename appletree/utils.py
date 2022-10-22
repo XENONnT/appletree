@@ -12,7 +12,6 @@ from matplotlib.patches import Rectangle
 from matplotlib import pyplot as plt
 
 import GOFevaluation
-from appletree.plugin import Plugin
 from appletree.share import _cached_configs
 
 NT_AUX_INSTALLED = False
@@ -437,20 +436,3 @@ def add_plugins_to_graph_tree(context,
             )
         _seen.append(plugin_name)
     return graph_tree, _seen
-
-
-@export
-def add_extensions(module1, module2):
-    """Add attributes of module2 to module1"""
-    for x in dir(module2):
-        x = getattr(module2, x)
-        if not isinstance(x, type(type)):
-            continue
-        _add_extension(module1, x)
-
-
-@export
-def _add_extension(module, plugin):
-    """Add plugin to module"""
-    if issubclass(plugin, Plugin):
-        setattr(module, plugin.__name__, plugin)

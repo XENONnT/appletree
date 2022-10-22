@@ -51,3 +51,19 @@ class Plugin():
         assert arguments[1] == 'key' and arguments[1] == 'parameters'
         for i, depend in enumerate(self.depends_on, start=2):
             assert arguments[i] == depend, f'Plugin {self.__name__} is insane, check dependency!'
+
+@export
+def add_plugin_extensions(module1, module2):
+    """Add plugins of module2 to module1"""
+    for x in dir(module2):
+        x = getattr(module2, x)
+        if not isinstance(x, type(type)):
+            continue
+        _add_plugin_extension(module1, x)
+
+
+@export
+def _add_plugin_extension(module, plugin):
+    """Add plugin to module"""
+    if issubclass(plugin, Plugin):
+        setattr(module, plugin.__name__, plugin)
