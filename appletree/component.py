@@ -411,3 +411,20 @@ class ComponentFixed(Component):
         result[-1] *= normalization_factor
 
         return result
+
+
+@export
+def add_component_extensions(module1, module2):
+    """Add components of module2 to module1"""
+    for x in dir(module2):
+        x = getattr(module2, x)
+        if not isinstance(x, type(type)):
+            continue
+        _add_component_extension(module1, x)
+
+
+@export
+def _add_component_extension(module, component):
+    """Add component to module"""
+    if issubclass(component, Component):
+        setattr(module, component.__name__, component)

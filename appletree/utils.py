@@ -234,7 +234,7 @@ def get_equiprob_bins_2d(data,
     mask &= (data[:, 1] > y_clip[0])
     mask &= (data[:, 1] < y_clip[1])
 
-    x_bins, y_bins = GOFevaluation.utils._get_equiprobable_binning(
+    x_bins, y_bins = GOFevaluation.utils.get_equiprobable_binning(
         data[mask],
         n_partitions,
         order = order,

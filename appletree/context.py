@@ -224,7 +224,7 @@ class Context():
         chain = self.sampler.get_chain(flat=True)
         mpe_parameters = chain[np.argmax(logp)]
         self.par_manager.set_parameter_fit_from_array(mpe_parameters)
-        parameters = self.par_manager.get_all_parameter()
+        parameters = copy.deepcopy(self.par_manager.get_all_parameter())
         return parameters
 
     def get_template(self,
