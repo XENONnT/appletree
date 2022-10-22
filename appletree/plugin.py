@@ -52,6 +52,7 @@ class Plugin():
         for i, depend in enumerate(self.depends_on, start=2):
             assert arguments[i] == depend, f'Plugin {self.__name__} is insane, check dependency!'
 
+
 @export
 def add_plugin_extensions(module1, module2):
     """Add plugins of module2 to module1"""
