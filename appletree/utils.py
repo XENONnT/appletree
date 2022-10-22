@@ -4,8 +4,6 @@ import json
 from warnings import warn
 import pkg_resources
 from time import time
-from collections import namedtuple
-from functools import partial
 
 import numpy as np
 import pandas as pd
