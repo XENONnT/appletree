@@ -125,7 +125,8 @@ class Context():
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
         """
-        self.par_manager.set_parameter_fit_from_array(parameters)
+        # self.par_manager.setparameter_fit_from_array(parameters)
+        self.par_manager.set_parameter(parameters)
 
         key = randgen.get_key()
         log_posterior = 0
@@ -172,6 +173,7 @@ class Context():
             ndim,
             self.log_posterior,
             backend=backend,
+            parameter_names=self.par_manager.parameter_fit,
             kwargs = {'batch_size': batch_size},
         )
 
@@ -190,26 +192,17 @@ class Context():
         """
         # Final iteration
         final_iteration = context.sampler.get_chain()[-1, :, :]
+        p0 = final_iteration.tolist()
 
-        p0 = []
-        for iwalker in final_iteration:
-            self.par_manager.sample_init()
-
-            # assign i-walker of final iteration
-            context.par_manager.set_parameter_fit_from_array(iwalker)
-            parameters = context.par_manager.get_all_parameter()
-
-            self.par_manager._parameter_dict.update(parameters)
-            p0.append(self.par_manager.parameter_fit_array)
-
-        ndim = len(self.par_manager.parameter_fit_array)
+        ndim = len(self.par_manager.parameter_fit)
         # Init sampler for current context
-        backend = self._get_backend(len(final_iteration), ndim)
+        backend = self._get_backend(len(p0), ndim)
         self.sampler = emcee.EnsembleSampler(
-            len(final_iteration),
+            len(p0),
             ndim,
             self.log_posterior,
             backend=backend,
+            parameter_names=self.par_manager.parameter_fit,
             kwargs = {'batch_size': batch_size},
         )
 
@@ -227,8 +220,12 @@ class Context():
         logp = self.sampler.get_log_prob(flat=True)
         chain = self.sampler.get_chain(flat=True)
         mpe_parameters = chain[np.argmax(logp)]
-        self.par_manager.set_parameter_fit_from_array(mpe_parameters)
+        mpe_parameters = emcee.ensemble.ndarray_to_list_of_dicts(
+            [mpe_parameters],
+            self.sampler.parameter_names,
+        )[0]
         parameters = copy.deepcopy(self.par_manager.get_all_parameter())
+        parameters.update(mpe_parameters)
         return parameters
 
     def get_all_post_parameters(self, **kwargs):
@@ -263,7 +260,7 @@ class Context():
     def _sanity_check(self):
         """Check if needed parameters are provided."""
         needed = set(self.needed_parameters)
-        provided = set(self.par_manager._parameter_dict.keys())
+        provided = set(self.par_manager.get_all_parameter().keys())
         # We will not update unneeded parameters!
         if not needed.issubset(provided):
             mes = f'Parameter manager should provide needed parameters only, '
