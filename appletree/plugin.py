@@ -37,6 +37,8 @@ class Plugin():
         for config in self.takes_config.values():
             config.build()
 
+        self.sanity_check()
+
     def __call__(self, *args, **kwargs):
         """Calls self.simulate"""
         return self.simulate(*args, **kwargs)
@@ -48,9 +50,9 @@ class Plugin():
     def sanity_check(self):
         """Check the consistency between `depends_on`, `provides` and in(out)put of `simulation`"""
         arguments = inspect.getfullargspec(self.simulate)[0]
-        assert arguments[1] == 'key' and arguments[1] == 'parameters'
-        for i, depend in enumerate(self.depends_on, start=2):
-            assert arguments[i] == depend, f'Plugin {self.__name__} is insane, check dependency!'
+        assert arguments[1] == 'key' and arguments[2] == 'parameters'
+        for i, depend in enumerate(self.depends_on, start=3):
+            assert arguments[i] == depend, f'Plugin {self.__class__.__name__} is insane, check dependency!'
 
 
 @export

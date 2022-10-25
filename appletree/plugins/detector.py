@@ -23,8 +23,8 @@ class S1Correction(Plugin):
     provides = ['s1_correction']
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, x, y, z):
-        pos = jnp.stack([x, y, z]).T
+    def simulate(self, key, parameters, rec_x, rec_y, rec_z):
+        pos = jnp.stack([rec_x, rec_y, rec_z]).T
         s1_correction = interpolation.map_interpolator_regular_binning_3d(
             pos,
             self.s1_lce.coordinate_lowers,
@@ -45,8 +45,8 @@ class S2Correction(Plugin):
     provides = ['s2_correction']
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, x, y):
-        pos = jnp.stack([x, y]).T
+    def simulate(self, key, parameters, rec_x, rec_y):
+        pos = jnp.stack([rec_x, rec_y]).T
         s2_correction = interpolation.map_interpolator_regular_binning_2d(
             pos,
             self.s2_lce.coordinate_lowers,

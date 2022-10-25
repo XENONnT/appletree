@@ -39,6 +39,8 @@ class Parameter():
                 self._parameter_fixed.add(par_name)
             else:
                 self._parameter_fit.add(par_name)
+        self._parameter_fixed = set(sorted(self._parameter_fixed))
+        self._parameter_fit = set(sorted(self._parameter_fit))
 
         if seed is not None:
             np.random.seed(seed)
@@ -64,7 +66,7 @@ class Parameter():
                 }
                 val = np.random.normal(**kwargs)
                 self._parameter_dict[par_name] = np.clip(val, *setting['allowed_range'])
-            elif prior_type == 'TwoHalfNorm':
+            elif prior_type == 'twohalfnorm':
                 kwargs = {
                     'mu': args['mu'],
                     'sigma_pos': args['sigma_pos'],
@@ -130,7 +132,7 @@ class Parameter():
                 mean = args['mean']
                 std = args['std']
                 log_prior += - (val - mean)**2 / 2 / std**2
-            elif prior_type == 'TwoHalfNorm':
+            elif prior_type == 'twohalfnorm':
                 mu = args['mu']
                 sigma_pos = args['sigma_pos']
                 sigma_neg = args['sigma_neg']

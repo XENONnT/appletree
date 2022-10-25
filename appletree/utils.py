@@ -353,13 +353,13 @@ def tree_to_svg(graph_tree, save_as='data_types', view=True):
 
 
 @export
-def add_deps_to_graph_tree(context,
+def add_deps_to_graph_tree(component,
                            graph_tree,
                            data_names: list = ['cs1', 'cs2', 'eff'],
                            _seen = None):
     """
     Recursively add nodes to graph base on plugin.deps
-    :param context: Context instance
+    :param component: Component instance
     :param graph_tree: Digraph instance
     :param data_names: Data type name
     :param _seen: list or None, the seen data_name should not be plot
@@ -377,10 +377,10 @@ def add_deps_to_graph_tree(context,
                         fillcolor='white')
         if data_name == 'batch_size':
             continue
-        dep_plugin = context._plugin_class_registry[data_name]
+        dep_plugin = component._plugin_class_registry[data_name]
         for dep in dep_plugin.depends_on:
             graph_tree.edge(data_name, dep)
-            graph_tree, _seen = add_deps_to_graph_tree(context, 
+            graph_tree, _seen = add_deps_to_graph_tree(component, 
                                                        graph_tree,
                                                        dep_plugin.depends_on,
                                                        _seen)
@@ -389,14 +389,14 @@ def add_deps_to_graph_tree(context,
 
 
 @export
-def add_plugins_to_graph_tree(context,
+def add_plugins_to_graph_tree(component,
                               graph_tree,
                               data_names: list = ['cs1', 'cs2', 'eff'],
                               _seen = None,
                               with_data_names=False):
     """
     Recursively add nodes to graph base on plugin.deps
-    :param context: Context instance
+    :param component: Component instance
     :param graph_tree: Digraph instance
     :param data_names: Data type name
     :param _seen: list or None, the seen data_name should not be plot
@@ -408,7 +408,7 @@ def add_plugins_to_graph_tree(context,
         if data_name == 'batch_size':
             continue
 
-        plugin = context._plugin_class_registry[data_name]
+        plugin = component._plugin_class_registry[data_name]
         plugin_name = plugin.__name__
         if plugin_name in _seen:
             continue
@@ -426,10 +426,10 @@ def add_plugins_to_graph_tree(context,
         for dep in plugin.depends_on:
             if dep == 'batch_size':
                 continue
-            dep_plugin = context._plugin_class_registry[dep]
+            dep_plugin = component._plugin_class_registry[dep]
             graph_tree.edge(plugin_name, dep_plugin.__name__)
             graph_tree, _seen = add_plugins_to_graph_tree(
-                context,
+                component,
                 graph_tree,
                 plugin.depends_on,
                 _seen,

@@ -21,9 +21,9 @@ class Component:
 
     rate_name: str = ''
     norm_type: str = ''
-    tag: str = '_'  # for instance name of the plugins
 
     def __init__(self,
+                 name: str = None,
                  bins: list = [],
                  bins_type: str = '',
                  **kwargs):
@@ -33,6 +33,10 @@ class Component:
         For meshgrid bins_type, bins are sent to jnp.histogramdd.
         :param bins_type: binning scheme, can be either irreg or meshgrid.
         """
+        if name is None:
+            self.name = self.__class__.__name__
+        else:
+            self.name = name
         self.bins = bins
         self.bins_type = bins_type
         self.needed_parameters = set()
@@ -161,14 +165,15 @@ class ComponentSim(Component):
 
     def dependencies_deduce(self,
                             data_names: list = ('cs1', 'cs2', 'eff'),
-                            dependencies: list = None) -> list:
+                            dependencies: list = None,
+                            nodep_data_name: str = 'batch_size') -> list:
         """Deduce dependencies."""
         if dependencies is None:
             dependencies = []
 
         for data_name in data_names:
-            # `batch_size` have no dependency
-            if data_name == 'batch_size':
+            # usually `batch_size` have no dependency
+            if data_name == nodep_data_name:
                 continue
             try:
                 dependencies.append({
@@ -181,11 +186,12 @@ class ComponentSim(Component):
 
         for data_name in data_names:
             # `batch_size` has no dependency
-            if data_name == 'batch_size':
+            if data_name == nodep_data_name:
                 continue
             dependencies = self.dependencies_deduce(
                 data_names=self._plugin_class_registry[data_name].depends_on,
                 dependencies=dependencies,
+                nodep_data_name=nodep_data_name,
             )
 
         return dependencies
@@ -205,7 +211,8 @@ class ComponentSim(Component):
 
     def flush_source_code(self,
                           data_names: list = ('cs1', 'cs2', 'eff'),
-                          func_name: str = 'simulate'):
+                          func_name: str = 'simulate',
+                          nodep_data_name: str = 'batch_size'):
         """Infer the simulation code from the dependency tree."""
         self.func_name = func_name
 
@@ -227,18 +234,21 @@ class ComponentSim(Component):
 
         # initialize new instances
         for work in self.worksheet:
-            instance = work[0] + self.tag
+            instance = work[0] + '_' + self.name
             code += f'{instance} = {work[0]}()\n'
 
         # define functions
         code += '\n'
-        code += '@partial(jit, static_argnums=(1, ))\n'
-        code += f'def {func_name}(key, batch_size, parameters):\n'
+        if nodep_data_name == 'batch_size':
+            code += '@partial(jit, static_argnums=(1, ))\n'
+        else:
+            code += '@jit\n'
+        code += f'def {func_name}(key, {nodep_data_name}, parameters):\n'
 
         for work in self.worksheet:
             provides = 'key, ' + ', '.join(work[1])
             depends_on = ', '.join(work[2])
-            instance = work[0] + self.tag
+            instance = work[0] + '_' + self.name
             code += f'{indent}{provides} = {instance}(key, parameters, {depends_on})\n'
         output = 'key, ' + '[' + ', '.join(data_names) + ']'
         code += f'{indent}return {output}\n'
@@ -262,18 +272,22 @@ class ComponentSim(Component):
 
     def deduce(self,
                data_names: list = ('cs1', 'cs2'),
-               func_name: str = 'simulate'):
+               func_name: str = 'simulate',
+               nodep_data_name: str = 'batch_size',
+               force_no_eff: bool = False):
         """Deduce workflow and code."""
         if not isinstance(data_names, (list, tuple)):
             raise ValueError(f'Unsupported data_names type {type(data_names)}!')
+        # make sure that 'eff' is the last data_name
         if 'eff' in data_names:
             data_names = list(data_names)
             data_names.remove('eff')
-        data_names = list(data_names) + ['eff']
+        if not force_no_eff:
+            data_names = list(data_names) + ['eff']
 
-        dependencies = self.dependencies_deduce(data_names)
+        dependencies = self.dependencies_deduce(data_names, nodep_data_name=nodep_data_name)
         self.dependencies_simplify(dependencies)
-        self.flush_source_code(data_names, func_name)
+        self.flush_source_code(data_names, func_name, nodep_data_name)
 
     def compile(self):
         """Build simulation function and cache it to share._cached_functions."""
@@ -333,7 +347,10 @@ class ComponentSim(Component):
         Return configuration options that affect data_names.
         :param data_names: Data type name
         """
-        dependencies = self.dependencies_deduce(data_names)
+        dependencies = self.dependencies_deduce(
+            data_names,
+            nodep_data_name='batch_size',
+        )
         r = []
         seen = []
 
@@ -365,6 +382,14 @@ class ComponentSim(Component):
         # Then you can print the dataframe like:
         # straxen.dataframe_to_wiki(df, title=f'{data_names}', float_digits=1)
         return df
+
+    def new_component(self):
+        component = self.__class__(
+            name=self.name + '_copy',
+            bins=self.bins,
+            bins_type=self.bins_type,
+        )
+        return component
 
 
 @export

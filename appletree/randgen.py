@@ -104,6 +104,24 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
 
 
 @export
+@partial(jit, static_argnums=(2, ))
+def bernoulli(key, p, shape=()):
+    """Bernoulli random sampler.
+    :param key: seed for random generator.
+    :param p: <jnp.array>-like probability in bernoulli distribution.
+    :param shape: output shape. If not given, output has shape jnp.shape(lam).
+    :return: an updated seed, random variables.
+    """
+    key, seed = random.split(key)
+
+    shape = shape or jnp.shape(p)
+    p = jnp.broadcast_to(p, shape).astype(FLOAT)
+
+    rvs = random.bernoulli(seed, p, shape=shape)
+    return key, rvs.astype(INT)
+
+
+@export
 @partial(jit, static_argnums=(3, 4))
 def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_BINOM):
     """Binomial random sampler.

@@ -1,5 +1,6 @@
 import os
 import copy
+import json
 import importlib
 import numpy as np
 import emcee
@@ -86,7 +87,10 @@ class Context():
         """
         if likelihood_name in self.likelihoods:
             raise ValueError(f'Likelihood named {likelihood_name} already existed!')
-        self.likelihoods[likelihood_name] = Likelihood(**likelihood_config)
+        self.likelihoods[likelihood_name] = Likelihood(
+            name=likelihood_name,
+            **likelihood_config,
+        )
 
     def register_component(self,
                            likelihood_name,
@@ -226,6 +230,15 @@ class Context():
         self.par_manager.set_parameter_fit_from_array(mpe_parameters)
         parameters = copy.deepcopy(self.par_manager.get_all_parameter())
         return parameters
+
+    def get_all_post_parameters(self, **kwargs):
+        chain = self.sampler.get_chain(**kwargs)
+        return chain
+
+    def dump_post_parameters(self, file_name):
+        parameters = self.get_post_parameters()
+        with open(file_name, 'w') as fp:
+            json.dump(parameters, fp)
 
     def get_template(self,
                      likelihood_name: str,
