@@ -299,8 +299,13 @@ class Context():
 
         # also store required configurations to appletree.share
         for k, v in configs.items():
-            file_path = get_file_path(v)
-            _cached_configs.update({k: file_path})
+            if isinstance(v, (float, int)):
+                _cached_configs.update({k: v})
+            elif isinstance(v, (str,)):
+                file_path = get_file_path(v)
+                _cached_configs.update({k: file_path})
+            else:
+                raise NotImplementedError
 
     def lineage(self, data_name: str = 'cs2'):
         """Return lineage of plugins."""
