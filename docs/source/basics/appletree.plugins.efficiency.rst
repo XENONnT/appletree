@@ -1,7 +1,7 @@
 :orphan:
 
 appletree.plugins.efficiency
-==========================
+================================
 
 In `appletree.plugins.efficiency`, we put some plugins to calculate the efficiency.
 

@@ -15,7 +15,7 @@ export, __all__ = exporter()
 
 @export
 class Component:
-    """Component base class"""
+    """Base class of component"""
 
     rate_name: str = ''
     norm_type: str = ''
@@ -36,11 +36,14 @@ class Component:
         self.needed_parameters = set()
 
     def simulate_hist(self, *args, **kwargs):
-        """Simulate and return hist."""
+        """Hook for simulation with histogram output."""
         raise NotImplementedError
 
     def implement_binning(self, mc, eff):
-        """Apply binning to MC data."""
+        """Apply binning to MC data.
+        :param mc: data from simulation.
+        :param eff: efficiency of each event, as the weight when making a histogram.
+        """
         if self.bins_type == 'irreg':
             hist = make_hist_irreg_bin_2d(mc, *self.bins, weights=eff)
         elif self.bins_type == 'meshgrid':
@@ -64,11 +67,11 @@ class Component:
         return normalization_factor
 
     def deduce(self, *args, **kwargs):
-        """Deduce."""
+        """Hook for workflow deduction."""
         raise NotImplementedError
 
     def compile(self):
-        """Compile."""
+        """Hook for compiling simulation code."""
         pass
 
 
@@ -150,7 +153,10 @@ class ComponentSim(Component):
     def dependencies_deduce(self,
                             data_names: list = ('cs1', 'cs2', 'eff'),
                             dependencies: list = None) -> list:
-        """Deduce dependencies."""
+        """Deduce dependencies.
+        :param data_names: data names that simulation will output.
+        :param dependencies: dependency tree.
+        """
         if dependencies is None:
             dependencies = []
 
@@ -251,7 +257,10 @@ class ComponentSim(Component):
     def deduce(self,
                data_names: list = ('cs1', 'cs2'),
                func_name: str = 'simulate'):
-        """Deduce workflow and code."""
+        """Deduce workflow and code.
+        :param data_names: data names that simulation will output.
+        :param func_name: name of the simulation function, used to cache it.
+        """
         if not isinstance(data_names, (list, tuple)):
             raise ValueError(f'Unsupported data_names type {type(data_names)}!')
         if 'eff' in data_names:
@@ -272,7 +281,11 @@ class ComponentSim(Component):
                       key,
                       batch_size,
                       parameters):
-        """Simulate and return histogram."""
+        """Simulate and return histogram.
+        :param key: key used for pseudorandom generator.
+        :param batch_size: number of events to be simulated.
+        :param parameters: a dictionary that contains all parameters needed in simulation.
+        """
         key, result = self.simulate(key, batch_size, parameters)
         mc = result[:-1]
         assert len(mc) == len(self.bins), "Length of bins must be the same as length of bins_on!"

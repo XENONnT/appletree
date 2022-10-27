@@ -9,15 +9,15 @@ from appletree.component import Component, ComponentSim, ComponentFixed
 
 
 class Likelihood:
-    """Combine all components(e.g. ER, AC, Wall), and calculate log posterior likelihood"""
+    """Combine all components (e.g. ER, AC, Wall), and calculate log posterior likelihood"""
 
     def __init__(self, **config):
         """Create an appletree likelihood
         :param config: Dictionary with configuration options that will be applied, should include:
-        - data_file_name: the data used in fitting, usually calibration data
-        - bins_type: either meshgrid or equiprob
-        - bins_on: observables where we will perform inference on, usually [cs1, cs2]
-        - x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
+            - data_file_name: the data used in fitting, usually calibration data
+            - bins_type: either meshgrid or equiprob
+            - bins_on: observables where we will perform inference on, usually [cs1, cs2]
+            - x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
         """
         self.components = {}
         self._config = config
@@ -73,7 +73,7 @@ class Likelihood:
                            component_cls: Component,
                            component_name: str,
                            file_name: str = None):
-        """Create an appletree likelihood
+        """Create an appletree likelihood.
         :param component_cls: class of Component
         :param component_name: name of Component
         :param file_name: file used in ComponentFixed
@@ -102,7 +102,7 @@ class Likelihood:
         self.needed_parameters |= self.components[component_name].needed_parameters
 
     def get_log_likelihood(self, key, batch_size, parameters):
-        """Get log likelihood of given parameters
+        """Get log likelihood of given parameters.
         :param key: a pseudo-random number generator (PRNG) key
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
@@ -118,7 +118,7 @@ class Likelihood:
     def print_likelihood_summary(self,
                                  indent: str = ' '*4,
                                  short: bool = True):
-        """Print likelihood summary: components, bins, file names
+        """Print likelihood summary: components, bins, file names.
         :param indent: str of indent
         :param short: bool, whether only print short summary
         """
@@ -168,7 +168,7 @@ class Likelihood:
             raise RuntimeError('Length of bins must be the same as length of bins_on!')
 
     def _simulate_model_hist(self, key, batch_size, parameters):
-        """Histogram of simulated observables
+        """Histogram of simulated observables.
         :param key: a pseudo-random number generator (PRNG) key
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation

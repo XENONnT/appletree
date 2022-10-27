@@ -29,6 +29,8 @@ using `emcee <https://emcee.readthedocs.io/en/stable/>`_.
     :caption: Features
 
 .. toctree::
+    :maxdepth: 1
     :caption: Example notebooks
 
+    notebooks/benchmark.ipynb
     notebooks/component.ipynb
