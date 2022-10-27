@@ -125,7 +125,6 @@ class Context():
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
         """
-        # self.par_manager.setparameter_fit_from_array(parameters)
         self.par_manager.set_parameter(parameters)
 
         key = randgen.get_key()
@@ -229,10 +228,12 @@ class Context():
         return parameters
 
     def get_all_post_parameters(self, **kwargs):
+        """Return all posterior parameters"""
         chain = self.sampler.get_chain(**kwargs)
         return chain
 
     def dump_post_parameters(self, file_name):
+        """Dump max posterior parameter in .json file"""
         parameters = self.get_post_parameters()
         with open(file_name, 'w') as fp:
             json.dump(parameters, fp)
@@ -301,7 +302,7 @@ class Context():
         for k, v in configs.items():
             if isinstance(v, (float, int)):
                 _cached_configs.update({k: v})
-            elif isinstance(v, (str,)):
+            elif isinstance(v, str):
                 file_path = get_file_path(v)
                 _cached_configs.update({k: file_path})
             else:

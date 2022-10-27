@@ -380,10 +380,12 @@ def add_deps_to_graph_tree(component,
         dep_plugin = component._plugin_class_registry[data_name]
         for dep in dep_plugin.depends_on:
             graph_tree.edge(data_name, dep)
-            graph_tree, _seen = add_deps_to_graph_tree(component, 
-                                                       graph_tree,
-                                                       dep_plugin.depends_on,
-                                                       _seen)
+            graph_tree, _seen = add_deps_to_graph_tree(
+                component,
+                graph_tree,
+                dep_plugin.depends_on,
+                _seen,
+            )
         _seen.append(data_name)
     return graph_tree, _seen
 

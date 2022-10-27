@@ -384,6 +384,8 @@ class ComponentSim(Component):
         return df
 
     def new_component(self):
+        """Generate new component with same binning,
+        usually used on predicting yields"""
         component = self.__class__(
             name=self.name + '_copy',
             bins=self.bins,
