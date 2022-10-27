@@ -44,7 +44,7 @@ class Plugin():
     def simulate(self, *args, **kwargs):
         """The main simulation function.
 
-        :param key: a jnp.array with length 2, used to generate random variables. 
+        :param key: a jnp.array with length 2, used to generate random variables.
             See https://jax.readthedocs.io/en/latest/jax-101/05-random-numbers.html
         :param parameters: a dictionary with key being parameters' names. Plugin will
             get values of self.parameters from this dictionary.
