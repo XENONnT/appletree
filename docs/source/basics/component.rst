@@ -23,12 +23,14 @@ For the component that needs simulation, we have a child class `ComponentSim`.
 .. autoclass:: appletree.ComponentSim
     :members:
     :undoc-members:
+    :special-members: __init__
 
 For the component that is fixed, `ComponentFixed` should be used instead.
 
 .. autoclass:: appletree.ComponentFixed
     :members:
     :undoc-members:
+    :special-members: __init__
 
 There are some default plugins with registrations in `appletree.components`. Check them
 as a quick start on how to build your own component. See also

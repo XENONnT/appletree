@@ -34,3 +34,5 @@ using `emcee <https://emcee.readthedocs.io/en/stable/>`_.
 
     notebooks/benchmark.ipynb
     notebooks/component.ipynb
+    notebooks/likelihood.ipynb
+    notebooks/context.ipynb
