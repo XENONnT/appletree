@@ -271,7 +271,7 @@ class Context():
     def update_url_base(self, url_base):
         """Update url_base in appletree.share"""
         print(f'Updated url_base to {url_base}')
-        _cached_configs.updte({'url_base': url_base})
+        _cached_configs.update({'url_base': url_base})
 
     def get_parameter_config(self, par_config):
         """Get configuration for parameter manager
@@ -300,7 +300,7 @@ class Context():
 
         # also store required configurations to appletree.share
         for k, v in configs.items():
-            if isinstance(v, (float, int)):
+            if isinstance(v, (float, int, list)):
                 _cached_configs.update({k: v})
             elif isinstance(v, str):
                 file_path = get_file_path(v)

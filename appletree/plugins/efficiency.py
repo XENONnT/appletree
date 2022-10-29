@@ -26,7 +26,7 @@ class S2Threshold(Plugin):
 @appletree.takes_config(
     Map(name='s1_eff',
         default='3fold_recon_eff.json',
-        help='S1 light collection efficiency correction'),
+        help='S1 reconstruction efficiency'),
 )
 class S1ReconEff(Plugin):
     depends_on = ['num_s1_phd']

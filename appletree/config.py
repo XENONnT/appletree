@@ -127,7 +127,7 @@ class Map(Config):
 
     def build_regbin(self, data):
         """Cache the map to jnp.array if bins_type is regbin"""
-        
+
         self.coordinate_name = data['coordinate_name']
         self.coordinate_lowers = jnp.asarray(data['coordinate_lowers'], dtype=float)
         self.coordinate_uppers = jnp.asarray(data['coordinate_uppers'], dtype=float)
