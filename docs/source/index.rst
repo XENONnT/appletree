@@ -36,3 +36,4 @@ using `emcee <https://emcee.readthedocs.io/en/stable/>`_.
     notebooks/component.ipynb
     notebooks/likelihood.ipynb
     notebooks/context.ipynb
+    notebooks/datastructure.ipynb
