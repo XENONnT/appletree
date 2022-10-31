@@ -14,10 +14,10 @@ class Likelihood:
     def __init__(self, **config):
         """Create an appletree likelihood
         :param config: Dictionary with configuration options that will be applied, should include:
-            - data_file_name: the data used in fitting, usually calibration data
-            - bins_type: either meshgrid or equiprob
-            - bins_on: observables where we will perform inference on, usually [cs1, cs2]
-            - x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
+        - data_file_name: the data used in fitting, usually calibration data
+        - bins_type: either meshgrid or equiprob
+        - bins_on: observables where we will perform inference on, usually [cs1, cs2]
+        - x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
         """
         self.components = {}
         self._config = config
