@@ -9,7 +9,7 @@ export, __all__ = exporter()
 
 @export
 class Plugin():
-    """Plugin, which is the smallest simulation unit."""
+    """The smallest simulation unit."""
 
     # the plugin's dependency(the arguments of `simulate`)
     depends_on = []
@@ -44,11 +44,21 @@ class Plugin():
         return self.simulate(*args, **kwargs)
 
     def simulate(self, *args, **kwargs):
-        """Simulate."""
+        """The main simulation function.
+
+        :param key: a jnp.array with length 2, used to generate random variables.
+            See https://jax.readthedocs.io/en/latest/jax-101/05-random-numbers.html
+        :param parameters: a dictionary with key being parameters' names. Plugin will
+            get values of self.parameters from this dictionary.
+        :param args: other args following `key` and `parameters` must be in the order of
+            self.depends_on.
+        :return: `key` and output simulated variables, ordered by self.provides. `key` will
+            be updated if it's used inside self.simulate to generate random variables.
+        """
         raise NotImplementedError
 
     def sanity_check(self):
-        """Check the consistency between `depends_on`, `provides` and in(out)put of `simulation`"""
+        """Check the consistency between `depends_on`, `provides` and in(out)put of `self.simulate`"""
         arguments = inspect.getfullargspec(self.simulate)[0]
         if arguments[1] != 'key':
             mesg = f"First argument of {self.__class__.__name__}"
