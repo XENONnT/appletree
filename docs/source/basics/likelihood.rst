@@ -9,6 +9,7 @@ and compares it with data, and calulate binned Poisson log likelihood. The base 
 .. autoclass:: appletree.Likelihood
     :members:
     :undoc-members:
+    :show-inheritance:
     :special-members: __init__
 
 See also

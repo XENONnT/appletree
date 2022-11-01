@@ -9,6 +9,7 @@ with prior from parameters, and sends to MCMC ensemble sampler.
 .. autoclass:: appletree.Context
     :members:
     :undoc-members:
+    :show-inheritance:
     :special-members: __init__
 
 See also
