@@ -1,5 +1,7 @@
 from warnings import warn
 from functools import partial
+
+import numpy as np
 import pandas as pd
 from jax import numpy as jnp
 import pandas as pd
@@ -36,6 +38,16 @@ class Component:
         self.bins = bins
         self.bins_type = bins_type
         self.needed_parameters = set()
+
+    def _clip(self, result: list):
+        """Clip simulated result"""
+        mask = np.ones(len(result[-1]), dtype=bool)
+        for i in range(len(result) - 1):
+            mask &= result[i] > np.array(self.bins[i]).min()
+            mask &= result[i] < np.array(self.bins[i]).max()
+        for i in range(len(result)):
+            result[i] = result[i][mask]
+        return result
 
     def simulate_hist(self, *args, **kwargs):
         """Hook for simulation with histogram output."""
@@ -304,6 +316,27 @@ class ComponentSim(Component):
 
         return key, hist
 
+    def simulate_weighed_data(self,
+                              key,
+                              batch_size,
+                              parameters):
+        """Simulate and return histogram."""
+        key, result = self.simulate(key, batch_size, parameters)
+        # Move data to CPU
+        result = [np.array(r) for r in result]
+        # Clip data points out of ROI
+        result = self._clip(result)
+        mc = result[:-1]
+        assert len(mc) == len(self.bins), "Length of bins must be the same as length of bins_on!"
+        mc = jnp.asarray(mc).T
+        eff = jnp.asarray(result[-1])  # we guarantee that the last output is efficiency in self.deduce
+
+        hist = self.implement_binning(mc, eff)
+        normalization_factor = self.get_normalization(hist, parameters, batch_size)
+        result[-1] *= normalization_factor
+
+        return key, result
+
     def save_code(self, file_path):
         """Save the code to file."""
         with open(file_path, 'w') as f:
@@ -371,8 +404,8 @@ class ComponentFixed(Component):
                data_names: list = ('cs1', 'cs2')):
         """Deduce the needed parameters and make the fixed histogram."""
         self.data = load_data(self._file_name)[list(data_names)].to_numpy()
-        eff = jnp.ones(len(self.data))
-        self.hist = self.implement_binning(self.data, eff)
+        self.eff = jnp.ones(len(self.data))
+        self.hist = self.implement_binning(self.data, self.eff)
         self.needed_parameters.add(self.rate_name)
 
     def simulate(self):
@@ -385,3 +418,16 @@ class ComponentFixed(Component):
         """Return the fixed histogram."""
         normalization_factor = self.get_normalization(self.hist, parameters, len(self.data))
         return self.hist * normalization_factor
+
+    def simulate_weighed_data(self,
+                              parameters,
+                              *args, **kwargs):
+        """Simulate and return histogram."""
+        result = [r for r in self.data.T]
+        result.append(np.array(self.eff))
+        # Clip all simulated data points
+        result = self._clip(result)
+        normalization_factor = self.get_normalization(self.hist, parameters, len(self.data))
+        result[-1] *= normalization_factor
+
+        return result

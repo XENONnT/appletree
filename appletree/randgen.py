@@ -5,8 +5,8 @@ import jax
 from jax import numpy as jnp
 import numpy as np
 from jax import random, lax, jit, vmap
+from numpyro.distributions.util import _binomial_dispatch as _binomial_dispatch_numpyro
 
-from appletree import utils
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
@@ -133,7 +133,7 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
         return lax.cond(
             use_normal_approx,
             (seed, p, n), lambda x: _binomial_normal_approx_dispatch(*x),
-            (seed, p, n), lambda x: utils._binomial_dispatch_numpyro(*x),
+            (seed, p, n), lambda x: _binomial_dispatch_numpyro(*x),
         )
 
     key, seed = random.split(key)
@@ -166,3 +166,49 @@ def uniform_key_vectorized(key):
     """
     sampler = vmap(jax.random.uniform, (0, ), 0)
     return sampler(key)
+
+
+class TwoHalfNorm:
+    """Continuous distribution, two half Normal"""
+
+    @staticmethod
+    def rvs(mu=0, sigma_pos=1, sigma_neg=1, size=1):
+        """
+        Get random variables
+        :param mu: float, 'center' value of the distribution
+        :param sigma_pos: float,
+        Standard deviation of the distribution when variable larger than mu. Must be non-negative.
+        :param sigma_neg: float,
+        Standard deviation of the distribution when variable smaller than mu. Must be non-negative.
+        :param size: int or tuple of ints, Output shape.
+        :return: random samples
+        """
+        assert (sigma_pos > 0) and (sigma_neg > 0), 'sigma should be positive'
+        pos_half_prob = sigma_pos / (sigma_pos + sigma_neg)
+
+        use_pos_half = np.random.uniform(size=size) < pos_half_prob
+        use_neg_half = ~use_pos_half
+
+        n_sigma = np.abs(np.random.normal(size=size))
+        offset = use_pos_half * n_sigma * sigma_pos - use_neg_half * n_sigma * sigma_neg
+
+        return offset + mu
+
+    @staticmethod
+    def logpdf(x, mu=0, sigma_pos=1, sigma_neg=1):
+        """
+        Log of the probability density function.
+        :param x: array, input variables
+        :param mu: float, 'center' value of the distribution
+        :param sigma_pos: float,
+        Standard deviation of the distribution when variable larger than mu. Must be non-negative.
+        :param sigma_neg: float,
+        Standard deviation of the distribution when variable smaller than mu. Must be non-negative.
+        :param size: int or tuple of ints, Output shape.
+        :return: log probability density function
+        """
+        assert (sigma_pos > 0) and (sigma_neg > 0), 'sigma should be positive'
+        norm = 2 / (sigma_pos + sigma_neg) / np.sqrt(2 * np.pi)
+        logpdf = np.where(x < mu, -(x - mu)**2 / sigma_neg**2 / 2, -(x - mu)**2 / sigma_pos**2 / 2)
+        logpdf += np.log(norm)
+        return logpdf

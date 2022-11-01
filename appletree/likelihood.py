@@ -53,10 +53,10 @@ class Likelihood:
             if self._dim != 2:
                 raise RuntimeError('only 2D equiprob binned likelihood is supported!')
             self._bins = get_equiprob_bins_2d(self.data,
-                                             self._bins,
-                                             x_clip=config['x_clip'],
-                                             y_clip=config['y_clip'],
-                                             which_np=jnp)
+                                              self._bins,
+                                              x_clip=config['x_clip'],
+                                              y_clip=config['y_clip'],
+                                              which_np=jnp)
             self.component_bins_type = 'irreg'
             self.data_hist = make_hist_irreg_bin_2d(
                 self.data,
@@ -189,3 +189,16 @@ class Likelihood:
                 raise TypeError(f'unsupported component type for {component_name}!')
             hist += _hist
         return key, hist
+
+    def simulate_weighed_data(self, key, batch_size, parameters):
+        result = []
+        for component_name, component in self.components.items():
+            if isinstance(component, ComponentSim):
+                key, _result = component.simulate_weighed_data(key, batch_size, parameters)
+            elif isinstance(component, ComponentFixed):
+                _result = component.simulate_weighed_data(parameters)
+            else:
+                raise TypeError(f'unsupported component type for {component_name}!')
+            result.append(_result)
+        result = [r for r in np.hstack(result)]
+        return key, result
