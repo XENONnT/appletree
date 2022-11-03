@@ -1,5 +1,6 @@
 import os
 import copy
+import json
 import importlib
 import numpy as np
 import emcee
@@ -89,7 +90,10 @@ class Context():
         """
         if likelihood_name in self.likelihoods:
             raise ValueError(f'Likelihood named {likelihood_name} already existed!')
-        self.likelihoods[likelihood_name] = Likelihood(**likelihood_config)
+        self.likelihoods[likelihood_name] = Likelihood(
+            name=likelihood_name,
+            **likelihood_config,
+        )
 
     def register_component(self,
                            likelihood_name,
@@ -126,7 +130,7 @@ class Context():
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
         """
-        self.par_manager.set_parameter_fit_from_array(parameters)
+        self.par_manager.set_parameter(parameters)
 
         key = randgen.get_key()
         log_posterior = 0
@@ -174,6 +178,7 @@ class Context():
             ndim,
             self.log_posterior,
             backend=backend,
+            parameter_names=self.par_manager.parameter_fit,
             kwargs = {'batch_size': batch_size},
         )
 
@@ -193,26 +198,17 @@ class Context():
         """
         # Final iteration
         final_iteration = context.sampler.get_chain()[-1, :, :]
+        p0 = final_iteration.tolist()
 
-        p0 = []
-        for iwalker in final_iteration:
-            self.par_manager.sample_init()
-
-            # assign i-walker of final iteration
-            context.par_manager.set_parameter_fit_from_array(iwalker)
-            parameters = context.par_manager.get_all_parameter()
-
-            self.par_manager._parameter_dict.update(parameters)
-            p0.append(self.par_manager.parameter_fit_array)
-
-        ndim = len(self.par_manager.parameter_fit_array)
+        ndim = len(self.par_manager.parameter_fit)
         # Init sampler for current context
-        backend = self._get_backend(len(final_iteration), ndim)
+        backend = self._get_backend(len(p0), ndim)
         self.sampler = emcee.EnsembleSampler(
-            len(final_iteration),
+            len(p0),
             ndim,
             self.log_posterior,
             backend=backend,
+            parameter_names=self.par_manager.parameter_fit,
             kwargs = {'batch_size': batch_size},
         )
 
@@ -230,9 +226,24 @@ class Context():
         logp = self.sampler.get_log_prob(flat=True)
         chain = self.sampler.get_chain(flat=True)
         mpe_parameters = chain[np.argmax(logp)]
-        self.par_manager.set_parameter_fit_from_array(mpe_parameters)
-        parameters = self.par_manager.get_all_parameter()
+        mpe_parameters = emcee.ensemble.ndarray_to_list_of_dicts(
+            [mpe_parameters],
+            self.sampler.parameter_names,
+        )[0]
+        parameters = copy.deepcopy(self.par_manager.get_all_parameter())
+        parameters.update(mpe_parameters)
         return parameters
+
+    def get_all_post_parameters(self, **kwargs):
+        """Return all posterior parameters"""
+        chain = self.sampler.get_chain(**kwargs)
+        return chain
+
+    def dump_post_parameters(self, file_name):
+        """Dump max posterior parameter in .json file"""
+        parameters = self.get_post_parameters()
+        with open(file_name, 'w') as fp:
+            json.dump(parameters, fp)
 
     def get_template(self,
                      likelihood_name: str,
@@ -258,7 +269,7 @@ class Context():
     def _sanity_check(self):
         """Check if needed parameters are provided."""
         needed = set(self.needed_parameters)
-        provided = set(self.par_manager._parameter_dict.keys())
+        provided = set(self.par_manager.get_all_parameter().keys())
         # We will not update unneeded parameters!
         if not needed.issubset(provided):
             mes = f'Parameter manager should provide needed parameters only, '
@@ -268,7 +279,7 @@ class Context():
     def update_url_base(self, url_base):
         """Update url_base in appletree.share"""
         print(f'Updated url_base to {url_base}')
-        _cached_configs.updte({'url_base': url_base})
+        _cached_configs.update({'url_base': url_base})
 
     def get_parameter_config(self, par_config):
         """Get configuration for parameter manager
@@ -299,8 +310,13 @@ class Context():
 
         # also store required configurations to appletree.share
         for k, v in configs.items():
-            file_path = get_file_path(v)
-            _cached_configs.update({k: file_path})
+            if isinstance(v, (float, int, list)):
+                _cached_configs.update({k: v})
+            elif isinstance(v, str):
+                file_path = get_file_path(v)
+                _cached_configs.update({k: file_path})
+            else:
+                raise NotImplementedError
 
     def lineage(self, data_name: str = 'cs2'):
         """Return lineage of plugins."""

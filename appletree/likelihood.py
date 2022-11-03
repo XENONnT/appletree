@@ -11,7 +11,7 @@ from appletree.component import Component, ComponentSim, ComponentFixed
 class Likelihood:
     """Combine all components (e.g. ER, AC, Wall), and calculate log posterior likelihood"""
 
-    def __init__(self, **config):
+    def __init__(self, name: str = None, **config):
         """Create an appletree likelihood
 
         :param config: Dictionary with configuration options that will be applied, should include:
@@ -21,6 +21,10 @@ class Likelihood:
           * bins_on: observables where we will perform inference on, usually [cs1, cs2]
           * x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
         """
+        if name is None:
+            self.name = self.__class__.__name__
+        else:
+            self.name = name
         self.components = {}
         self._config = config
         self._data_file_name = config['data_file_name']
@@ -86,6 +90,7 @@ class Likelihood:
 
         # Initialize component
         component = component_cls(
+            name=component_name,
             bins=self._bins,
             bins_type=self.component_bins_type,
             file_name=file_name,
@@ -93,7 +98,7 @@ class Likelihood:
         component.rate_name = component_name + '_rate'
         kwargs = {'data_names': self._bins_on}
         if isinstance(component, ComponentSim):
-            kwargs['func_name'] = component_name + '_sim'
+            kwargs['func_name'] = self.name + '_' + component_name + '_sim'
             kwargs['data_names'] = self._bins_on + ['eff']
         component.deduce(**kwargs)
         component.compile()

@@ -45,7 +45,7 @@
         "init_mean": null,
         "init_std": null,
         "unit": "cm/us",
-        "doc": "Gas gain"
+        "doc": "Drift velocity"
     },
     "s2_threshold": {
         "prior_type": "fixed",

@@ -42,10 +42,18 @@ class Parameter():
                 self._parameter_fixed.add(par_name)
             else:
                 self._parameter_fit.add(par_name)
+        # Parameters name set is not sorted
+        self._parameter_fixed = set(self._parameter_fixed)
+        self._parameter_fit = set(self._parameter_fit)
 
         if seed is not None:
             np.random.seed(seed)
         self.sample_prior()
+
+    @property
+    def parameter_fit(self):
+        """Return sorted list of parameters name waiting for fitting"""
+        return sorted(self._parameter_fit)
 
     def sample_prior(self):
         """Sampling parameters from prior and set self._parameter_dict.
@@ -67,7 +75,7 @@ class Parameter():
                 }
                 val = np.random.normal(**kwargs)
                 self._parameter_dict[par_name] = np.clip(val, *setting['allowed_range'])
-            elif prior_type == 'TwoHalfNorm':
+            elif prior_type == 'twohalfnorm':
                 kwargs = {
                     'mu': args['mu'],
                     'sigma_pos': args['sigma_pos'],
@@ -133,7 +141,7 @@ class Parameter():
                 mean = args['mean']
                 std = args['std']
                 log_prior += - (val - mean)**2 / 2 / std**2
-            elif prior_type == 'TwoHalfNorm':
+            elif prior_type == 'twohalfnorm':
                 mu = args['mu']
                 sigma_pos = args['sigma_pos']
                 sigma_neg = args['sigma_neg']
@@ -203,15 +211,6 @@ class Parameter():
         else:
             raise ValueError("keys must be a str or a list of str!")
 
-    def set_parameter_fit_from_array(self, arr):
-        """Set non-fixed parameters by an array. The order is given by self._parameter_fit."""
-        if len(arr) != len(self._parameter_fit):
-            mes = f"the length of arr must be the same as length of parameter to fit {len(self._parameter_fit)}!"
-            raise ValueError(mes)
-
-        update = {par_name: val for par_name, val in zip(self._parameter_fit, arr)}
-        self.set_parameter(update)
-
     def get_parameter(self, keys):
         """Return parameter values.
 
@@ -234,7 +233,7 @@ class Parameter():
     @property
     def parameter_fit_array(self):
         """Return non-fixed parameters, ordered by self._parameter_fit."""
-        return self.get_parameter(self._parameter_fit)
+        return self.get_parameter(sorted(self._parameter_fit))
 
     def get_all_parameter(self):
         """Return all parameters as a dict."""

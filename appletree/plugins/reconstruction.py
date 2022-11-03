@@ -1,6 +1,8 @@
 from jax import jit
 from functools import partial
 
+from jax import numpy as jnp
+
 import appletree
 from appletree import randgen
 from appletree import interpolation
@@ -12,13 +14,27 @@ export, __all__ = exporter(export_self=False)
 
 
 @export
+@appletree.takes_config(
+    Map(name='posrec_reso',
+        default='posrec_reso.json',
+        help='Position reconstruction resolution'),
+)
 class PositionRecon(Plugin):
-    depends_on = ['x', 'y', 'z']
+    depends_on = ['x', 'y', 'z', 'num_electron_drifted']
     provides = ['rec_x', 'rec_y', 'rec_z']
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, x, y, z):
-        return key, x, y, z
+    def simulate(self, key, parameters, x, y, z, num_electron_drifted):
+        std = interpolation.curve_interpolator(
+            num_electron_drifted,
+            self.posrec_reso.coordinate_system,
+            self.posrec_reso.map,
+        )
+        std /= jnp.sqrt(2)
+        mean = jnp.zeros_like(num_electron_drifted)
+        key, delta_x = randgen.normal(key, mean, std)
+        key, delta_y = randgen.normal(key, mean, std)
+        return key, x + delta_x, y + delta_y, z
 
 
 @export

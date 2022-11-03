@@ -19,7 +19,7 @@
         "init_mean": null,
         "init_std": null,
         "unit": "cm/us",
-        "doc": "Gas gain"
+        "doc": "Drift velocity"
     },
     "s2_threshold": {
         "prior_type": "fixed",
@@ -90,7 +90,7 @@
         "init_mean": 0.0,
         "init_std": 1.0,
         "unit": "1",
-        "doc": "light yield shaper"
+        "doc": "light yield shifter"
     },
     "t_qy": {
         "prior_type": "norm",
@@ -105,7 +105,7 @@
         "init_mean": 0.0,
         "init_std": 1.0,
         "unit": "1",
-        "doc": "charge yield shaper"
+        "doc": "charge yield shifter"
     },
     "nr_rate": {
         "prior_type": "free",
