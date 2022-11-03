@@ -13,11 +13,13 @@ class Likelihood:
 
     def __init__(self, name: str = None, **config):
         """Create an appletree likelihood
+
         :param config: Dictionary with configuration options that will be applied, should include:
-        - data_file_name: the data used in fitting, usually calibration data
-        - bins_type: either meshgrid or equiprob
-        - bins_on: observables where we will perform inference on, usually [cs1, cs2]
-        - x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
+
+          * data_file_name: the data used in fitting, usually calibration data
+          * bins_type: either meshgrid or equiprob
+          * bins_on: observables where we will perform inference on, usually [cs1, cs2]
+          * x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
         """
         if name is None:
             self.name = self.__class__.__name__
@@ -78,6 +80,7 @@ class Likelihood:
                            component_name: str,
                            file_name: str = None):
         """Create an appletree likelihood.
+
         :param component_cls: class of Component
         :param component_name: name of Component
         :param file_name: file used in ComponentFixed
@@ -108,6 +111,7 @@ class Likelihood:
 
     def get_log_likelihood(self, key, batch_size, parameters):
         """Get log likelihood of given parameters.
+
         :param key: a pseudo-random number generator (PRNG) key
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
@@ -124,6 +128,7 @@ class Likelihood:
                                  indent: str = ' '*4,
                                  short: bool = True):
         """Print likelihood summary: components, bins, file names.
+
         :param indent: str of indent
         :param short: bool, whether only print short summary
         """
@@ -174,6 +179,7 @@ class Likelihood:
 
     def _simulate_model_hist(self, key, batch_size, parameters):
         """Histogram of simulated observables.
+
         :param key: a pseudo-random number generator (PRNG) key
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation

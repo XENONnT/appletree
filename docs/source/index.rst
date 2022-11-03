@@ -26,7 +26,12 @@ using `emcee <https://emcee.readthedocs.io/en/stable/>`_.
 
 .. toctree::
     :maxdepth: 1
-    :caption: Features
+    :caption: Advanced techniques
+
+    advance/parameter.rst
+    advance/instruct.rst
+    advance/map.rst
+    advance/file.rst
 
 .. toctree::
     :maxdepth: 1

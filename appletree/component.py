@@ -28,9 +28,11 @@ class Component:
                  bins_type: str = '',
                  **kwargs):
         """Initialization.
+
         :param bins: bins to generate the histogram.
-        For irreg bins_type, bins must be bin edges of the two dimensions.
-        For meshgrid bins_type, bins are sent to jnp.histogramdd.
+
+          * For irreg bins_type, bins must be bin edges of the two dimensions.
+          * For meshgrid bins_type, bins are sent to jnp.histogramdd.
         :param bins_type: binning scheme, can be either irreg or meshgrid.
         """
         if name is None:
@@ -57,6 +59,7 @@ class Component:
 
     def implement_binning(self, mc, eff):
         """Apply binning to MC data.
+
         :param mc: data from simulation.
         :param eff: efficiency of each event, as the weight when making a histogram.
         """
@@ -171,6 +174,7 @@ class ComponentSim(Component):
                             dependencies: list = None,
                             nodep_data_name: str = 'batch_size') -> list:
         """Deduce dependencies.
+
         :param data_names: data names that simulation will output.
         :param dependencies: dependency tree.
         :param nodep_data_name: data_name without dependency will not be deduced
@@ -283,6 +287,7 @@ class ComponentSim(Component):
                nodep_data_name: str = 'batch_size',
                force_no_eff: bool = False):
         """Deduce workflow and code.
+
         :param data_names: data names that simulation will output.
         :param func_name: name of the simulation function, used to cache it.
         :param nodep_data_name: data_name without dependency will not be deduced
@@ -311,6 +316,7 @@ class ComponentSim(Component):
                       batch_size,
                       parameters):
         """Simulate and return histogram.
+
         :param key: key used for pseudorandom generator.
         :param batch_size: number of events to be simulated.
         :param parameters: a dictionary that contains all parameters needed in simulation.
@@ -361,6 +367,7 @@ class ComponentSim(Component):
     def show_config(self, data_names: list = ('cs1', 'cs2', 'eff')):
         """
         Return configuration options that affect data_names.
+
         :param data_names: Data type name
         """
         dependencies = self.dependencies_deduce(
