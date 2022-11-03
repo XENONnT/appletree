@@ -102,7 +102,7 @@ def camel_to_snake(x):
 @export
 def _get_abspath(file_name):
     """Get the abspath of the file. Raise FileNotFoundError when not found in any subfolder"""
-    for sub_dir in ('maps', 'data', 'parameters', 'configs'):
+    for sub_dir in ('maps', 'data', 'parameters', 'instructs'):
         p = os.path.join(_package_path(sub_dir), file_name)
         if os.path.exists(p):
             return p
