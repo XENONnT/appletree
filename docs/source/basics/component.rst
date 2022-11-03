@@ -17,20 +17,21 @@ The base class is `Component`.
 .. autoclass:: appletree.Component
     :members:
     :undoc-members:
+    :show-inheritance:
 
 For the component that needs simulation, we have a child class `ComponentSim`.
 
 .. autoclass:: appletree.ComponentSim
     :members:
     :undoc-members:
-    :special-members: __init__
+    :show-inheritance:
 
 For the component that is fixed, `ComponentFixed` should be used instead.
 
 .. autoclass:: appletree.ComponentFixed
     :members:
     :undoc-members:
-    :special-members: __init__
+    :show-inheritance:
 
 There are some default plugins with registrations in `appletree.components`. Check them
 as a quick start on how to build your own component. See also

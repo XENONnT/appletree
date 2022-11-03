@@ -15,12 +15,13 @@ os.environ['OMP_NUM_THREADS'] = '1'
 
 
 class Context():
-    """Combine all likelihood(e.g. Rn220, Ar37),
+    """Combine all likelihood (e.g. Rn220, Ar37),
     handle MCMC and post-fitting analysis
     """
 
     def __init__(self, config):
         """Create an appletree context
+
         :param config: dict or str, configuration file name or dictionary
         """
         if isinstance(config, str):
@@ -51,6 +52,7 @@ class Context():
 
     def register_all_likelihood(self, config):
         """Create all appletree likelihoods
+
         :param config: dict, configuration file name or dictionary
         """
         components = importlib.import_module('appletree.components')
@@ -81,6 +83,7 @@ class Context():
                             likelihood_name,
                             likelihood_config):
         """Create an appletree likelihood
+
         :param likelihood_name: name of Likelihood
         :param likelihood_config: dict of likelihood configuration
         """
@@ -94,6 +97,7 @@ class Context():
                            component_name,
                            file_name=None):
         """Register component to likelihood
+
         :param likelihood_name: name of Likelihood
         :param component_cls: class of Component
         :param component_name: name of Component
@@ -118,6 +122,7 @@ class Context():
 
     def log_posterior(self, parameters, batch_size=1_000_000):
         """Get log likelihood of given parameters
+
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
         """
@@ -150,6 +155,7 @@ class Context():
 
     def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000):
         """Fitting posterior distribution of needed parameters
+
         :param nwalkers: int, number of walkers in the ensemble
         :param iteration: int, number of steps to generate
         """
@@ -181,6 +187,7 @@ class Context():
 
     def continue_fitting(self, context, iteration=500, batch_size=1_000_000):
         """Continue a fitting of another context
+
         :param context: appletree context
         :param iteration: int, number of steps to generate
         """
@@ -233,6 +240,7 @@ class Context():
                      batch_size: int = 1_000_000,
                      seed: int = None):
         """Get parameters correspondes to max posterior
+
         :param likelihood_name: name of Likelihood
         :param component_name: name of Component
         :param batch_size: int of number of simulated events
@@ -264,6 +272,7 @@ class Context():
 
     def get_parameter_config(self, par_config):
         """Get configuration for parameter manager
+
         :param par_config: str, parameters configuration file
         """
         par_config = load_json(par_config)
@@ -279,6 +288,7 @@ class Context():
 
     def set_config(self, configs):
         """Set new configuration options
+
         :param configs: dict, configuration file name or dictionary
         """
         if not hasattr(self, 'config'):

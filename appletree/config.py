@@ -16,6 +16,7 @@ __all__ += 'OMITTED'.split()
 @export
 def takes_config(*configs):
     """Decorator for plugin classes, to specify which configs it takes.
+
     :param configs: Config instances of configs this plugin takes.
     """
 
@@ -59,6 +60,7 @@ class Config():
                  default: ty.Any = OMITTED,
                  help: str = ''):
         """Initialization.
+
         :param name: name of the map
         :param type: Excepted type of the option's value.
         :param default: Default value the option takes.

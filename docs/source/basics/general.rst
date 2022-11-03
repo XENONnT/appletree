@@ -8,7 +8,7 @@ Think about that we wanna do a combined fitting, where multiple sets of calibrat
 be fit simultaneously. We have some model, i.e. parametrization of the physics and detector responses, 
 and we have some prior knowledge on the parameters, but we do not know how much the calibration data
 favors the parametrization as well as the prior knowledge. Appletree solves this kind of problem in a
-Bayesian way, as shown as the following plot
+Bayesian way, as shown in the following plot
 
 .. image:: ../../figures/workflow.png
     :width: 600
@@ -21,7 +21,7 @@ point estimator on the parameters as the "best-fit".
 
 The idea of appletree is quite simple, but there are several things need special attention. First, the
 model is usually very hard to express in an analytical form, thus the model is usually realized by doing
-simulations. Second, there can be multiple models to describe different calibration data, e.g. ER model 
+simulations. Second, models can be different to describe different calibration data, e.g. ER model 
 and NR model etc. Last, the dataset is usually not pure, meaning that it's consist of events from different
 mechanism, which could be AC, wall events.
 

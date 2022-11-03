@@ -118,11 +118,12 @@ def _package_path(sub_directory):
 def get_file_path(fname):
     """Find the full path to the resource file
     Try 5 methods in the following order
-    1. fname begin with '/', return absolute path
-    2. can get file from _get_abspath, return appletree internal file path
-    3. url_base begin with '/', return url_base + name
-    4. can be found in local installed ntauxfiles, return ntauxfiles absolute path
-    5. can be downloaded from MongoDB, download and return cached path
+
+    #. fname begin with '/', return absolute path
+    #. can get file from _get_abspath, return appletree internal file path
+    #. url_base begin with '/', return url_base + name
+    #. can be found in local installed ntauxfiles, return ntauxfiles absolute path
+    #. can be downloaded from MongoDB, download and return cached path
     """
     if not fname:
         warn(f'A file has value False, assuming this is intentional.')
@@ -221,12 +222,13 @@ def get_equiprob_bins_2d(data,
                          y_clip = (-np.inf, +np.inf),
                          which_np = np):
     """Get 2D equiprobable binning edges.
+
     :param data: array with shape (N, 2).
     :param n_partitions: [M1, M2] where M1 M2 are the number of bins on each dimension.
     :param x_clip: lower and upper binning edges on the 0th dimension.
-    Data outside the x_clip will be dropped.
+        Data outside the x_clip will be dropped.
     :param y_clip: lower and upper binning edges on the 1st dimension.
-    Data outside the y_clip will be dropped.
+        Data outside the y_clip will be dropped.
     :param which_np: can be numpy or jax.numpy, determining the returned array type.
     """
     mask = (data[:, 0] > x_clip[0])
@@ -249,6 +251,7 @@ def get_equiprob_bins_2d(data,
 @export
 def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
     """Plot histogram defined by irregular binning.
+
     :param bins_x: array with shape (M1, )
     :param bins_y: array with shape (M1-1, M2)
     :param hist: array with shape (M1-1, M2-1)
@@ -341,6 +344,7 @@ def add_spaces(x):
 def tree_to_svg(graph_tree, save_as='data_types', view=True):
     """
     Where to save this node
+
     :param graph_tree: Digraph instance
     :param save_as: str, file name
     :param view: bool, Open the rendered result with the default application.
@@ -359,6 +363,7 @@ def add_deps_to_graph_tree(context,
                            _seen = None):
     """
     Recursively add nodes to graph base on plugin.deps
+
     :param context: Context instance
     :param graph_tree: Digraph instance
     :param data_names: Data type name
@@ -396,6 +401,7 @@ def add_plugins_to_graph_tree(context,
                               with_data_names=False):
     """
     Recursively add nodes to graph base on plugin.deps
+
     :param context: Context instance
     :param graph_tree: Digraph instance
     :param data_names: Data type name
