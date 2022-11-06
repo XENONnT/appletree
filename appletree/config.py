@@ -111,6 +111,8 @@ class Map(Config):
             file_path = get_file_path(self.get_default())
             _cached_configs.update({self.name: file_path})
 
+        self.file_path = file_path
+
         data = load_json(file_path)
 
         if data['coordinate_type'] == 'point':
