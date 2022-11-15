@@ -16,13 +16,7 @@ export, __all__ = exporter(export_self=False)
 @appletree.takes_config(
     Map(name='ly_median',
         default='nr_ly_median.json',
-        help='Light yield median curve'),
-    Map(name='ly_lower',
-        default='nr_ly_lower.json',
-        help='Light yield lower curve'),
-    Map(name='ly_upper',
-        default='nr_ly_upper.json',
-        help='Light yield upper curve'),
+        help='Light yield curve from NESTv2'),
 )
 class LightYield(Plugin):
     depends_on = ['energy']
@@ -31,15 +25,10 @@ class LightYield(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
-        add_map = jnp.where(
-            parameters['t_ly'] >= 0,
-            parameters['t_ly'] * (self.ly_upper.map - self.ly_median.map),
-            parameters['t_ly'] * (self.ly_median.map - self.ly_lower.map),
-        )
         light_yield = interpolation.curve_interpolator(
             energy,
             self.ly_median.coordinate_system,
-            jnp.clip(self.ly_median.map + add_map, 0, jnp.inf),
+            jnp.clip(self.ly_median.map * (1 + parameters['t_ly']), 0, jnp.inf),
         )
         return key, light_yield
 
@@ -59,13 +48,7 @@ class NumberPhoton(Plugin):
 @appletree.takes_config(
     Map(name='qy_median',
         default='nr_qy_median.json',
-        help='Charge yield median curve'),
-    Map(name='qy_lower',
-        default='nr_qy_lower.json',
-        help='Charge yield lower curve'),
-    Map(name='qy_upper',
-        default='nr_qy_upper.json',
-        help='Charge yield upper curve'),
+        help='Charge yield curve from NESTv2'),
 )
 class ChargeYield(Plugin):
     depends_on = ['energy']
@@ -74,15 +57,10 @@ class ChargeYield(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
-        add_map = jnp.where(
-            parameters['t_qy'] >= 0,
-            parameters['t_qy'] * (self.qy_upper.map - self.qy_median.map),
-            parameters['t_qy'] * (self.qy_median.map - self.qy_lower.map),
-        )
         charge_yield = interpolation.curve_interpolator(
             energy,
             self.qy_median.coordinate_system,
-            jnp.clip(self.qy_median.map + add_map, 0, jnp.inf),
+            jnp.clip(self.qy_median.map * (1 + parameters['t_qy']), 0, jnp.inf),
         )
         return key, charge_yield
 
