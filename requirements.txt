@@ -2,7 +2,7 @@ immutabledict
 numpy
 pandas
 scipy
-sklearn
+scikit-learn
 matplotlib
 jax~=0.3.16
 jaxlib~=0.3.15
