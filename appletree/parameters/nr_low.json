@@ -78,14 +78,11 @@
         "doc": "DPE probability"
     },
     "t_ly": {
-        "prior_type": "norm",
-        "prior_args": {
-            "mean": 0.0,
-            "std": 1.0
-        },
+        "prior_type": "free",
+        "prior_args": {},
         "allowed_range": [
-            -10.0,
-            10.0
+            -1,
+            5
         ],
         "init_mean": 0.0,
         "init_std": 1.0,
@@ -93,14 +90,11 @@
         "doc": "light yield shifter"
     },
     "t_qy": {
-        "prior_type": "norm",
-        "prior_args": {
-            "mean": 0.0,
-            "std": 1.0
-        },
+        "prior_type": "free",
+        "prior_args": {},
         "allowed_range": [
-            -10.0,
-            10.0
+            -1,
+            5
         ],
         "init_mean": 0.0,
         "init_std": 1.0,
