@@ -146,7 +146,9 @@ def get_file_path(fname):
         url_base = _cached_configs['url_base']
 
         if url_base.startswith('/'):
-            return os.path.join(url_base, fname)
+            p = os.path.join(url_base, fname)
+            if os.path.exists(p):
+                return p
 
     # 4. From local installed ntauxfiles
     if NT_AUX_INSTALLED:

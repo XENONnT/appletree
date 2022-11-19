@@ -81,7 +81,7 @@
         "prior_type": "free",
         "prior_args": {},
         "allowed_range": [
-            -1,
+            -2,
             2
         ],
         "init_mean": 0.0,
@@ -93,7 +93,7 @@
         "prior_type": "free",
         "prior_args": {},
         "allowed_range": [
-            -1,
+            -2,
             2
         ],
         "init_mean": 0.0,
