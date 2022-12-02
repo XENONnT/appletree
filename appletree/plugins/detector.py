@@ -16,7 +16,7 @@ export, __all__ = exporter(export_self=False)
 @appletree.takes_config(
     Map(name='s1_lce',
         default='s1_correction_map.json',
-        help='S1 light collation efficiency correction'),
+        help='S1 light collection efficiency correction'),
 )
 class S1Correction(Plugin):
     depends_on = ['rec_x', 'rec_y', 'rec_z']
@@ -38,7 +38,7 @@ class S1Correction(Plugin):
 @appletree.takes_config(
     Map(name='s2_lce',
         default='s2_correction_map.json',
-        help='S2 light collation efficiency correction'),
+        help='S2 light collection efficiency correction'),
 )
 class S2Correction(Plugin):
     depends_on = ['rec_x', 'rec_y']
