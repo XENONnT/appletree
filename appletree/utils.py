@@ -120,8 +120,8 @@ def get_file_path(fname):
     Try 5 methods in the following order
 
     #. fname begin with '/', return absolute path
-    #. can get file from _get_abspath, return appletree internal file path
     #. url_base begin with '/', return url_base + name
+    #. can get file from _get_abspath, return appletree internal file path
     #. can be found in local installed ntauxfiles, return ntauxfiles absolute path
     #. can be downloaded from MongoDB, download and return cached path
     """
@@ -134,13 +134,7 @@ def get_file_path(fname):
     if fname.startswith('/'):
         return fname
 
-    # 2. From appletree internal files
-    try:
-        return _get_abspath(fname)
-    except FileNotFoundError:
-        pass
-
-    # 3. From local folder
+    # 2. From local folder
     # Use url_base as prefix
     if 'url_base' in _cached_configs.keys():
         url_base = _cached_configs['url_base']
@@ -149,6 +143,12 @@ def get_file_path(fname):
             p = os.path.join(url_base, fname)
             if os.path.exists(p):
                 return p
+
+    # 3. From appletree internal files
+    try:
+        return _get_abspath(fname)
+    except FileNotFoundError:
+        pass
 
     # 4. From local installed ntauxfiles
     if NT_AUX_INSTALLED:
