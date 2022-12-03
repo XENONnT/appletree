@@ -12,6 +12,9 @@ export, __all__ = exporter()
 class Plugin():
     """The smallest simulation unit."""
 
+    # Do not initialize this class because it is base
+    __is_base = True
+
     # the plugin's dependency(the arguments of `simulate`)
     depends_on = []
 

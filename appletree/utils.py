@@ -458,6 +458,7 @@ def add_extensions(module1, module2, base):
         )
     else:
         setattr(module1, module2.__name__.split('.')[-1], module2)
+
     for x in dir(module2):
         x = getattr(module2, x)
         if not isinstance(x, type(type)):
@@ -468,6 +469,9 @@ def add_extensions(module1, module2, base):
 @export
 def _add_extension(module, subclass, base):
     """Add subclass to module"""
+    if getattr(subclass, '_' + subclass.__name__ + '__is_base', False):
+        return
+
     if issubclass(subclass, base) and subclass != base:
         if subclass.__name__ in dir(module):
             raise ValueError(

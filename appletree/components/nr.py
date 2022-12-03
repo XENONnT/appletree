@@ -3,7 +3,7 @@ import appletree as apt
 from appletree.component import ComponentSim
 
 
-class NRBand(ComponentSim):
+class NR(ComponentSim):
     norm_type = 'on_pdf'
 
     def __init__(self, *args, **kwargs):

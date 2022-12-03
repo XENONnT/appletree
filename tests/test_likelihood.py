@@ -41,7 +41,7 @@ def test_nr_likelihood():
         y_clip = [1e2, 1e3],
     )
     llh = apt.Likelihood(**config)
-    llh.register_component(apt.components.NRBand, 'neutron_nr')
+    llh.register_component(apt.components.NR, 'neutron_nr')
     llh.print_likelihood_summary(short=True)
 
     # Get parameters

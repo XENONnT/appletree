@@ -20,6 +20,9 @@ export, __all__ = exporter()
 class Component:
     """Base class of component"""
 
+    # Do not initialize this class because it is base
+    __is_base = True
+
     rate_name: str = ''
     norm_type: str = ''
 
@@ -119,6 +122,9 @@ class Component:
 @export
 class ComponentSim(Component):
     """Component that needs MC simulations."""
+
+    # Do not initialize this class because it is base
+    __is_base = True
 
     code: str = None
     old_code: str = None
@@ -444,6 +450,9 @@ class ComponentSim(Component):
 @export
 class ComponentFixed(Component):
     """Component whose shape is fixed."""
+
+    # Do not initialize this class because it is base
+    __is_base = True
 
     def __init__(self,
                  *args, **kwargs):
