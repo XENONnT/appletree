@@ -1,3 +1,4 @@
+import os
 from functools import partial
 from time import time
 
@@ -13,7 +14,8 @@ export, __all__ = exporter(export_self=False)
 
 INT = np.int32
 FLOAT = np.float32
-ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
+ALWAYS_USE_NORMAL_APPROX_IN_BINOM = bool(
+    os.environ.get('ALWAYS_USE_NORMAL_APPROX_IN_BINOM', True))
 
 
 @export

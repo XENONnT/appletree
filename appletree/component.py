@@ -444,6 +444,26 @@ class ComponentFixed(Component):
         """Fixed component does not need to simulate."""
         raise NotImplementedError
 
+    def multiple_simulations(self, key, batch_size, parameters, times):
+        """Simulate many times and 
+        move results to CPU because the memory limit of GPU"""
+        results_pile = []
+        for _ in range(times):
+            key, results = self.simulate(key, batch_size, parameters)
+            results_pile.append(np.array(results))
+        return key, np.hstack(results_pile)
+
+    def multiple_simulations_compile(self, key, batch_size, parameters, times):
+        """Simulate many times after new compilation and 
+        move results to CPU because the memory limit of GPU"""
+        results_pile = []
+        for _ in range(times):
+            _cached_configs['g4'] = [_cached_configs['g4'][0], batch_size, key.sum().item()]
+            self.compile()
+            key, results = self.multiple_simulations(key, batch_size, parameters, 1)
+            results_pile.append(results)
+        return key, np.hstack(results_pile)
+
     def simulate_hist(self,
                       parameters,
                       *args, **kwargs):
@@ -468,6 +488,13 @@ class ComponentFixed(Component):
 @export
 def add_component_extensions(module1, module2):
     """Add components of module2 to module1"""
+    if module2.__name__ in dir(module1):
+        raise ValueError(
+            f'{module2.__name__} already existed in {module1.__name__}, '
+            'do not re-register a module with same name',
+        )
+    else:
+        setattr(module1, module2.__name__.split('.')[-1], module2)
     for x in dir(module2):
         x = getattr(module2, x)
         if not isinstance(x, type(type)):
@@ -478,5 +505,11 @@ def add_component_extensions(module1, module2):
 @export
 def _add_component_extension(module, component):
     """Add component to module"""
-    if issubclass(component, Component):
-        setattr(module, component.__name__, component)
+    if issubclass(component, Component) and component != Component:
+        if component.__name__ in dir(module):
+            raise ValueError(
+                f'{component.__name__} already existed in {module.__name__}, '
+                'do not re-register a component with same name',
+            )
+        else:
+            setattr(module, component.__name__, component)
