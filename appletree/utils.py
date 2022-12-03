@@ -446,3 +446,33 @@ def add_plugins_to_graph_tree(component,
             )
         _seen.append(plugin_name)
     return graph_tree, _seen
+
+
+@export
+def add_extensions(module1, module2, base):
+    """Add subclasses of module2 to module1"""
+    if module2.__name__ in dir(module1):
+        raise ValueError(
+            f'{module2.__name__} already existed in {module1.__name__}, '
+            'do not re-register a module with same name',
+        )
+    else:
+        setattr(module1, module2.__name__.split('.')[-1], module2)
+    for x in dir(module2):
+        x = getattr(module2, x)
+        if not isinstance(x, type(type)):
+            continue
+        _add_extension(module1, x, base)
+
+
+@export
+def _add_extension(module, subclass, base):
+    """Add subclass to module"""
+    if issubclass(subclass, base) and subclass != base:
+        if subclass.__name__ in dir(module):
+            raise ValueError(
+                f'{subclass.__name__} already existed in {module.__name__}, '
+                'do not re-register a {base.__name__} with same name',
+            )
+        else:
+            setattr(module, subclass.__name__, subclass)

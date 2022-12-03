@@ -2,6 +2,7 @@ import inspect
 
 from immutabledict import immutabledict
 
+from appletree import utils
 from appletree.utils import exporter
 
 export, __all__ = exporter()
@@ -76,31 +77,14 @@ class Plugin():
                 raise ValueError(mesg)
 
 
+
 @export
 def add_plugin_extensions(module1, module2):
     """Add plugins of module2 to module1"""
-    if module2.__name__ in dir(module1):
-        raise ValueError(
-            f'{module2.__name__} already existed in {module1.__name__}, '
-            'do not re-register a module with same name',
-        )
-    else:
-        setattr(module1, module2.__name__.split('.')[-1], module2)
-    for x in dir(module2):
-        x = getattr(module2, x)
-        if not isinstance(x, type(type)):
-            continue
-        _add_plugin_extension(module1, x)
+    utils.add_extensions(module1, module2, Plugin)
 
 
 @export
 def _add_plugin_extension(module, plugin):
     """Add plugin to module"""
-    if issubclass(plugin, Plugin) and plugin != Plugin:
-        if plugin.__name__ in dir(module):
-            raise ValueError(
-                f'{plugin.__name__} already existed in {module.__name__}, '
-                'do not re-register a plugin with same name',
-            )
-        else:
-            setattr(module, plugin.__name__, plugin)
+    utils._add_extension(module, plugin, Plugin)
