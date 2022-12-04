@@ -62,8 +62,9 @@ class Component:
         raise NotImplementedError
 
     def multiple_simulations(self, key, batch_size, parameters, times):
-        """Simulate many times and 
-        move results to CPU because the memory limit of GPU"""
+        """Simulate many times and
+        move results to CPU because the memory limit of GPU
+        """
         results_pile = []
         for _ in range(times):
             key, results = self.simulate(key, batch_size, parameters)
@@ -71,12 +72,14 @@ class Component:
         return key, np.hstack(results_pile)
 
     def multiple_simulations_compile(self, key, batch_size, parameters, times):
-        """Simulate many times after new compilation and 
-        move results to CPU because the memory limit of GPU"""
+        """Simulate many times after new compilation and
+        move results to CPU because the memory limit of GPU
+        """
         results_pile = []
         for _ in range(times):
             if _cached_configs['g4']:
-                _cached_configs['g4'] = [_cached_configs['g4'][0], batch_size, key.sum().item()]
+                g4_file_name = _cached_configs['g4'][0]
+                _cached_configs['g4'] = [g4_file_name, batch_size, key.sum().item()]
             self.compile()
             key, results = self.multiple_simulations(key, batch_size, parameters, 1)
             results_pile.append(results)
