@@ -120,8 +120,8 @@ def get_file_path(fname):
     Try 5 methods in the following order
 
     #. fname begin with '/', return absolute path
-    #. can get file from _get_abspath, return appletree internal file path
     #. url_base begin with '/', return url_base + name
+    #. can get file from _get_abspath, return appletree internal file path
     #. can be found in local installed ntauxfiles, return ntauxfiles absolute path
     #. can be downloaded from MongoDB, download and return cached path
     """
@@ -134,13 +134,7 @@ def get_file_path(fname):
     if fname.startswith('/'):
         return fname
 
-    # 2. From appletree internal files
-    try:
-        return _get_abspath(fname)
-    except FileNotFoundError:
-        pass
-
-    # 3. From local folder
+    # 2. From local folder
     # Use url_base as prefix
     if 'url_base' in _cached_configs.keys():
         url_base = _cached_configs['url_base']
@@ -149,6 +143,12 @@ def get_file_path(fname):
             p = os.path.join(url_base, fname)
             if os.path.exists(p):
                 return p
+
+    # 3. From appletree internal files
+    try:
+        return _get_abspath(fname)
+    except FileNotFoundError:
+        pass
 
     # 4. From local installed ntauxfiles
     if NT_AUX_INSTALLED:
@@ -446,3 +446,55 @@ def add_plugins_to_graph_tree(component,
             )
         _seen.append(plugin_name)
     return graph_tree, _seen
+
+
+@export
+def add_extensions(module1, module2, base):
+    """
+    Add subclasses of module2 to module1
+
+    When ComponentSim compiles the dependency tree,
+    it will search in the appletree.plugins module for Plugin(as attributes).
+    When building Likelihood, it will also search for corresponding Component(s)
+    specified in the instructions(e.g. NRBand).
+
+    So we need to assign the attributes before compilation.
+    These plugins are mostly user defined.
+    """
+    # Assign the module2 as attribute of module1
+    if module2.__name__ in dir(module1):
+        raise ValueError(
+            f'{module2.__name__} already existed in {module1.__name__}, '
+            'do not re-register a module with same name',
+        )
+    else:
+        setattr(module1, module2.__name__.split('.')[-1], module2)
+
+    # Iterate the module2 and assign the single Plugin(s) as attribute(s)
+    for x in dir(module2):
+        x = getattr(module2, x)
+        if not isinstance(x, type(type)):
+            continue
+        _add_extension(module1, x, base)
+
+
+def _add_extension(module, subclass, base):
+    """
+    Add subclass to module
+    Skip the class when it is base class.
+
+    It is no allowed to assign a class which has same name to an already assigned class.
+    We do not allowed class name covering!
+    Please change the name of your class when Error shows itself.
+    """
+    if getattr(subclass, '_' + subclass.__name__ + '__is_base', False):
+        return
+
+    if issubclass(subclass, base) and subclass != base:
+        if subclass.__name__ in dir(module):
+            raise ValueError(
+                f'{subclass.__name__} already existed in {module.__name__}, '
+                'do not re-register a {base.__name__} with same name',
+            )
+        else:
+            setattr(module, subclass.__name__, subclass)

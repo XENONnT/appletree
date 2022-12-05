@@ -7,6 +7,7 @@ from jax import numpy as jnp
 import pandas as pd
 
 import appletree
+from appletree import utils
 from appletree.plugin import Plugin
 from appletree.share import _cached_configs, _cached_functions
 from appletree.utils import exporter, load_data
@@ -18,6 +19,9 @@ export, __all__ = exporter()
 @export
 class Component:
     """Base class of component"""
+
+    # Do not initialize this class because it is base
+    __is_base = True
 
     rate_name: str = ''
     norm_type: str = ''
@@ -56,6 +60,30 @@ class Component:
     def simulate_hist(self, *args, **kwargs):
         """Hook for simulation with histogram output."""
         raise NotImplementedError
+
+    def multiple_simulations(self, key, batch_size, parameters, times):
+        """Simulate many times and
+        move results to CPU because the memory limit of GPU
+        """
+        results_pile = []
+        for _ in range(times):
+            key, results = self.simulate(key, batch_size, parameters)
+            results_pile.append(np.array(results))
+        return key, np.hstack(results_pile)
+
+    def multiple_simulations_compile(self, key, batch_size, parameters, times):
+        """Simulate many times after new compilation and
+        move results to CPU because the memory limit of GPU
+        """
+        results_pile = []
+        for _ in range(times):
+            if _cached_configs['g4']:
+                g4_file_name = _cached_configs['g4'][0]
+                _cached_configs['g4'] = [g4_file_name, batch_size, key.sum().item()]
+            self.compile()
+            key, results = self.multiple_simulations(key, batch_size, parameters, 1)
+            results_pile.append(results)
+        return key, np.hstack(results_pile)
 
     def implement_binning(self, mc, eff):
         """Apply binning to MC data.
@@ -97,6 +125,9 @@ class Component:
 @export
 class ComponentSim(Component):
     """Component that needs MC simulations."""
+
+    # Do not initialize this class because it is base
+    __is_base = True
 
     code: str = None
     old_code: str = None
@@ -423,6 +454,9 @@ class ComponentSim(Component):
 class ComponentFixed(Component):
     """Component whose shape is fixed."""
 
+    # Do not initialize this class because it is base
+    __is_base = True
+
     def __init__(self,
                  *args, **kwargs):
         """Initialization"""
@@ -468,15 +502,10 @@ class ComponentFixed(Component):
 @export
 def add_component_extensions(module1, module2):
     """Add components of module2 to module1"""
-    for x in dir(module2):
-        x = getattr(module2, x)
-        if not isinstance(x, type(type)):
-            continue
-        _add_component_extension(module1, x)
+    utils.add_extensions(module1, module2, Component)
 
 
 @export
 def _add_component_extension(module, component):
     """Add component to module"""
-    if issubclass(component, Component):
-        setattr(module, component.__name__, component)
+    utils._add_extension(module, component, Component)

@@ -24,7 +24,7 @@ class Quanta(Plugin):
 
 
 @export
-class Ionization(Plugin):
+class IonizationER(Plugin):
     depends_on = ['num_quanta']
     provides = ['num_ion']
     parameters = ('nex_ni_ratio',)
@@ -69,7 +69,7 @@ class RecombFluct(Plugin):
 
 
 @export
-class TrueRecomb(Plugin):
+class TrueRecombER(Plugin):
     depends_on = ['recomb_mean', 'recomb_std']
     provides = ['recomb']
 
@@ -80,7 +80,7 @@ class TrueRecomb(Plugin):
 
 
 @export
-class Recombination(Plugin):
+class RecombinationER(Plugin):
     depends_on = ['num_quanta', 'num_ion', 'recomb']
     provides = ['num_photon', 'num_electron']
 
