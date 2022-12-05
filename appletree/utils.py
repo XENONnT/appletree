@@ -450,7 +450,19 @@ def add_plugins_to_graph_tree(component,
 
 @export
 def add_extensions(module1, module2, base):
-    """Add subclasses of module2 to module1"""
+    """
+    Add subclasses of module2 to module1
+
+    When ComponentSim compiles the dependency tree,
+    it will search in the appletree.plugins module for Plugin(as attributes).
+    When building Likelihood, it will also search for corresponding Component(s)
+    specified in the instructions(e.g. NRBand).
+
+    So we need to assign the attributes before compilation. 
+    These plugins are mostly user defined.
+    """
+
+    # Assign the module2 as attribute of module1
     if module2.__name__ in dir(module1):
         raise ValueError(
             f'{module2.__name__} already existed in {module1.__name__}, '
@@ -459,6 +471,7 @@ def add_extensions(module1, module2, base):
     else:
         setattr(module1, module2.__name__.split('.')[-1], module2)
 
+    # Iterate the module2 and assign the single Plugin(s) as attribute(s)
     for x in dir(module2):
         x = getattr(module2, x)
         if not isinstance(x, type(type)):
@@ -466,9 +479,15 @@ def add_extensions(module1, module2, base):
         _add_extension(module1, x, base)
 
 
-@export
 def _add_extension(module, subclass, base):
-    """Add subclass to module"""
+    """
+    Add subclass to module
+    Skip the class when it is base class.
+
+    It is no allowed to assign a class which has same name to an already assigned class.
+    We do not allowed class name covering!
+    Please change the name of your class when Error shows itself. 
+    """
     if getattr(subclass, '_' + subclass.__name__ + '__is_base', False):
         return
 
