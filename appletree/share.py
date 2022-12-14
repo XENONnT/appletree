@@ -1,6 +1,7 @@
 _cached_configs = dict()
 _cached_functions = dict()
 
+
 def set_global_config(configs):
     """Set new global configuration options
 
