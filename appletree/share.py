@@ -6,6 +6,8 @@ def set_global_config(configs):
 
     :param configs: dict, configuration file name or dictionary
     """
+    from appletree.utils import get_file_path
+
     for k, v in configs.items():
         if isinstance(v, (float, int, list)):
             _cached_configs.update({k: v})
