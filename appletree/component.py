@@ -25,6 +25,7 @@ class Component:
 
     rate_name: str = ''
     norm_type: str = ''
+    add_eps_to_hist: bool = True
 
     def __init__(self,
                  name: str = None,
@@ -99,8 +100,9 @@ class Component:
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
         else:
             raise ValueError(f'Unsupported bins_type {self.bins_type}!')
-        # as an uncertainty to prevent blowing up
-        hist = jnp.clip(hist, 1., jnp.inf)
+        if self.add_eps_to_hist:
+            # as an uncertainty to prevent blowing up
+            hist = jnp.clip(hist, 1., jnp.inf)
         return hist
 
     def get_normalization(self, hist, parameters, batch_size=None):
