@@ -9,8 +9,7 @@ from appletree import randgen
 from appletree import Parameter
 from appletree import Likelihood
 from appletree.utils import load_json
-from appletree.config import get_file_path
-from appletree.share import _cached_configs
+from appletree.share import set_global_config
 
 os.environ['OMP_NUM_THREADS'] = '1'
 
@@ -279,7 +278,7 @@ class Context():
     def update_url_base(self, url_base):
         """Update url_base in appletree.share"""
         print(f'Updated url_base to {url_base}')
-        _cached_configs.update({'url_base': url_base})
+        set_global_config({'url_base': url_base})
 
     def get_parameter_config(self, par_config):
         """Get configuration for parameter manager
@@ -309,14 +308,7 @@ class Context():
         self.config.update(configs)
 
         # also store required configurations to appletree.share
-        for k, v in configs.items():
-            if isinstance(v, (float, int, list)):
-                _cached_configs.update({k: v})
-            elif isinstance(v, str):
-                file_path = get_file_path(v)
-                _cached_configs.update({k: file_path})
-            else:
-                raise NotImplementedError
+        set_global_config(configs)
 
     def lineage(self, data_name: str = 'cs2'):
         """Return lineage of plugins."""
