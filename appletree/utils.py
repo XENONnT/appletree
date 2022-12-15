@@ -501,17 +501,13 @@ def _add_extension(module, subclass, base):
 
 
 def integrate(x, y):
-    """
-    Calculate the integral using midpoint method.
-    """
+    """Calculate the integral using midpoint method."""
     _, res = cum_integrate(x, y)
     return res[-1]
 
 
 def cum_integrate(x, y):
-    """
-    Calculate the cumulative integral using midpoint method.
-    """
+    """Calculate the cumulative integral using midpoint method."""
     dx = x[1:] - x[:-1]
     x_mid = 0.5 * (x[1:] + x[:-1])
     y_mid = 0.5 * (y[1:] + y[:-1])

@@ -127,7 +127,7 @@ class Map(Config):
         """Cache the map to jnp.array if bins_type is point"""
 
         if data['coordinate_name'] == 'pdf':
-            warn(f'Convert (x, pdf) map of {self.name} to (cdf, x).')
+            warn(f'Convert {self.name} from (x, pdf) to (cdf, x).')
             x, cdf = self.pdf_to_cdf(data['coordinate_system'], data['map'])
             data['coordinate_name'] = 'cdf'
             data['coordinate_system'] = cdf
@@ -145,6 +145,7 @@ class Map(Config):
         self.map = jnp.asarray(data['map'], dtype=float)
 
     def pdf_to_cdf(self, x, pdf):
+        """Convert pdf map to cdf map"""
         norm = integrate(x, pdf)
         x, cdf = cum_integrate(x, pdf)
         cdf /= norm
