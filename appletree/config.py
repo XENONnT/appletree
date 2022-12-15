@@ -2,9 +2,10 @@ import typing as ty
 
 from immutabledict import immutabledict
 from jax import numpy as jnp
+from warnings import warn
 
 from appletree.share import _cached_configs
-from appletree.utils import exporter, load_json, get_file_path
+from appletree.utils import exporter, load_json, get_file_path, integrate, cum_integrate
 
 export, __all__ = exporter()
 
@@ -125,6 +126,12 @@ class Map(Config):
     def build_point(self, data):
         """Cache the map to jnp.array if bins_type is point"""
 
+        if data['coordinate_name'] == 'pdf':
+            warn(f'Convert (x, pdf) map of {self.name} to (cdf, x).')
+            x, cdf = self.pdf_to_cdf(data['coordinate_system'], data['map'])
+            data['coordinate_name'] = 'cdf'
+            data['coordinate_system'] = cdf
+            data['map'] = x
         self.coordinate_name = data['coordinate_name']
         self.coordinate_system = jnp.asarray(data['coordinate_system'], dtype=float)
         self.map = jnp.asarray(data['map'], dtype=float)
@@ -136,3 +143,9 @@ class Map(Config):
         self.coordinate_lowers = jnp.asarray(data['coordinate_lowers'], dtype=float)
         self.coordinate_uppers = jnp.asarray(data['coordinate_uppers'], dtype=float)
         self.map = jnp.asarray(data['map'], dtype=float)
+
+    def pdf_to_cdf(self, x, pdf):
+        norm = integrate(x, pdf)
+        x, cdf = cum_integrate(x, pdf)
+        cdf /= norm
+        return x, cdf
