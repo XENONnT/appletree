@@ -9,7 +9,7 @@ import pandas as pd
 import appletree
 from appletree import utils
 from appletree.plugin import Plugin
-from appletree.share import _cached_configs, _cached_functions
+from appletree.share import _cached_configs, _cached_functions, set_global_config
 from appletree.utils import exporter, load_data
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 
@@ -25,6 +25,7 @@ class Component:
 
     rate_name: str = ''
     norm_type: str = ''
+    add_eps_to_hist: bool = True
 
     def __init__(self,
                  name: str = None,
@@ -99,8 +100,9 @@ class Component:
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
         else:
             raise ValueError(f'Unsupported bins_type {self.bins_type}!')
-        # as an uncertainty to prevent blowing up
-        hist = jnp.clip(hist, 1., jnp.inf)
+        if self.add_eps_to_hist:
+            # as an uncertainty to prevent blowing up
+            hist = jnp.clip(hist, 1., jnp.inf)
         return hist
 
     def get_normalization(self, hist, parameters, batch_size=None):
@@ -394,6 +396,13 @@ class ComponentSim(Component):
         """Return lineage of plugins."""
         assert isinstance(data_name, str)
         pass
+
+    def set_config(self, configs):
+        """Set new global configuration options
+
+        :param configs: dict, configuration file name or dictionary
+        """
+        set_global_config(configs)
 
     def show_config(self, data_names: list = ('cs1', 'cs2', 'eff')):
         """
