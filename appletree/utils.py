@@ -1,7 +1,7 @@
 import os
 import re
 import json
-import warnings
+from warnings import warn
 import pkg_resources
 from time import time
 
@@ -138,7 +138,7 @@ def get_file_path(fname):
         if url_base.startswith('/'):
             fpath = os.path.join(url_base, fname)
             if os.path.exists(fpath):
-                warnings.warn(f'Load {fname} successfully from {fpath}')
+                warn(f'Load {fname} successfully from {fpath}')
                 return fpath
 
     # 3. From appletree internal files
@@ -152,7 +152,7 @@ def get_file_path(fname):
         # You might want to use this, for example if you are a developer
         if fname in ntauxfiles.list_private_files():
             fpath = ntauxfiles.get_abspath(fname)
-            warnings.warn(f'Load {fname} successfully from {fpath}')
+            warn(f'Load {fname} successfully from {fpath}')
             return fpath
 
     # 5. From MongoDB
@@ -168,10 +168,10 @@ def get_file_path(fname):
         # FileNotFoundError, ValueErrors can be raised if we
         # cannot load the requested config
         fpath = downloader.download_single(fname)
-        warnings.warn(f'Loading {fname} from mongo downloader to {fpath}')
+        warn(f'Loading {fname} from mongo downloader to {fpath}')
         return fname  # Keep the name and let get_resource do its thing
     except (FileNotFoundError, ValueError, NameError, AttributeError):
-        warnings.warn(f'Mongo downloader not possible or does not have {fname}')
+        warn(f'Mongo downloader not possible or does not have {fname}')
 
     # raise error when can not find corresponding file
     raise RuntimeError(f'Can not find {fname}, please check your file system')
