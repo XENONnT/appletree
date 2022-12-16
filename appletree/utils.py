@@ -1,7 +1,7 @@
 import os
 import re
 import json
-from warnings import warn
+import warnings
 import pkg_resources
 from time import time
 
@@ -125,60 +125,56 @@ def get_file_path(fname):
     #. can be found in local installed ntauxfiles, return ntauxfiles absolute path
     #. can be downloaded from MongoDB, download and return cached path
     """
-    if not fname:
-        warn(f'A file has value False, assuming this is intentional.')
-        return
-
-    # 1. From absolute path
-    # Usually Config.default is a absolute path
-    if fname.startswith('/'):
-        return fname
-
-    # 2. From local folder
-    # Use url_base as prefix
-    if 'url_base' in _cached_configs.keys():
-        url_base = _cached_configs['url_base']
-
-        if url_base.startswith('/'):
-            p = os.path.join(url_base, fname)
-            if os.path.exists(p):
-                return p
-
-    # 3. From appletree internal files
     try:
-        return _get_abspath(fname)
-    except FileNotFoundError:
-        pass
+        # 1. From absolute path
+        # Usually Config.default is a absolute path
+        if fname.startswith('/'):
+            return fname
 
-    # 4. From local installed ntauxfiles
-    if NT_AUX_INSTALLED:
-        # You might want to use this, for example if you are a developer
-        if fname in ntauxfiles.list_private_files():
-            warn(f'Using the private repo to load {fname} locally')
-            fpath = ntauxfiles.get_abspath(fname)
-            warn(f'Loading {fname} is successfully from {fpath}')
-            return fpath
+        # 2. From local folder
+        # Use url_base as prefix
+        if 'url_base' in _cached_configs.keys():
+            url_base = _cached_configs['url_base']
 
-    # 5. From MongoDB
-    try:
-        import straxen
-        # https://straxen.readthedocs.io/en/latest/config_storage.html
-        # downloading-xenonnt-files-from-the-database  # noqa
+            if url_base.startswith('/'):
+                fpath = os.path.join(url_base, fname)
+                if os.path.exists(fpath):
+                    warnings.warn(f'Load {fname} successfully from {fpath}')
+                    return fpath
 
-        # we need to add the straxen.MongoDownloader() in this
-        # try: except NameError: logic because the NameError
-        # gets raised if we don't have access to utilix.
-        downloader = straxen.MongoDownloader()
-        # FileNotFoundError, ValueErrors can be raised if we
-        # cannot load the requested config
-        fpath = downloader.download_single(fname)
-        warn(f'Loading {fname} from mongo downloader to {fpath}')
-        return fname  # Keep the name and let get_resource do its thing
+        # 3. From appletree internal files
+        try:
+            return _get_abspath(fname)
+        except FileNotFoundError:
+            pass
 
-    except (FileNotFoundError, ValueError, NameError, AttributeError):
-        warn(f'Mongo downloader not possible or does not have {fname}')
+        # 4. From local installed ntauxfiles
+        if NT_AUX_INSTALLED:
+            # You might want to use this, for example if you are a developer
+            if fname in ntauxfiles.list_private_files():
+                fpath = ntauxfiles.get_abspath(fname)
+                warnings.warn(f'Load {fname} successfully from {fpath}')
+                return fpath
 
-    warn(f'I can not find {fname}!')
+        # 5. From MongoDB
+        try:
+            import straxen
+            # https://straxen.readthedocs.io/en/latest/config_storage.html
+            # downloading-xenonnt-files-from-the-database  # noqa
+
+            # we need to add the straxen.MongoDownloader() in this
+            # try: except NameError: logic because the NameError
+            # gets raised if we don't have access to utilix.
+            downloader = straxen.MongoDownloader()
+            # FileNotFoundError, ValueErrors can be raised if we
+            # cannot load the requested config
+            fpath = downloader.download_single(fname)
+            warnings.warn(f'Loading {fname} from mongo downloader to {fpath}')
+            return fname  # Keep the name and let get_resource do its thing
+        except (FileNotFoundError, ValueError, NameError, AttributeError):
+            warnings.warn(f'Mongo downloader not possible or does not have {fname}')
+    except:
+        raise RuntimeError(f'Can not find {fname}, please check your file system')
 
 
 @export
