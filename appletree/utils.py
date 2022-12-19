@@ -500,14 +500,19 @@ def _add_extension(module, subclass, base):
             setattr(module, subclass.__name__, subclass)
 
 
-def integrate(x, y):
-    """Calculate the integral using midpoint method."""
+def integrate_midpoint(x, y):
+    """Calculate the integral using midpoint method.
+    :param x: 1D array-like 
+    :param y: 1D array-like, with the same length as x.
+    """
     _, res = cum_integrate(x, y)
     return res[-1]
 
 
-def cum_integrate(x, y):
-    """Calculate the cumulative integral using midpoint method."""
+def cum_integrate_midpoint(x, y):
+    """Calculate the cumulative integral using midpoint method.
+    :param x: 1D array-like 
+    :param y: 1D array-like, with the same length as x."""
     dx = x[1:] - x[:-1]
     x_mid = 0.5 * (x[1:] + x[:-1])
     y_mid = 0.5 * (y[1:] + y[:-1])
