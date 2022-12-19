@@ -37,7 +37,7 @@ class PositionRecon(Plugin):
         rec_x = x + delta_x
         rec_y = y + delta_y
         rec_z = z
-        rec_r = jnp.sqrt(x_rec**2 + y_rec**2)
+        rec_r = jnp.sqrt(rec_x**2 + rec_y**2)
         return key, rec_x, rec_y, rec_z, rec_r
 
 
