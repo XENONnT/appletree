@@ -21,7 +21,7 @@ export, __all__ = exporter(export_self=False)
 )
 class PositionRecon(Plugin):
     depends_on = ['x', 'y', 'z', 'num_electron_drifted']
-    provides = ['rec_x', 'rec_y', 'rec_z']
+    provides = ['rec_x', 'rec_y', 'rec_z', 'rec_r']
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, x, y, z, num_electron_drifted):
@@ -34,7 +34,11 @@ class PositionRecon(Plugin):
         mean = jnp.zeros_like(num_electron_drifted)
         key, delta_x = randgen.normal(key, mean, std)
         key, delta_y = randgen.normal(key, mean, std)
-        return key, x + delta_x, y + delta_y, z
+        rec_x = x + delta_x
+        rec_y = y + delta_y
+        rec_z = z
+        rec_r = jnp.sqrt(rec_x**2 + rec_y**2)
+        return key, rec_x, rec_y, rec_z, rec_r
 
 
 @export

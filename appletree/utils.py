@@ -125,10 +125,6 @@ def get_file_path(fname):
     #. can be found in local installed ntauxfiles, return ntauxfiles absolute path
     #. can be downloaded from MongoDB, download and return cached path
     """
-    if not fname:
-        warn(f'A file has value False, assuming this is intentional.')
-        return
-
     # 1. From absolute path
     # Usually Config.default is a absolute path
     if fname.startswith('/'):
@@ -140,9 +136,10 @@ def get_file_path(fname):
         url_base = _cached_configs['url_base']
 
         if url_base.startswith('/'):
-            p = os.path.join(url_base, fname)
-            if os.path.exists(p):
-                return p
+            fpath = os.path.join(url_base, fname)
+            if os.path.exists(fpath):
+                warn(f'Load {fname} successfully from {fpath}')
+                return fpath
 
     # 3. From appletree internal files
     try:
@@ -154,9 +151,8 @@ def get_file_path(fname):
     if NT_AUX_INSTALLED:
         # You might want to use this, for example if you are a developer
         if fname in ntauxfiles.list_private_files():
-            warn(f'Using the private repo to load {fname} locally')
             fpath = ntauxfiles.get_abspath(fname)
-            warn(f'Loading {fname} is successfully from {fpath}')
+            warn(f'Load {fname} successfully from {fpath}')
             return fpath
 
     # 5. From MongoDB
@@ -174,11 +170,11 @@ def get_file_path(fname):
         fpath = downloader.download_single(fname)
         warn(f'Loading {fname} from mongo downloader to {fpath}')
         return fname  # Keep the name and let get_resource do its thing
-
     except (FileNotFoundError, ValueError, NameError, AttributeError):
         warn(f'Mongo downloader not possible or does not have {fname}')
 
-    warn(f'I can not find {fname}!')
+    # raise error when can not find corresponding file
+    raise RuntimeError(f'Can not find {fname}, please check your file system')
 
 
 @export
