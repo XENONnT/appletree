@@ -34,9 +34,11 @@ class PositionRecon(Plugin):
         mean = jnp.zeros_like(num_electron_drifted)
         key, delta_x = randgen.normal(key, mean, std)
         key, delta_y = randgen.normal(key, mean, std)
-        x_rec = x + delta_x
-        y_rec = y + delta_y
-        return key, x_rec, y_rec, z, jnp.sqrt(x_rec**2 + y_rec**2)
+        rec_x = x + delta_x
+        rec_y = y + delta_y
+        rec_z = z
+        rec_r = jnp.sqrt(x_rec**2 + y_rec**2)
+        return key, rec_x, rec_y, rec_z, rec_r
 
 
 @export
