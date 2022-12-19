@@ -5,7 +5,7 @@ from jax import numpy as jnp
 from warnings import warn
 
 from appletree.share import _cached_configs
-from appletree.utils import exporter, load_json, get_file_path, integrate, cum_integrate
+from appletree.utils import exporter, load_json, get_file_path, integrate_midpoint, cum_integrate_midpoint
 
 export, __all__ = exporter()
 
@@ -146,7 +146,7 @@ class Map(Config):
 
     def pdf_to_cdf(self, x, pdf):
         """Convert pdf map to cdf map"""
-        norm = integrate(x, pdf)
-        x, cdf = cum_integrate(x, pdf)
+        norm = integrate_midpoint(x, pdf)
+        x, cdf = cum_integrate_midpoint(x, pdf)
         cdf /= norm
         return x, cdf
