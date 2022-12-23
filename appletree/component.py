@@ -116,7 +116,8 @@ class Component:
         elif self.norm_type == 'on_sim':
             if self._use_mcinput:
                 bootstrap_name = self._plugin_class_registry['energy'].__name__
-                n_events_selected = _cached_functions[bootstrap_name + '_' + self.name].g4.n_events_selected
+                bootstrap_name = bootstrap_name + '_' + self.name
+                n_events_selected = _cached_functions[bootstrap_name].g4.n_events_selected
                 normalization_factor = 1 / n_events_selected * parameters[self.rate_name]
             else:
                 normalization_factor = 1 / batch_size * parameters[self.rate_name]
