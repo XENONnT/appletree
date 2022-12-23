@@ -58,6 +58,10 @@ class Component:
             result[i] = result[i][mask]
         return result
 
+    @property
+    def _use_mcinput(self):
+        return 'Bootstrap' in self._plugin_class_registry['energy'].__name__
+
     def simulate_hist(self, *args, **kwargs):
         """Hook for simulation with histogram output."""
         raise NotImplementedError
@@ -78,7 +82,7 @@ class Component:
         """
         results_pile = []
         for _ in range(times):
-            if _cached_configs['g4']:
+            if _cached_configs['g4'] and self._use_mcinput:
                 g4_file_name = _cached_configs['g4'][0]
                 _cached_configs['g4'] = [g4_file_name, batch_size, key.sum().item()]
             self.compile()
@@ -110,7 +114,12 @@ class Component:
         if self.norm_type == 'on_pdf':
             normalization_factor = 1 / jnp.sum(hist) * parameters[self.rate_name]
         elif self.norm_type == 'on_sim':
-            normalization_factor = 1 / batch_size * parameters[self.rate_name]
+            if self._use_mcinput:
+                bootstrap_name = self._plugin_class_registry['energy'].__name__
+                n_events_selected = _cached_functions[bootstrap_name + '_' + self.name].g4.n_events_selected
+                normalization_factor = 1 / n_events_selected * parameters[self.rate_name]
+            else:
+                normalization_factor = 1 / batch_size * parameters[self.rate_name]
         else:
             raise ValueError(f'Unsupported norm_type {self.norm_type}!')
         return normalization_factor
@@ -254,7 +263,7 @@ class ComponentSim(Component):
             self.needed_parameters |= set(plugin.parameters)
 
     def flush_source_code(self,
-                          data_names: list = ('cs1', 'cs2', 'eff'),
+                          data_names: list = ['cs1', 'cs2', 'eff'],
                           func_name: str = 'simulate',
                           nodep_data_name: str = 'batch_size'):
         """Infer the simulation code from the dependency tree."""
