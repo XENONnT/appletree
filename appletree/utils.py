@@ -511,6 +511,8 @@ def cum_integrate_midpoint(x, y):
 
     :param x: 1D array-like
     :param y: 1D array-like, with the same length as x."""
+    x = np.array(x)
+    y = np.array(y)
     dx = x[1:] - x[:-1]
     x_mid = 0.5 * (x[1:] + x[:-1])
     y_mid = 0.5 * (y[1:] + y[:-1])
