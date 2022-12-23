@@ -18,7 +18,7 @@ def test_er_likelihood():
     llh.print_likelihood_summary(short=True)
 
     # Get parameters
-    par_config_file_name = get_file_path('er_sr0.json')
+    par_config_file_name = get_file_path('er.json')
     par_manager = apt.Parameter(par_config_file_name)
     par_manager.sample_init()
     parameters = par_manager.get_all_parameter()
