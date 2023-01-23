@@ -27,7 +27,7 @@ class Plugin():
     # Set using the takes_config decorator
     takes_config = immutabledict()
 
-    def __init__(self, llh_name):
+    def __init__(self, llh_name: str = None):
         """Initialization."""
         # llh_name will tell us which map to use
         self.llh_name = llh_name

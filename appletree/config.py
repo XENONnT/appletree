@@ -80,7 +80,7 @@ class Config():
         raise ValueError(f"Missing option {self.name} "
                          f"required by {self.taken_by}")
 
-    def build(self, llh_name):
+    def build(self, llh_name: str = None):
         """Build configuration, set attributes to Config instance"""
         raise NotImplementedError
 
@@ -91,14 +91,21 @@ class Constant(Config):
 
     value = None
 
-    def build(self, llh_name):
+    def build(self, llh_name: str = None):
         """Set value of Constant"""
         if not self.name in _cached_configs:
             _cached_configs.update({self.name: self.get_default()})
 
         value = _cached_configs[self.name]
         if isinstance(value, dict):
-            self.value = value[llh_name]
+            try:
+                self.value = value[llh_name]
+            except:
+                mesg = f'You specified {self.name} as a dictionary. '
+                mesg += f'The key of it should be the name of one '
+                mesg += f'of the likelihood, '
+                mesg += f'but it is {llh_name}.'
+                raise ValueError(mesg)
         else:
             self.value = value
 
@@ -107,7 +114,7 @@ class Constant(Config):
 class Map(Config):
     """Map is a special config which takes input file"""
 
-    def build(self, llh_name):
+    def build(self, llh_name: str = None):
         """Cache the map to jnp.array"""
 
         if self.name in _cached_configs:
@@ -117,7 +124,14 @@ class Map(Config):
             _cached_configs.update({self.name: file_path})
 
         if isinstance(file_path, dict):
-            self.file_path = file_path[llh_name]
+            try:
+                self.file_path = file_path[llh_name]
+            except:
+                mesg = f'You specified {self.name} as a dictionary. '
+                mesg += f'The key of it should be the name of one '
+                mesg += f'of the likelihood, '
+                mesg += f'but it is {llh_name}.'
+                raise ValueError(mesg)
         else:
             self.file_path = file_path
 
