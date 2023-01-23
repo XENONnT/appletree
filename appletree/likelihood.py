@@ -91,6 +91,7 @@ class Likelihood:
         # Initialize component
         component = component_cls(
             name=component_name,
+            llh_name=self.name,
             bins=self._bins,
             bins_type=self.component_bins_type,
             file_name=file_name,

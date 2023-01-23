@@ -27,8 +27,10 @@ class Plugin():
     # Set using the takes_config decorator
     takes_config = immutabledict()
 
-    def __init__(self):
+    def __init__(self, llh_name):
         """Initialization."""
+        # llh_name will tell us which map to use
+        self.llh_name = llh_name
         if not self.depends_on:
             raise ValueError('depends_on not provided for '
                              f'{self.__class__.__name__}')
@@ -39,7 +41,7 @@ class Plugin():
 
         # configs are loaded when a plugin is initialized
         for config in self.takes_config.values():
-            config.build()
+            config.build(self.llh_name)
 
         self.sanity_check()
 

@@ -29,6 +29,7 @@ class Component:
 
     def __init__(self,
                  name: str = None,
+                 llh_name: str = None,
                  bins: list = [],
                  bins_type: str = '',
                  **kwargs):
@@ -44,6 +45,7 @@ class Component:
             self.name = self.__class__.__name__
         else:
             self.name = name
+        self.llh_name = llh_name
         self.bins = bins
         self.bins_type = bins_type
         self.needed_parameters = set()
@@ -289,7 +291,7 @@ class ComponentSim(Component):
         # initialize new instances
         for work in self.worksheet:
             instance = work[0] + '_' + self.name
-            code += f'{instance} = {work[0]}()\n'
+            code += f"{instance} = {work[0]}('{self.llh_name}')\n"
 
         # define functions
         code += '\n'
