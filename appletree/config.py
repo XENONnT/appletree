@@ -100,7 +100,7 @@ class Constant(Config):
         if isinstance(value, dict):
             try:
                 self.value = value[llh_name]
-            except:
+            except KeyError:
                 mesg = f'You specified {self.name} as a dictionary. '
                 mesg += f'The key of it should be the name of one '
                 mesg += f'of the likelihood, '
@@ -126,7 +126,7 @@ class Map(Config):
         if isinstance(file_path, dict):
             try:
                 self.file_path = file_path[llh_name]
-            except:
+            except KeyError:
                 mesg = f'You specified {self.name} as a dictionary. '
                 mesg += f'The key of it should be the name of one '
                 mesg += f'of the likelihood, '
