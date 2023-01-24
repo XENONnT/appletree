@@ -1,4 +1,5 @@
 import inspect
+from copy import deepcopy
 
 from immutabledict import immutabledict
 
@@ -44,6 +45,10 @@ class Plugin():
             config.build(self.llh_name)
 
         self.sanity_check()
+
+        # Do not set configurations as 
+        for config in self.takes_config.values():
+            setattr(self, config.name, deepcopy(config))
 
     def __call__(self, *args, **kwargs):
         """Calls self.simulate"""

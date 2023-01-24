@@ -44,8 +44,7 @@ def takes_config(*configs):
         else:
             plugin_class.takes_config = immutabledict(result)
 
-        for config in plugin_class.takes_config.values():
-            setattr(plugin_class, config.name, config)
+        # Should set the configurations as the attributes of Plugin
         return plugin_class
 
     return wrapped

@@ -45,7 +45,10 @@ class Component:
             self.name = self.__class__.__name__
         else:
             self.name = name
-        self.llh_name = llh_name
+        if llh_name is None:
+            self.llh_name = self.__class__.__name__ + '_llh'
+        else:
+            self.llh_name = llh_name
         self.bins = bins
         self.bins_type = bins_type
         self.needed_parameters = set()
@@ -290,8 +293,9 @@ class ComponentSim(Component):
 
         # initialize new instances
         for work in self.worksheet:
-            instance = work[0] + '_' + self.name
-            code += f"{instance} = {work[0]}('{self.llh_name}')\n"
+            plugin = work[0]
+            instance = plugin + '_' + self.name
+            code += f"{instance} = {plugin}('{self.llh_name}')\n"
 
         # define functions
         code += '\n'
@@ -324,7 +328,8 @@ class ComponentSim(Component):
     @code.setter
     def code(self, code):
         self._code = code
-        self._compile = partial(exec, self.code, _cached_functions)
+        _cached_functions[self.llh_name] = {}
+        self._compile = partial(exec, self.code, _cached_functions[self.llh_name])
 
     def deduce(self,
                data_names: list = ('cs1', 'cs2'),
@@ -354,7 +359,7 @@ class ComponentSim(Component):
     def compile(self):
         """Build simulation function and cache it to share._cached_functions."""
         self._compile()
-        self.simulate = _cached_functions[self.func_name]
+        self.simulate = _cached_functions[self.llh_name][self.func_name]
 
     def simulate_hist(self,
                       key,
