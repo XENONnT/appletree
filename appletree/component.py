@@ -122,7 +122,7 @@ class Component:
             if self._use_mcinput:
                 bootstrap_name = self._plugin_class_registry['energy'].__name__
                 bootstrap_name = bootstrap_name + '_' + self.name
-                n_events_selected = _cached_functions[bootstrap_name].g4.n_events_selected
+                n_events_selected = _cached_functions[self.llh_name][bootstrap_name].g4.n_events_selected
                 normalization_factor = 1 / n_events_selected * parameters[self.rate_name]
             else:
                 normalization_factor = 1 / batch_size * parameters[self.rate_name]
@@ -315,7 +315,7 @@ class ComponentSim(Component):
 
         self.code = code
 
-        if func_name in _cached_functions.keys():
+        if func_name in _cached_functions[self.llh_name].keys():
             warning = f'Function name {func_name} is already cached. '
             warning += 'Running compile() will overwrite it.'
             warn(warning)
@@ -328,7 +328,8 @@ class ComponentSim(Component):
     @code.setter
     def code(self, code):
         self._code = code
-        _cached_functions[self.llh_name] = {}
+        if self.llh_name not in _cached_functions.keys():
+            _cached_functions[self.llh_name] = {}
         self._compile = partial(exec, self.code, _cached_functions[self.llh_name])
 
     def deduce(self,
