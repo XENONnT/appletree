@@ -46,7 +46,7 @@ class Plugin():
 
         self.sanity_check()
 
-        # Do not set configurations as 
+        # Do not set configurations as static
         for config in self.takes_config.values():
             setattr(self, config.name, deepcopy(config))
 
