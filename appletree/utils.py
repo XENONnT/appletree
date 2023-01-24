@@ -445,7 +445,7 @@ def add_plugins_to_graph_tree(component,
 
 
 @export
-def add_extensions(module1, module2, base):
+def add_extensions(module1, module2, base, force=False):
     """
     Add subclasses of module2 to module1
 
@@ -458,12 +458,15 @@ def add_extensions(module1, module2, base):
     These plugins are mostly user defined.
     """
     # Assign the module2 as attribute of module1
-    if module2.__name__ in dir(module1):
+    is_exists = module2.__name__ in dir(module1)
+    if is_exists and not force:
         raise ValueError(
             f'{module2.__name__} already existed in {module1.__name__}, '
-            'do not re-register a module with same name',
+            f'do not re-register a module with same name',
         )
     else:
+        if is_exists:
+            print(f'You have forcibly registered {module2.__name__} to {module1.__name__}')
         setattr(module1, module2.__name__.split('.')[-1], module2)
 
     # Iterate the module2 and assign the single Plugin(s) as attribute(s)
@@ -471,10 +474,10 @@ def add_extensions(module1, module2, base):
         x = getattr(module2, x)
         if not isinstance(x, type(type)):
             continue
-        _add_extension(module1, x, base)
+        _add_extension(module1, x, base, force=force)
 
 
-def _add_extension(module, subclass, base):
+def _add_extension(module, subclass, base, force=False):
     """
     Add subclass to module
     Skip the class when it is base class.
@@ -487,12 +490,15 @@ def _add_extension(module, subclass, base):
         return
 
     if issubclass(subclass, base) and subclass != base:
-        if subclass.__name__ in dir(module):
+        is_exists = subclass.__name__ in dir(module)
+        if is_exists and not force:
             raise ValueError(
                 f'{subclass.__name__} already existed in {module.__name__}, '
-                'do not re-register a {base.__name__} with same name',
+                f'do not re-register a {base.__name__} with same name',
             )
         else:
+            if is_exists:
+                print(f'You have forcibly registered {subclass.__name__} to {module.__name__}')
             setattr(module, subclass.__name__, subclass)
 
 

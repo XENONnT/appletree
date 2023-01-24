@@ -526,12 +526,12 @@ class ComponentFixed(Component):
 
 
 @export
-def add_component_extensions(module1, module2):
+def add_component_extensions(module1, module2, force=False):
     """Add components of module2 to module1"""
-    utils.add_extensions(module1, module2, Component)
+    utils.add_extensions(module1, module2, Component, force=force)
 
 
 @export
-def _add_component_extension(module, component):
+def _add_component_extension(module, component, force=False):
     """Add component to module"""
-    utils._add_extension(module, component, Component)
+    utils._add_extension(module, component, Component, force=force)

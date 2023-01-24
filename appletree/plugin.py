@@ -89,12 +89,12 @@ class Plugin():
 
 
 @export
-def add_plugin_extensions(module1, module2):
+def add_plugin_extensions(module1, module2, force=False):
     """Add plugins of module2 to module1"""
-    utils.add_extensions(module1, module2, Plugin)
+    utils.add_extensions(module1, module2, Plugin, force=force)
 
 
 @export
-def _add_plugin_extension(module, plugin):
+def _add_plugin_extension(module, plugin, force=False):
     """Add plugin to module"""
-    utils._add_extension(module, plugin, Plugin)
+    utils._add_extension(module, plugin, Plugin, force=force)
