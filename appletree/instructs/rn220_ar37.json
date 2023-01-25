@@ -1,0 +1,56 @@
+{
+    "configs": {
+        "s1_lce":      "s1_correction_map.json",
+        "s2_lce":      "s2_correction_map.json",
+        "elife":       "elife.json",
+        "posrec_reso": "posrec_reso.json",
+        "s1_eff":      "3fold_recon_eff.json",
+        "s1_bias":     "s1_bias.json",
+        "s1_smear":    "s1_smearing.json",
+        "s2_bias":     "s2_bias.json",
+        "s2_smear":    "s2_smearing.json",
+        "s1_cut_acc":  "s1_cut_acc.json",
+        "s2_cut_acc":  "s2_cut_acc.json"
+    },
+
+    "likelihoods": {
+        "rn220_llh": {
+            "components": {
+                "rn220_er": "ERBand",
+                "rn220_ac": {
+                    "component_cls": "AC",
+                    "file_name": "AC_Rn220.pkl"
+                }
+            },
+            "copy_parameters": {
+                "rn220_er_rate": "er_rate",
+                "rn220_ac_rate": "ac_rate"
+            },
+
+            "data_file_name": "data_Rn220.csv",
+            "bins_type": "equiprob",
+            "bins_on": ["cs1", "cs2"],
+            "bins": [15, 15],
+            "x_clip": [0, 100],
+            "y_clip": [2e2, 1e4]
+        },
+
+        "ar37_llh": {
+            "components": {
+                "ar37_er": "ERPeak"
+            },
+            "copy_parameters": {
+                "ar37_er_rate": "er_rate"
+            },
+
+            "data_file_name": "data_Ar37.csv",
+            "bins_type": "equiprob",
+            "bins_on": ["cs1", "cs2"],
+            "bins": [20, 20],
+            "x_clip": [0, 50],
+            "y_clip": [1250, 2200]
+        }
+    },
+
+    "par_config": "er.json"
+}

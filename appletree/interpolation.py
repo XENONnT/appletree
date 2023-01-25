@@ -77,6 +77,23 @@ def curve_interpolator(pos, ref_pos, ref_val):
 
 @export
 @jit
+def map_interpolator_regular_binning_1d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
+    """Inverse distance weighting average as 1D interpolation using KNN(K=2).
+    A uniform mesh grid binning is assumed.
+
+    :param pos: array with shape (N, ), positions at which the interp is calculated.
+    :param ref_pos_lowers: array with shape (1, ), the lower edges of the binning on each dimension.
+    :param ref_pos_uppers: array with shape (1, ), the upper edges of the binning on each dimension.
+    :param ref_val: array with shape (M1, ), map values.
+    """
+    ref_pos = jnp.linspace(ref_pos_lowers, ref_pos_uppers, len(ref_val))
+    val = curve_interpolator(pos, ref_pos, ref_val)
+
+    return val
+
+
+@export
+@jit
 def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
     """Inverse distance weighting average as 2D interpolation using KNN(K=4).
     A uniform mesh grid binning is assumed.

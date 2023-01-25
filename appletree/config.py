@@ -44,8 +44,7 @@ def takes_config(*configs):
         else:
             plugin_class.takes_config = immutabledict(result)
 
-        for config in plugin_class.takes_config.values():
-            setattr(plugin_class, config.name, config)
+        # Should set the configurations as the attributes of Plugin
         return plugin_class
 
     return wrapped
@@ -80,7 +79,7 @@ class Config():
         raise ValueError(f"Missing option {self.name} "
                          f"required by {self.taken_by}")
 
-    def build(self):
+    def build(self, llh_name: str = None):
         """Build configuration, set attributes to Config instance"""
         raise NotImplementedError
 
@@ -91,19 +90,30 @@ class Constant(Config):
 
     value = None
 
-    def build(self):
+    def build(self, llh_name: str = None):
         """Set value of Constant"""
         if not self.name in _cached_configs:
             _cached_configs.update({self.name: self.get_default()})
 
-        self.value = _cached_configs[self.name]
+        value = _cached_configs[self.name]
+        if isinstance(value, dict):
+            try:
+                self.value = value[llh_name]
+            except KeyError:
+                mesg = f'You specified {self.name} as a dictionary. '
+                mesg += f'The key of it should be the name of one '
+                mesg += f'of the likelihood, '
+                mesg += f'but it is {llh_name}.'
+                raise ValueError(mesg)
+        else:
+            self.value = value
 
 
 @export
 class Map(Config):
     """Map is a special config which takes input file"""
 
-    def build(self):
+    def build(self, llh_name: str = None):
         """Cache the map to jnp.array"""
 
         if self.name in _cached_configs:
@@ -112,9 +122,19 @@ class Map(Config):
             file_path = get_file_path(self.get_default())
             _cached_configs.update({self.name: file_path})
 
-        self.file_path = file_path
+        if isinstance(file_path, dict):
+            try:
+                self.file_path = file_path[llh_name]
+            except KeyError:
+                mesg = f'You specified {self.name} as a dictionary. '
+                mesg += f'The key of it should be the name of one '
+                mesg += f'of the likelihood, '
+                mesg += f'but it is {llh_name}.'
+                raise ValueError(mesg)
+        else:
+            self.file_path = file_path
 
-        data = load_json(file_path)
+        data = load_json(self.file_path)
 
         if data['coordinate_type'] == 'point':
             self.build_point(data)

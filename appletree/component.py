@@ -29,6 +29,7 @@ class Component:
 
     def __init__(self,
                  name: str = None,
+                 llh_name: str = None,
                  bins: list = [],
                  bins_type: str = '',
                  **kwargs):
@@ -44,6 +45,10 @@ class Component:
             self.name = self.__class__.__name__
         else:
             self.name = name
+        if llh_name is None:
+            self.llh_name = self.__class__.__name__ + '_llh'
+        else:
+            self.llh_name = llh_name
         self.bins = bins
         self.bins_type = bins_type
         self.needed_parameters = set()
@@ -117,7 +122,7 @@ class Component:
             if self._use_mcinput:
                 bootstrap_name = self._plugin_class_registry['energy'].__name__
                 bootstrap_name = bootstrap_name + '_' + self.name
-                n_events_selected = _cached_functions[bootstrap_name].g4.n_events_selected
+                n_events_selected = _cached_functions[self.llh_name][bootstrap_name].g4.n_events_selected
                 normalization_factor = 1 / n_events_selected * parameters[self.rate_name]
             else:
                 normalization_factor = 1 / batch_size * parameters[self.rate_name]
@@ -288,8 +293,9 @@ class ComponentSim(Component):
 
         # initialize new instances
         for work in self.worksheet:
-            instance = work[0] + '_' + self.name
-            code += f'{instance} = {work[0]}()\n'
+            plugin = work[0]
+            instance = plugin + '_' + self.name
+            code += f"{instance} = {plugin}('{self.llh_name}')\n"
 
         # define functions
         code += '\n'
@@ -309,7 +315,7 @@ class ComponentSim(Component):
 
         self.code = code
 
-        if func_name in _cached_functions.keys():
+        if func_name in _cached_functions[self.llh_name].keys():
             warning = f'Function name {func_name} is already cached. '
             warning += 'Running compile() will overwrite it.'
             warn(warning)
@@ -322,7 +328,9 @@ class ComponentSim(Component):
     @code.setter
     def code(self, code):
         self._code = code
-        self._compile = partial(exec, self.code, _cached_functions)
+        if self.llh_name not in _cached_functions.keys():
+            _cached_functions[self.llh_name] = {}
+        self._compile = partial(exec, self.code, _cached_functions[self.llh_name])
 
     def deduce(self,
                data_names: list = ('cs1', 'cs2'),
@@ -352,7 +360,7 @@ class ComponentSim(Component):
     def compile(self):
         """Build simulation function and cache it to share._cached_functions."""
         self._compile()
-        self.simulate = _cached_functions[self.func_name]
+        self.simulate = _cached_functions[self.llh_name][self.func_name]
 
     def simulate_hist(self,
                       key,
@@ -519,12 +527,12 @@ class ComponentFixed(Component):
 
 
 @export
-def add_component_extensions(module1, module2):
+def add_component_extensions(module1, module2, force=False):
     """Add components of module2 to module1"""
-    utils.add_extensions(module1, module2, Component)
+    utils.add_extensions(module1, module2, Component, force=force)
 
 
 @export
-def _add_component_extension(module, component):
+def _add_component_extension(module, component, force=False):
     """Add component to module"""
-    utils._add_extension(module, component, Component)
+    utils._add_extension(module, component, Component, force=force)

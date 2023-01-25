@@ -15,5 +15,13 @@ def set_global_config(configs):
         elif isinstance(v, str):
             file_path = get_file_path(v)
             _cached_configs.update({k: file_path})
+        elif isinstance(v, dict):
+            file_path_dict = {}
+            for kk, vv in v.items():
+                if isinstance(vv, (float, int, list)):
+                    file_path_dict[kk] = vv
+                elif isinstance(vv, str):
+                    file_path_dict[kk] = get_file_path(vv)
+            _cached_configs.update({k: file_path_dict})
         else:
             raise NotImplementedError

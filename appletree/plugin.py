@@ -1,4 +1,5 @@
 import inspect
+from copy import deepcopy
 
 from immutabledict import immutabledict
 
@@ -27,8 +28,10 @@ class Plugin():
     # Set using the takes_config decorator
     takes_config = immutabledict()
 
-    def __init__(self):
+    def __init__(self, llh_name: str = None):
         """Initialization."""
+        # llh_name will tell us which map to use
+        self.llh_name = llh_name
         if not self.depends_on:
             raise ValueError('depends_on not provided for '
                              f'{self.__class__.__name__}')
@@ -39,9 +42,13 @@ class Plugin():
 
         # configs are loaded when a plugin is initialized
         for config in self.takes_config.values():
-            config.build()
+            config.build(self.llh_name)
 
         self.sanity_check()
+
+        # Do not set configurations as static
+        for config in self.takes_config.values():
+            setattr(self, config.name, deepcopy(config))
 
     def __call__(self, *args, **kwargs):
         """Calls self.simulate"""
@@ -82,12 +89,12 @@ class Plugin():
 
 
 @export
-def add_plugin_extensions(module1, module2):
+def add_plugin_extensions(module1, module2, force=False):
     """Add plugins of module2 to module1"""
-    utils.add_extensions(module1, module2, Plugin)
+    utils.add_extensions(module1, module2, Plugin, force=force)
 
 
 @export
-def _add_plugin_extension(module, plugin):
+def _add_plugin_extension(module, plugin, force=False):
     """Add plugin to module"""
-    utils._add_extension(module, plugin, Plugin)
+    utils._add_extension(module, plugin, Plugin, force=force)
