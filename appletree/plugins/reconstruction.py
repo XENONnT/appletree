@@ -5,7 +5,6 @@ from jax import numpy as jnp
 
 import appletree
 from appletree import randgen
-from appletree import interpolation
 from appletree.config import Map
 from appletree.plugin import Plugin
 from appletree.utils import exporter
@@ -25,11 +24,7 @@ class PositionRecon(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, x, y, z, num_electron_drifted):
-        std = interpolation.curve_interpolator(
-            num_electron_drifted,
-            self.posrec_reso.coordinate_system,
-            self.posrec_reso.map,
-        )
+        std = self.posrec_reso.apply(num_electron_drifted)
         std /= jnp.sqrt(2)
         mean = jnp.zeros_like(num_electron_drifted)
         key, delta_x = randgen.normal(key, mean, std)
@@ -56,12 +51,8 @@ class S1(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s1_phd, num_s1_pe):
-        mean = interpolation.curve_interpolator(num_s1_phd,
-                                                self.s1_bias.coordinate_system,
-                                                self.s1_bias.map)
-        std = interpolation.curve_interpolator(num_s1_phd,
-                                               self.s1_smear.coordinate_system,
-                                               self.s1_smear.map)
+        mean = self.s1_bias.appl(num_s1_phd)
+        std = self.s1_smear.appl(num_s1_phd)
         key, bias = randgen.normal(key, mean, std)
         s1 = num_s1_pe * (1. + bias)
         return key, s1
@@ -82,12 +73,8 @@ class S2(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s2_pe):
-        mean = interpolation.curve_interpolator(num_s2_pe,
-                                                self.s2_bias.coordinate_system,
-                                                self.s2_bias.map)
-        std = interpolation.curve_interpolator(num_s2_pe,
-                                               self.s2_smear.coordinate_system,
-                                               self.s2_smear.map)
+        mean = self.s2_bias.apply(num_s2_pe)
+        std = self.s2_smear.apply(num_s2_pe)
         key, bias = randgen.normal(key, mean, std)
         s2 = num_s2_pe * (1. + bias)
         return key, s2

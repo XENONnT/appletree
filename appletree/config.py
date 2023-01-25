@@ -113,10 +113,10 @@ class Constant(Config):
 @export
 class Map(Config):
     """
-    Map is a special config which takes input file.
+    Map is a special config that takes input files.
     The method `apply` is dynamically assigned.
     When using points, the `apply` will be `map_point`, 
-    while using  regular binning, the `apply` will be `map_regbin`.
+    while using regular binning, the `apply` will be `map_regbin`.
     When using log-binning, we will first convert the positions to log space.
     """
 

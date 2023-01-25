@@ -4,7 +4,6 @@ from functools import partial
 
 import appletree
 from appletree import randgen
-from appletree import interpolation
 from appletree.plugin import Plugin
 from appletree.config import Map
 from appletree.utils import exporter
@@ -25,12 +24,7 @@ class S1Correction(Plugin):
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, rec_x, rec_y, rec_z):
         pos = jnp.stack([rec_x, rec_y, rec_z]).T
-        s1_correction = interpolation.map_interpolator_regular_binning_3d(
-            pos,
-            self.s1_lce.coordinate_lowers,
-            self.s1_lce.coordinate_uppers,
-            self.s1_lce.map,
-        )
+        s1_correction = self.s1_lce.apply(pos)
         return key, s1_correction
 
 
@@ -47,12 +41,7 @@ class S2Correction(Plugin):
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, rec_x, rec_y):
         pos = jnp.stack([rec_x, rec_y]).T
-        s2_correction = interpolation.map_interpolator_regular_binning_2d(
-            pos,
-            self.s2_lce.coordinate_lowers,
-            self.s2_lce.coordinate_uppers,
-            self.s2_lce.map,
-        )
+        s2_correction = self.s2_lce.apply(pos)
         return key, s2_correction
 
 
@@ -96,7 +85,7 @@ class DriftLoss(Plugin):
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, z):
         key, p = randgen.uniform(key, 0, 1., shape=jnp.shape(z))
-        lifetime = interpolation.curve_interpolator(p, self.elife.coordinate_system, self.elife.map)
+        lifetime = self.elife.apply(p)
         drift_survive_prob = jnp.exp(- jnp.abs(z) / parameters['drift_velocity'] / lifetime)
         return key, drift_survive_prob
 

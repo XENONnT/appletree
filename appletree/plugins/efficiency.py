@@ -3,7 +3,6 @@ from jax import jit
 from functools import partial
 
 import appletree
-from appletree import interpolation
 from appletree.plugin import Plugin
 from appletree.config import Map
 from appletree.utils import exporter
@@ -34,8 +33,7 @@ class S1ReconEff(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s1_phd):
-        acc_s1_recon_eff = interpolation.curve_interpolator(num_s1_phd,
-            self.s1_eff.coordinate_system, self.s1_eff.map)
+        acc_s1_recon_eff = self.s1_eff.apply(num_s1_phd)
         return key, acc_s1_recon_eff
 
 
@@ -51,8 +49,7 @@ class S1CutAccept(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, s1):
-        cut_acc_s1 = interpolation.curve_interpolator(s1,
-            self.s1_cut_acc.coordinate_system, self.s1_cut_acc.map)
+        cut_acc_s1 = self.s1_cut_acc.apply(s1)
         return key, cut_acc_s1
 
 
@@ -68,8 +65,7 @@ class S2CutAccept(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, s2):
-        cut_acc_s2 = interpolation.curve_interpolator(s2,
-            self.s2_cut_acc.coordinate_system, self.s2_cut_acc.map)
+        cut_acc_s2 = self.s2_cut_acc.apply(s2)
         return key, cut_acc_s2
 
 
