@@ -6,6 +6,7 @@ from warnings import warn
 
 from appletree.share import _cached_configs
 from appletree.utils import exporter, load_json, get_file_path, integrate_midpoint, cum_integrate_midpoint
+from appletree import interpolation
 
 export, __all__ = exporter()
 
@@ -111,7 +112,13 @@ class Constant(Config):
 
 @export
 class Map(Config):
-    """Map is a special config which takes input file"""
+    """
+    Map is a special config which takes input file.
+    The method `apply` is dynamically assigned.
+    When using points, the `apply` will be `map_point`, 
+    while using  regular binning, the `apply` will be `map_regbin`.
+    When using log-binning, we will first convert the positions to log space.
+    """
 
     def build(self, llh_name: str = None):
         """Cache the map to jnp.array"""
@@ -136,15 +143,23 @@ class Map(Config):
 
         data = load_json(self.file_path)
 
-        if data['coordinate_type'] == 'point':
+        coordinate_type = data['coordinate_type']
+        if coordinate_type == 'point' or coordinate_type == 'log_point':
             self.build_point(data)
-        elif data['coordinate_type'] == 'regbin':
+        elif coordinate_type == 'regbin' or coordinate_type == 'log_regbin':
             self.build_regbin(data)
         else:
             raise ValueError("map_type must be either 'point' or 'regbin'!")
 
     def build_point(self, data):
         """Cache the map to jnp.array if bins_type is point"""
+        if data['coordinate_name'] == 'pdf' or data['coordinate_name'] == 'cdf':
+            if data['coordinate_type'] == 'log_point':
+                raise ValueError(
+                    f'It is not a good idea to use log pdf nor cdf '
+                    f'in map {self.file_path}. '
+                    f'Because its coordinate type is log-binned. '
+                )
 
         if data['coordinate_name'] == 'pdf':
             warn(f'Convert {self.name} from (x, pdf) to (cdf, x).')
@@ -152,17 +167,79 @@ class Map(Config):
             data['coordinate_name'] = 'cdf'
             data['coordinate_system'] = cdf
             data['map'] = x
+
+        self.coordinate_type = data['coordinate_type']
         self.coordinate_name = data['coordinate_name']
         self.coordinate_system = jnp.asarray(data['coordinate_system'], dtype=float)
         self.map = jnp.asarray(data['map'], dtype=float)
 
+        setattr(self, 'interpolator', interpolation.curve_interpolator)
+        if self.coordinate_type == 'log_point':
+            if jnp.any(self.coordinate_system <= 0):
+                raise ValueError(
+                    f'Find non-positive coordinate system in map {self.file_path}, '
+                    f'which is specified as {self.coordinate_type}'
+                )
+            setattr(self, 'preprocess', self.log_pos)
+        else:
+            setattr(self, 'preprocess', self.linear_pos)
+        setattr(self, 'apply', self.map_point)
+
+    def map_point(self, pos):
+        val = self.interpolator(
+            self.preprocess(pos),
+            self.preprocess(self.coordinate_system),
+            self.preprocess(self.map),
+        )
+        return val
+
     def build_regbin(self, data):
         """Cache the map to jnp.array if bins_type is regbin"""
+        if 'pdf' in data['coordinate_name'] or 'cdf' in data['coordinate_name']:
+            if data['coordinate_type'] == 'log_regbin':
+                raise ValueError(
+                    f'It is not a good idea to use log pdf nor cdf '
+                    f'in map {self.file_path}. '
+                    f'Because its coordinate type is log-binned. '
+                )
 
+        self.coordinate_type = data['coordinate_type']
         self.coordinate_name = data['coordinate_name']
         self.coordinate_lowers = jnp.asarray(data['coordinate_lowers'], dtype=float)
         self.coordinate_uppers = jnp.asarray(data['coordinate_uppers'], dtype=float)
         self.map = jnp.asarray(data['map'], dtype=float)
+
+        if len(self.coordinate_lowers) == 1:
+            setattr(self, 'interpolator', interpolation.map_interpolator_regular_binning_1d)
+        elif len(self.coordinate_lowers) == 2:
+            setattr(self, 'interpolator', interpolation.map_interpolator_regular_binning_2d)
+        elif len(self.coordinate_lowers) == 3:
+            setattr(self, 'interpolator', interpolation.map_interpolator_regular_binning_3d)
+        if self.coordinate_type == 'log_regbin':
+            if jnp.any(self.coordinate_lowers <= 0) or jnp.any(self.coordinate_uppers <= 0):
+                raise ValueError(
+                    f'Find non-positive coordinate system in map {self.file_path}, '
+                    f'which is specified as {self.coordinate_type}'
+                )
+            setattr(self, 'preprocess', self.log_pos)
+        else:
+            setattr(self, 'preprocess', self.linear_pos)
+        setattr(self, 'apply', self.map_regbin)
+
+    def map_regbin(self, pos):
+        val = self.interpolator(
+            self.preprocess(pos),
+            self.preprocess(self.coordinate_lowers),
+            self.preprocess(self.coordinate_uppers),
+            self.map,
+        )
+        return val
+
+    def linear_pos(self, pos):
+        return pos
+
+    def log_pos(self, pos):
+        return jnp.log10(pos)
 
     def pdf_to_cdf(self, x, pdf):
         """Convert pdf map to cdf map"""
