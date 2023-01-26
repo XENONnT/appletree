@@ -7,6 +7,7 @@ from warnings import warn
 from appletree.share import _cached_configs
 from appletree.utils import exporter, load_json, get_file_path, integrate_midpoint, cum_integrate_midpoint
 from appletree import interpolation
+from appletree.interpolation import FLOAT_POS_MIN, FLOAT_POS_MAX
 
 export, __all__ = exporter()
 
@@ -239,7 +240,7 @@ class Map(Config):
         return pos
 
     def log_pos(self, pos):
-        return jnp.log10(pos)
+        return jnp.log10(jnp.clip(pos, a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX))
 
     def pdf_to_cdf(self, x, pdf):
         """Convert pdf map to cdf map"""
