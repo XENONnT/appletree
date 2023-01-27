@@ -77,6 +77,51 @@
         "unit": "1",
         "doc": "DPE probability"
     },
+    "s1_eff_3f_sigma": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -5.0,
+            5.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S1 efficiency shifter"
+    },
+    "s1_cut_acc_sigma": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -5.0,
+            5.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S1 cut acceptance shifter"
+    },
+    "s2_cut_acc_sigma": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -5.0,
+            5.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S2 cut acceptance shifter"
+    },
     "t_ly": {
         "prior_type": "free",
         "prior_args": {},

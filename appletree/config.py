@@ -88,7 +88,7 @@ class Config():
 
 @export
 class Constant(Config):
-    """Map is a special config which takes only certain value"""
+    """Constant is a special config which takes only certain value"""
 
     value = None
 
@@ -248,3 +248,55 @@ class Map(Config):
         x, cdf = cum_integrate_midpoint(x, pdf)
         cdf /= norm
         return x, cdf
+
+
+@export
+class SigmaMap(Config):
+    """
+    Maps with uncertainty.
+    Default value is a list whose order is:
+    [median, lower, upper]
+    Each map is assigned as attribute of SigmaMap.
+    """
+
+    def build(self, llh_name: str = None):
+        """Read maps"""
+        if self.name in _cached_configs:
+            _configs = _cached_configs[self.name]
+            if isinstance(_configs, dict):
+                try:
+                    self._configs = _configs[llh_name]
+                except KeyError:
+                    mesg = f'You specified {self.name} as a dictionary. '
+                    mesg += f'The key of it should be the name of one '
+                    mesg += f'of the likelihood, '
+                    mesg += f'but it is {llh_name}.'
+                    raise ValueError(mesg)
+            else:
+                self._configs = _configs
+        else:
+            self._configs = self.get_default()
+            _cached_configs.update({self.name: self._configs})
+        self._configs_default = self.get_default()
+
+        self.median = Map(name=self.name + '_median', default=self._configs_default[0])
+        _cached_configs[self.median.name] = self._configs[0]
+        self.median.build()
+        self.lower = Map(name=self.name + '_lower', default=self._configs_default[1])
+        _cached_configs[self.lower.name] = self._configs[1]
+        self.lower.build()
+        self.upper = Map(name=self.name + '_upper', default=self._configs_default[2])
+        _cached_configs[self.upper.name] = self._configs[2]
+        self.upper.build()
+
+    def apply(self, pos, sigma):
+        """
+        Apply SigmaMap with sigma and position
+        """
+        median = self.median.apply(pos)
+        lower = self.lower.apply(pos)
+        upper = self.upper.apply(pos)
+        add_pos = (upper - median) * sigma
+        add_neg = (median - lower) * sigma
+        add = jnp.where(sigma > 0, add_pos, add_neg)
+        return median + add

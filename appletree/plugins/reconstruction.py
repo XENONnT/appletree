@@ -38,12 +38,12 @@ class PositionRecon(Plugin):
 
 @export
 @appletree.takes_config(
-    Map(name='s1_bias',
+    Map(name='s1_bias_3f',
         default='s1_bias.json',
-        help='S1 reconstruction bias'),
-    Map(name='s1_smear',
+        help='3fold S1 reconstruction bias'),
+    Map(name='s1_smear_3f',
         default='s1_smearing.json',
-        help='S1 reconstruction smearing'),
+        help='3fold S1 reconstruction smearing'),
 )
 class S1(Plugin):
     depends_on = ['num_s1_phd', 'num_s1_pe']
@@ -51,8 +51,8 @@ class S1(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s1_phd, num_s1_pe):
-        mean = self.s1_bias.apply(num_s1_phd)
-        std = self.s1_smear.apply(num_s1_phd)
+        mean = self.s1_bias_3f.apply(num_s1_phd)
+        std = self.s1_smear_3f.apply(num_s1_phd)
         key, bias = randgen.normal(key, mean, std)
         s1 = num_s1_pe * (1. + bias)
         return key, s1
