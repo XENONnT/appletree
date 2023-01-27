@@ -290,9 +290,7 @@ class SigmaMap(Config):
         self.upper.build()
 
     def apply(self, pos, sigma):
-        """
-        Apply SigmaMap with sigma and position
-        """
+        """Apply SigmaMap with sigma and position"""
         median = self.median.apply(pos)
         lower = self.lower.apply(pos)
         upper = self.upper.apply(pos)

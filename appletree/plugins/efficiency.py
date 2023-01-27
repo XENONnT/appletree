@@ -4,7 +4,7 @@ from functools import partial
 
 import appletree
 from appletree.plugin import Plugin
-from appletree.config import Map, SigmaMap
+from appletree.config import SigmaMap
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
