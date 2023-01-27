@@ -255,8 +255,9 @@ class SigmaMap(Config):
     """
     Maps with uncertainty.
     Default value is a list whose order is:
-    [median, lower, upper]
+    [median, lower, upper, (parameter)]
     Each map is assigned as attribute of SigmaMap.
+    If the last element in the list is the required parameter.
     """
 
     def build(self, llh_name: str = None):
@@ -289,8 +290,15 @@ class SigmaMap(Config):
         _cached_configs[self.upper.name] = self._configs[2]
         self.upper.build()
 
-    def apply(self, pos, sigma):
+        # Find required parameter
+        if len(self._configs) == 4:
+            self.required_parameter = self._configs[-1]
+        else:
+            self.required_parameter = self.name + '_sigma'
+
+    def apply(self, pos, parameters):
         """Apply SigmaMap with sigma and position"""
+        sigma = parameters[self.required_parameter]
         median = self.median.apply(pos)
         lower = self.lower.apply(pos)
         upper = self.upper.apply(pos)

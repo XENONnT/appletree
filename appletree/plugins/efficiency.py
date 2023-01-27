@@ -38,7 +38,7 @@ class S1ReconEff(Plugin):
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s1_phd):
         acc_s1_recon_eff = self.s1_eff_3f.apply(
-            num_s1_phd, parameters['s1_eff_3f_sigma'])
+            num_s1_phd, parameters)
         acc_s1_recon_eff = jnp.clip(acc_s1_recon_eff, 0., 1.)
         return key, acc_s1_recon_eff
 
@@ -59,7 +59,7 @@ class S1CutAccept(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, s1):
-        cut_acc_s1 = self.s1_cut_acc.apply(s1, parameters['s1_cut_acc_sigma'])
+        cut_acc_s1 = self.s1_cut_acc.apply(s1, parameters)
         cut_acc_s1 = jnp.clip(cut_acc_s1, 0., 1.)
         return key, cut_acc_s1
 
@@ -80,7 +80,7 @@ class S2CutAccept(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, s2):
-        cut_acc_s2 = self.s2_cut_acc.apply(s2, parameters['s2_cut_acc_sigma'])
+        cut_acc_s2 = self.s2_cut_acc.apply(s2, parameters)
         cut_acc_s2 = jnp.clip(cut_acc_s2, 0., 1.)
         return key, cut_acc_s2
 
