@@ -260,8 +260,13 @@ class SigmaMap(Config):
     If the last element in the list is the required parameter.
     """
 
+    median = None
+    lower = None
+    upper = None
+
     def build(self, llh_name: str = None):
         """Read maps"""
+        self.llh_name = llh_name
         if self.name in _cached_configs:
             _configs = _cached_configs[self.name]
             if isinstance(_configs, dict):
@@ -280,19 +285,29 @@ class SigmaMap(Config):
             _cached_configs.update({self.name: self._configs})
         self._configs_default = self.get_default()
 
-        self.median = Map(name=self.name + '_median', default=self._configs_default[0])
-        _cached_configs[self.median.name] = self._configs[0]
-        self.median.build()
-        self.lower = Map(name=self.name + '_lower', default=self._configs_default[1])
-        _cached_configs[self.lower.name] = self._configs[1]
-        self.lower.build()
-        self.upper = Map(name=self.name + '_upper', default=self._configs_default[2])
-        _cached_configs[self.upper.name] = self._configs[2]
-        self.upper.build()
+        maps = {}
+        for i, sigma in enumerate(['median', 'lower', 'upper']):
+            maps[sigma] = Map(
+                name=self.name + f'_{sigma}',
+                default=self._configs_default[i])
+            if not maps[sigma].name in _cached_configs.keys():
+                _cached_configs[maps[sigma].name] = {}
+            _cached_configs[maps[sigma].name][self.llh_name] = self._configs[i]
+            setattr(self, f'{sigma}', maps[sigma])
+
+        self.median.build(llh_name=self.llh_name)
+        self.lower.build(llh_name=self.llh_name)
+        self.upper.build(llh_name=self.llh_name)
+
+        if len(self._configs) > 4:
+            raise ValueError('fYou give too much information in {self.name}.')
 
         # Find required parameter
         if len(self._configs) == 4:
             self.required_parameter = self._configs[-1]
+            print(
+                f'{self.llh_name} is using the parameter '
+                f'{self.required_parameter} in {self.name} map.')
         else:
             self.required_parameter = self.name + '_sigma'
 
