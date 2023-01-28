@@ -260,10 +260,6 @@ class SigmaMap(Config):
     If the last element in the list is the required parameter.
     """
 
-    median = None
-    lower = None
-    upper = None
-
     def build(self, llh_name: str = None):
         """Read maps"""
         self.llh_name = llh_name
