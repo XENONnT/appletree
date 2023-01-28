@@ -282,11 +282,12 @@ class SigmaMap(Config):
         self._configs_default = self.get_default()
 
         maps = {}
-        for i, sigma in enumerate(['median', 'lower', 'upper']):
+        sigmas = ['median', 'lower', 'upper']
+        for i, sigma in enumerate(sigmas):
             maps[sigma] = Map(
                 name=self.name + f'_{sigma}',
                 default=self._configs_default[i])
-            if not maps[sigma].name in _cached_configs.keys():
+            if maps[sigma].name not in _cached_configs.keys():
                 _cached_configs[maps[sigma].name] = {}
             _cached_configs[maps[sigma].name][self.llh_name] = self._configs[i]
             setattr(self, f'{sigma}', maps[sigma])
