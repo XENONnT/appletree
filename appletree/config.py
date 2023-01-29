@@ -107,7 +107,6 @@ class Constant(Config):
             # Update values to sharing dictionary
             _cached_configs[self.name] = {llh_name: value}
 
-        value = _cached_configs[self.name]
         if isinstance(value, dict):
             try:
                 self.value = value[llh_name]
