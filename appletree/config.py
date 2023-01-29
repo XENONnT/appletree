@@ -73,6 +73,12 @@ class Config():
         self.default = default
         self.help = help
 
+        # Sanity check
+        if isinstance(self.default, dict):
+            raise ValueError(
+                f"Do not set {self.name}'s default value as dict!"
+            )
+
     def get_default(self):
         """Get default value of configuration"""
         if self.default is not OMITTED:
@@ -94,8 +100,12 @@ class Constant(Config):
 
     def build(self, llh_name: str = None):
         """Set value of Constant"""
-        if not self.name in _cached_configs:
-            _cached_configs.update({self.name: self.get_default()})
+        if self.name in _cached_configs:
+            value = _cached_configs[self.name]
+        else:
+            value = self.get_default()
+            # Update values to sharing dictionary
+            _cached_configs[self.name] = {llh_name: value}
 
         value = _cached_configs[self.name]
         if isinstance(value, dict):
@@ -128,7 +138,8 @@ class Map(Config):
             file_path = _cached_configs[self.name]
         else:
             file_path = get_file_path(self.get_default())
-            _cached_configs.update({self.name: file_path})
+            # Update values to sharing dictionary
+            _cached_configs[self.name] = {llh_name: file_path}
 
         if isinstance(file_path, dict):
             try:
@@ -265,20 +276,23 @@ class SigmaMap(Config):
         self.llh_name = llh_name
         if self.name in _cached_configs:
             _configs = _cached_configs[self.name]
-            if isinstance(_configs, dict):
-                try:
-                    self._configs = _configs[llh_name]
-                except KeyError:
-                    mesg = f'You specified {self.name} as a dictionary. '
-                    mesg += f'The key of it should be the name of one '
-                    mesg += f'of the likelihood, '
-                    mesg += f'but it is {llh_name}.'
-                    raise ValueError(mesg)
-            else:
-                self._configs = _configs
         else:
             self._configs = self.get_default()
-            _cached_configs.update({self.name: self._configs})
+            # Update values to sharing dictionary
+            _cached_configs[self.name] = {llh_name: self._configs}
+
+        if isinstance(_configs, dict):
+            try:
+                self._configs = _configs[llh_name]
+            except KeyError:
+                mesg = f'You specified {self.name} as a dictionary. '
+                mesg += f'The key of it should be the name of one '
+                mesg += f'of the likelihood, '
+                mesg += f'but it is {llh_name}.'
+                raise ValueError(mesg)
+        else:
+            self._configs = _configs
+
         self._configs_default = self.get_default()
 
         maps = {}
@@ -290,7 +304,7 @@ class SigmaMap(Config):
             if maps[sigma].name not in _cached_configs.keys():
                 _cached_configs[maps[sigma].name] = {}
             _cached_configs[maps[sigma].name][self.llh_name] = self._configs[i]
-            setattr(self, f'{sigma}', maps[sigma])
+            setattr(self, sigma, maps[sigma])
 
         self.median.build(llh_name=self.llh_name)
         self.lower.build(llh_name=self.llh_name)

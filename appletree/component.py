@@ -88,8 +88,13 @@ class Component:
         results_pile = []
         for _ in range(times):
             if _cached_configs['g4'] and self._use_mcinput:
-                g4_file_name = _cached_configs['g4'][0]
-                _cached_configs['g4'] = [g4_file_name, batch_size, key.sum().item()]
+                if isinstance(_cached_configs['g4'], dict):
+                    g4_file_name = _cached_configs['g4'][self.llh_name][0]
+                    _cached_configs['g4'][self.llh_name] = [
+                        g4_file_name, batch_size, key.sum().item()]
+                else:
+                    g4_file_name = _cached_configs['g4'][0]
+                    _cached_configs['g4'] = [g4_file_name, batch_size, key.sum().item()]
             self.compile()
             key, results = self.multiple_simulations(key, batch_size, parameters, 1)
             results_pile.append(results)
@@ -449,6 +454,8 @@ class ComponentSim(Component):
                 except:
                     default = appletree.OMITTED
                 current = _cached_configs.get(config.name, None)
+                if isinstance(current, dict):
+                    current = current[self.llh_name]
                 r.append(dict(
                     option=config.name,
                     default=default,
