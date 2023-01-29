@@ -105,7 +105,7 @@ class Constant(Config):
         else:
             value = self.get_default()
             # Update values to sharing dictionary
-            _cached_configs[self.name] = {llh_name: value}
+            _cached_configs[self.name] = value
 
         if isinstance(value, dict):
             try:
@@ -138,7 +138,7 @@ class Map(Config):
         else:
             file_path = get_file_path(self.get_default())
             # Update values to sharing dictionary
-            _cached_configs[self.name] = {llh_name: file_path}
+            _cached_configs[self.name] = file_path
 
         if isinstance(file_path, dict):
             try:
@@ -278,7 +278,7 @@ class SigmaMap(Config):
         else:
             _configs = self.get_default()
             # Update values to sharing dictionary
-            _cached_configs[self.name] = {llh_name: _configs}
+            _cached_configs[self.name] = _configs
 
         if isinstance(_configs, dict):
             try:
