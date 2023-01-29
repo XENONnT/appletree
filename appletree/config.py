@@ -76,7 +76,7 @@ class Config():
         # Sanity check
         if isinstance(self.default, dict):
             raise ValueError(
-                f"Do not set {self.name}'s default value as dict!"
+                f"Do not set {self.name}'s default value as dict!",
             )
 
     def get_default(self):
@@ -277,9 +277,9 @@ class SigmaMap(Config):
         if self.name in _cached_configs:
             _configs = _cached_configs[self.name]
         else:
-            self._configs = self.get_default()
+            _configs = self.get_default()
             # Update values to sharing dictionary
-            _cached_configs[self.name] = {llh_name: self._configs}
+            _cached_configs[self.name] = {llh_name: _configs}
 
         if isinstance(_configs, dict):
             try:
