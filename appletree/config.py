@@ -302,7 +302,9 @@ class SigmaMap(Config):
                 default=self._configs_default[i])
             if maps[sigma].name not in _cached_configs.keys():
                 _cached_configs[maps[sigma].name] = {}
-            _cached_configs[maps[sigma].name][self.llh_name] = self._configs[i]
+            if isinstance(_cached_configs[maps[sigma].name], dict):
+                _cached_configs[maps[sigma].name].update(
+                    {self.llh_name: self._configs[i]})
             setattr(self, sigma, maps[sigma])
 
         self.median.build(llh_name=self.llh_name)
@@ -310,7 +312,7 @@ class SigmaMap(Config):
         self.upper.build(llh_name=self.llh_name)
 
         if len(self._configs) > 4:
-            raise ValueError('fYou give too much information in {self.name}.')
+            raise ValueError(f'You give too much information in {self.name} configs.')
 
         # Find required parameter
         if len(self._configs) == 4:

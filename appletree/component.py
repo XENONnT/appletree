@@ -53,6 +53,10 @@ class Component:
         self.bins_type = bins_type
         self.needed_parameters = set()
 
+        if self.bins_type == 'meshgrid':
+            warning = 'The usage of meshgrid binning is highly discouraged.'
+            warn(warning)
+
     def _clip(self, result: list):
         """Clip simulated result"""
         mask = np.ones(len(result[-1]), dtype=bool)
@@ -109,8 +113,6 @@ class Component:
         if self.bins_type == 'irreg':
             hist = make_hist_irreg_bin_2d(mc, *self.bins, weights=eff)
         elif self.bins_type == 'meshgrid':
-            warning = 'The usage of meshgrid binning is highly discouraged.'
-            warn(warning)
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
         else:
             raise ValueError(f'Unsupported bins_type {self.bins_type}!')
