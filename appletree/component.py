@@ -53,6 +53,10 @@ class Component:
         self.bins_type = bins_type
         self.needed_parameters = set()
 
+        if self.bins_type == 'meshgrid':
+            warning = 'The usage of meshgrid binning is highly discouraged.'
+            warn(warning)
+
     def _clip(self, result: list):
         """Clip simulated result"""
         mask = np.ones(len(result[-1]), dtype=bool)
@@ -88,8 +92,13 @@ class Component:
         results_pile = []
         for _ in range(times):
             if _cached_configs['g4'] and self._use_mcinput:
-                g4_file_name = _cached_configs['g4'][0]
-                _cached_configs['g4'] = [g4_file_name, batch_size, key.sum().item()]
+                if isinstance(_cached_configs['g4'], dict):
+                    g4_file_name = _cached_configs['g4'][self.llh_name][0]
+                    _cached_configs['g4'][self.llh_name] = [
+                        g4_file_name, batch_size, key.sum().item()]
+                else:
+                    g4_file_name = _cached_configs['g4'][0]
+                    _cached_configs['g4'] = [g4_file_name, batch_size, key.sum().item()]
             self.compile()
             key, results = self.multiple_simulations(key, batch_size, parameters, 1)
             results_pile.append(results)
@@ -104,8 +113,6 @@ class Component:
         if self.bins_type == 'irreg':
             hist = make_hist_irreg_bin_2d(mc, *self.bins, weights=eff)
         elif self.bins_type == 'meshgrid':
-            warning = 'The usage of meshgrid binning is highly discouraged.'
-            warn(warning)
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
         else:
             raise ValueError(f'Unsupported bins_type {self.bins_type}!')
@@ -449,6 +456,8 @@ class ComponentSim(Component):
                 except:
                     default = appletree.OMITTED
                 current = _cached_configs.get(config.name, None)
+                if isinstance(current, dict):
+                    current = current[self.llh_name]
                 r.append(dict(
                     option=config.name,
                     default=default,

@@ -3,7 +3,6 @@ from jax import jit
 from functools import partial
 
 import appletree
-from appletree import interpolation
 from appletree import randgen
 from appletree.plugin import Plugin
 from appletree.config import Map
@@ -26,11 +25,7 @@ class LightYield(Plugin):
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
         ly_map = jnp.clip(self.ly_median.map * (1.0 + parameters['t_ly']), 0, jnp.inf)
-        light_yield = interpolation.curve_interpolator(
-            energy,
-            self.ly_median.coordinate_system,
-            ly_map,
-        )
+        light_yield = self.ly_median.apply(energy)
         return key, light_yield
 
 
@@ -59,11 +54,7 @@ class ChargeYield(Plugin):
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
         qy_map = jnp.clip(self.qy_median.map * (1.0 + parameters['t_qy']), 0, jnp.inf)
-        charge_yield = interpolation.curve_interpolator(
-            energy,
-            self.qy_median.coordinate_system,
-            qy_map,
-        )
+        charge_yield = self.qy_median.apply(energy)
         return key, charge_yield
 
 

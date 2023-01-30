@@ -7,6 +7,9 @@ from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
+FLOAT_POS_MIN = jnp.finfo(jnp.float32).tiny
+FLOAT_POS_MAX = jnp.finfo(jnp.float32).max
+
 
 @jit
 def _L2_dist2(pos1, pos2):
@@ -125,10 +128,10 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
     ref_pos3 = ref_pos_lowers + bin_sizes * ind3
     ref_pos4 = ref_pos_lowers + bin_sizes * ind4
 
-    dr1 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos1 - pos)**2, axis=-1)), a_min=1e-10)
-    dr2 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos2 - pos)**2, axis=-1)), a_min=1e-10)
-    dr3 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos3 - pos)**2, axis=-1)), a_min=1e-10)
-    dr4 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos4 - pos)**2, axis=-1)), a_min=1e-10)
+    dr1 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos1 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr2 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos2 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr3 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos3 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr4 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos4 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
 
     val = (val1/dr1+val2/dr2+val3/dr3+val4/dr4)
     val /= (1./dr1+1./dr2+1./dr3+1./dr4)
@@ -181,14 +184,14 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
     ref_pos7 = ref_pos_lowers + bin_sizes * ind7
     ref_pos8 = ref_pos_lowers + bin_sizes * ind8
 
-    dr1 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos1 - pos)**2, axis=-1)), a_min=1e-10)
-    dr2 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos2 - pos)**2, axis=-1)), a_min=1e-10)
-    dr3 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos3 - pos)**2, axis=-1)), a_min=1e-10)
-    dr4 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos4 - pos)**2, axis=-1)), a_min=1e-10)
-    dr5 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos5 - pos)**2, axis=-1)), a_min=1e-10)
-    dr6 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos6 - pos)**2, axis=-1)), a_min=1e-10)
-    dr7 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos7 - pos)**2, axis=-1)), a_min=1e-10)
-    dr8 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos8 - pos)**2, axis=-1)), a_min=1e-10)
+    dr1 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos1 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr2 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos2 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr3 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos3 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr4 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos4 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr5 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos5 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr6 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos6 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr7 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos7 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr8 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos8 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
 
     val = (val1/dr1+val2/dr2+val3/dr3+val4/dr4+val5/dr5+val6/dr6+val7/dr7+val8/dr8)
     val /= (1./dr1+1./dr2+1./dr3+1./dr4+1./dr5+1./dr6+1./dr7+1./dr8)

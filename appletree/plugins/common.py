@@ -5,7 +5,6 @@ from jax import numpy as jnp
 
 import appletree
 from appletree import randgen
-from appletree import interpolation
 from appletree.plugin import Plugin
 from appletree.config import Constant, Map
 from appletree.utils import exporter
@@ -52,11 +51,7 @@ class FixedEnergySpectra(Plugin):
     @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
         key, p = randgen.uniform(key, 0, 1., shape=(batch_size, ))
-        energy = interpolation.curve_interpolator(
-            p,
-            self.energy_spectrum.coordinate_system,
-            self.energy_spectrum.map,
-        )
+        energy = self.energy_spectrum.apply(p)
         return key, energy
 
 

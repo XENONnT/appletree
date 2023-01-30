@@ -1,16 +1,25 @@
 {
     "configs": {
-        "s1_lce":      "s1_correction_map.json",
-        "s2_lce":      "s2_correction_map.json",
-        "elife":       "elife.json",
-        "posrec_reso": "posrec_reso.json",
-        "s1_eff":      "3fold_recon_eff.json",
-        "s1_bias":     "s1_bias.json",
-        "s1_smear":    "s1_smearing.json",
-        "s2_bias":     "s2_bias.json",
-        "s2_smear":    "s2_smearing.json",
-        "s1_cut_acc":  "s1_cut_acc.json",
-        "s2_cut_acc":  "s2_cut_acc.json"
+        "s1_lce":            "s1_correction_map.json",
+        "s2_lce":            "s2_correction_map.json",
+        "elife":             "elife.json",
+        "posrec_reso":       "posrec_reso.json",
+        "s1_eff_3f":  [
+            "3fold_recon_eff.json",
+            "3fold_recon_eff.json",
+            "3fold_recon_eff.json"],
+        "s1_cut_acc": [
+            "s1_cut_acc.json",
+            "s1_cut_acc.json",
+            "s1_cut_acc.json"],
+        "s2_cut_acc": [
+            "s2_cut_acc.json",
+            "s2_cut_acc.json",
+            "s2_cut_acc.json"],
+        "s1_bias_3f":        "s1_bias_3f.json",
+        "s1_smear_3f":       "s1_smearing_3f.json",
+        "s2_bias":           "s2_bias.json",
+        "s2_smear":          "s2_smearing.json"
     },
 
     "likelihoods": {

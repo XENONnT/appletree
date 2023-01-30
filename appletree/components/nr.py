@@ -11,7 +11,7 @@ class NR(ComponentSim):
 
         self.register(apt.plugins.common.FixedEnergySpectra)
         self.register(apt.plugins.common.PositionSpectra)
-        self.register_all(apt.plugins.nr_lyqy)
+        self.register_all(apt.plugins.lyqy)
         self.register_all(apt.plugins.detector)
         self.register_all(apt.plugins.reconstruction)
         self.register_all(apt.plugins.efficiency)

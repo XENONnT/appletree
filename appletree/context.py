@@ -272,7 +272,7 @@ class Context():
         # We will not update unneeded parameters!
         if not needed.issubset(provided):
             mes = f'Parameter manager should provide needed parameters only, '
-            mes += '{provided - needed} not needed'
+            mes += f'{provided - needed} not needed'
             raise RuntimeError(mes)
 
     def update_url_base(self, url_base):
