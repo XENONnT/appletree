@@ -303,6 +303,8 @@ class SigmaMap(Config):
             if maps[sigma].name not in _cached_configs.keys():
                 _cached_configs[maps[sigma].name] = {}
             if isinstance(_cached_configs[maps[sigma].name], dict):
+                # In case some plugins only use the median
+                # and may already update the map name in `_cached_configs`
                 _cached_configs[maps[sigma].name].update(
                     {self.llh_name: self._configs[i]})
             setattr(self, sigma, maps[sigma])
