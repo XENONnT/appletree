@@ -177,6 +177,7 @@ class Context():
             ndim,
             self.log_posterior,
             backend=backend,
+            blobs_dtype=np.float32,
             parameter_names=self.par_manager.parameter_fit,
             kwargs = {'batch_size': batch_size},
         )
@@ -289,11 +290,20 @@ class Context():
         return par_config
 
     def update_parameter_config(self, likelihoods):
+        needed_rate_parameters = []
+        from_parameters = []
         for likelihood in likelihoods.values():
             for k, v in likelihood['copy_parameters'].items():
                 # specify rate scale
                 # normalization factor, for AC & ER, etc.
                 self.par_config.update({k: self.par_config[v]})
+                from_parameters.append(v)
+            for k, v in likelihood['components'].items():
+                needed_rate_parameters.append(k + '_rate')
+        for p in from_parameters:
+            if p not in needed_rate_parameters and p in self.par_config:
+                # Drop unused parameters
+                self.par_config.pop(p)
         return self.par_config
 
     def set_config(self, configs):

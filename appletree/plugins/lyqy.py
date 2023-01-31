@@ -24,8 +24,8 @@ class LightYield(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
-        ly_map = jnp.clip(self.ly_median.map * (1.0 + parameters['t_ly']), 0, jnp.inf)
-        light_yield = self.ly_median.apply(energy)
+        light_yield = self.ly_median.apply(energy) * (1. + parameters['t_ly'])
+        light_yield = jnp.clip(light_yield, 0, jnp.inf)
         return key, light_yield
 
 
@@ -53,8 +53,8 @@ class ChargeYield(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
-        qy_map = jnp.clip(self.qy_median.map * (1.0 + parameters['t_qy']), 0, jnp.inf)
-        charge_yield = self.qy_median.apply(energy)
+        charge_yield = self.qy_median.apply(energy) * (1. + parameters['t_qy'])
+        charge_yield = jnp.clip(charge_yield, 0, jnp.inf)
         return key, charge_yield
 
 
