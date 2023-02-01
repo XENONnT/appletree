@@ -39,10 +39,9 @@ class Context():
         self.likelihoods = {}
 
         self.par_config = self.get_parameter_config(config['par_config'])
-        self.update_parameter_config(config['likelihoods'])
+        self.needed_parameters = self.update_parameter_config(config['likelihoods'])
 
         self.par_manager = Parameter(self.par_config)
-        self.needed_parameters = set()
 
         self.register_all_likelihood(config)
 
@@ -290,6 +289,7 @@ class Context():
         return par_config
 
     def update_parameter_config(self, likelihoods):
+        needed_parameters = set()
         needed_rate_parameters = []
         from_parameters = []
         for likelihood in likelihoods.values():
@@ -298,13 +298,14 @@ class Context():
                 # normalization factor, for AC & ER, etc.
                 self.par_config.update({k: self.par_config[v]})
                 from_parameters.append(v)
+                needed_parameters.add(k)
             for k, v in likelihood['components'].items():
                 needed_rate_parameters.append(k + '_rate')
         for p in from_parameters:
             if p not in needed_rate_parameters and p in self.par_config:
                 # Drop unused parameters
                 self.par_config.pop(p)
-        return self.par_config
+        return needed_parameters
 
     def set_config(self, configs):
         """Set new configuration options

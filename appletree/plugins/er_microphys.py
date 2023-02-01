@@ -13,7 +13,7 @@ export, __all__ = exporter(export_self=False)
 class Quanta(Plugin):
     depends_on = ['energy']
     provides = ['num_quanta']
-    parameters = ('fano',)
+    parameters = ('w', 'fano',)
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
