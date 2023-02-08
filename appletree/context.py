@@ -2,8 +2,10 @@ import os
 import copy
 import json
 import importlib
+from datetime import datetime
 import numpy as np
 import emcee
+import h5py
 
 from appletree import randgen
 from appletree import Parameter
@@ -187,6 +189,8 @@ class Context():
             store=True,
             progress=True,
         )
+
+        self._dump_meta()
         return result
 
     def continue_fitting(self, context, iteration=500, batch_size=1_000_000):
@@ -207,6 +211,7 @@ class Context():
             ndim,
             self.log_posterior,
             backend=backend,
+            blobs_dtype=np.float32,
             parameter_names=self.par_manager.parameter_fit,
             kwargs = {'batch_size': batch_size},
         )
@@ -218,6 +223,8 @@ class Context():
             progress=True,
             skip_initial_state_check=True,
         )
+
+        self._dump_meta()
         return result
 
     def get_post_parameters(self):
@@ -243,6 +250,24 @@ class Context():
         parameters = self.get_post_parameters()
         with open(file_name, 'w') as fp:
             json.dump(parameters, fp)
+
+    def _dump_meta(self, metadata=None):
+        """Save parameters name as attributes"""
+        if metadata is None:
+            metadata = {
+                'version': '0.0',
+                'date': datetime.now().strftime('%Y%m%d_%H:%M:%S')
+            }
+        if self.backend_h5 is not None:
+            name = self.sampler.backend.name
+            with h5py.File(self.backend_h5, 'r+') as opt:
+                opt[name].attrs['metadata'] = json.dumps(metadata)
+                # parameters prior configuration
+                opt[name].attrs['par_config'] = json.dumps(self.par_manager.par_config)
+                # max posterior parameters
+                opt[name].attrs['post_parameters'] = json.dumps(self.get_post_parameters())
+                # the order of parameters saved in backend
+                opt[name].attrs['parameter_fit'] = self.par_manager.parameter_fit
 
     def get_template(self,
                      likelihood_name: str,
