@@ -256,7 +256,7 @@ class Context():
         if metadata is None:
             metadata = {
                 'version': '0.0',
-                'date': datetime.now().strftime('%Y%m%d_%H:%M:%S')
+                'date': datetime.now().strftime('%Y%m%d_%H:%M:%S'),
             }
         if self.backend_h5 is not None:
             name = self.sampler.backend.name
@@ -324,7 +324,7 @@ class Context():
                 self.par_config.update({k: self.par_config[v]})
                 from_parameters.append(v)
                 needed_parameters.add(k)
-            for k, v in likelihood['components'].items():
+            for k in likelihood['components'].keys():
                 needed_rate_parameters.append(k + '_rate')
         for p in from_parameters:
             if p not in needed_rate_parameters and p in self.par_config:

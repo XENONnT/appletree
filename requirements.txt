@@ -11,5 +11,6 @@ numpyro~=0.10.0
 multihist~=0.6.5
 corner~=2.2.1
 straxen>=1.7.1
+h5py~=3.7.0
 git+https://github.com/XENONnT/GOFevaluation
 # GOFevaluation~=0.1.1
