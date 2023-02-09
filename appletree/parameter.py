@@ -233,7 +233,7 @@ class Parameter():
     @property
     def parameter_fit_array(self):
         """Return non-fixed parameters, ordered by self._parameter_fit."""
-        return self.get_parameter(sorted(self._parameter_fit))
+        return self.get_parameter(self.parameter_fit)
 
     def get_all_parameter(self):
         """Return all parameters as a dict."""

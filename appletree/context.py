@@ -2,14 +2,17 @@ import os
 import copy
 import json
 import importlib
+from datetime import datetime
 import numpy as np
 import emcee
+import h5py
 
+import appletree as apt
 from appletree import randgen
 from appletree import Parameter
 from appletree import Likelihood
 from appletree.utils import load_json
-from appletree.share import set_global_config
+from appletree.share import _cached_configs, set_global_config
 
 os.environ['OMP_NUM_THREADS'] = '1'
 
@@ -39,10 +42,9 @@ class Context():
         self.likelihoods = {}
 
         self.par_config = self.get_parameter_config(config['par_config'])
-        self.update_parameter_config(config['likelihoods'])
+        self.needed_parameters = self.update_parameter_config(config['likelihoods'])
 
         self.par_manager = Parameter(self.par_config)
-        self.needed_parameters = set()
 
         self.register_all_likelihood(config)
 
@@ -177,6 +179,7 @@ class Context():
             ndim,
             self.log_posterior,
             backend=backend,
+            blobs_dtype=np.float32,
             parameter_names=self.par_manager.parameter_fit,
             kwargs = {'batch_size': batch_size},
         )
@@ -187,6 +190,8 @@ class Context():
             store=True,
             progress=True,
         )
+
+        self._dump_meta()
         return result
 
     def continue_fitting(self, context, iteration=500, batch_size=1_000_000):
@@ -207,6 +212,7 @@ class Context():
             ndim,
             self.log_posterior,
             backend=backend,
+            blobs_dtype=np.float32,
             parameter_names=self.par_manager.parameter_fit,
             kwargs = {'batch_size': batch_size},
         )
@@ -218,6 +224,8 @@ class Context():
             progress=True,
             skip_initial_state_check=True,
         )
+
+        self._dump_meta()
         return result
 
     def get_post_parameters(self):
@@ -243,6 +251,28 @@ class Context():
         parameters = self.get_post_parameters()
         with open(file_name, 'w') as fp:
             json.dump(parameters, fp)
+
+    def _dump_meta(self, metadata=None):
+        """Save parameters name as attributes"""
+        if metadata is None:
+            metadata = {
+                'version': apt.__version__,
+                'date': datetime.now().strftime('%Y%m%d_%H:%M:%S'),
+            }
+        if self.backend_h5 is not None:
+            name = self.sampler.backend.name
+            with h5py.File(self.backend_h5, 'r+') as opt:
+                opt[name].attrs['metadata'] = json.dumps(metadata)
+                # parameters prior configuration
+                opt[name].attrs['par_config'] = json.dumps(self.par_manager.par_config)
+                # max posterior parameters
+                opt[name].attrs['post_parameters'] = json.dumps(self.get_post_parameters())
+                # the order of parameters saved in backend
+                opt[name].attrs['parameter_fit'] = self.par_manager.parameter_fit
+                # instructions
+                opt[name].attrs['config'] = json.dumps(self.config)
+                # configurations, maybe users will manually add some maps
+                opt[name].attrs['_cached_configs'] = json.dumps(_cached_configs)
 
     def get_template(self,
                      likelihood_name: str,
@@ -270,7 +300,7 @@ class Context():
         needed = set(self.needed_parameters)
         provided = set(self.par_manager.get_all_parameter().keys())
         # We will not update unneeded parameters!
-        if not needed.issubset(provided):
+        if not provided.issubset(needed):
             mes = f'Parameter manager should provide needed parameters only, '
             mes += f'{provided - needed} not needed'
             raise RuntimeError(mes)
@@ -289,12 +319,23 @@ class Context():
         return par_config
 
     def update_parameter_config(self, likelihoods):
+        needed_parameters = set()
+        needed_rate_parameters = []
+        from_parameters = []
         for likelihood in likelihoods.values():
             for k, v in likelihood['copy_parameters'].items():
                 # specify rate scale
                 # normalization factor, for AC & ER, etc.
                 self.par_config.update({k: self.par_config[v]})
-        return self.par_config
+                from_parameters.append(v)
+                needed_parameters.add(k)
+            for k in likelihood['components'].keys():
+                needed_rate_parameters.append(k + '_rate')
+        for p in from_parameters:
+            if p not in needed_rate_parameters and p in self.par_config:
+                # Drop unused parameters
+                self.par_config.pop(p)
+        return needed_parameters
 
     def set_config(self, configs):
         """Set new configuration options

@@ -73,11 +73,11 @@
         "prior_type": "uniform",
         "prior_args": {
             "lower": 0.06,
-            "upper": 0.16
+            "upper": 0.20
         },
         "allowed_range": [
             0.06,
-            0.16
+            0.20
         ],
         "init_mean": 0.11,
         "init_std": 0.02,
