@@ -7,11 +7,12 @@ import numpy as np
 import emcee
 import h5py
 
+import appletree as apt
 from appletree import randgen
 from appletree import Parameter
 from appletree import Likelihood
 from appletree.utils import load_json
-from appletree.share import set_global_config
+from appletree.share import _cached_configs, set_global_config
 
 os.environ['OMP_NUM_THREADS'] = '1'
 
@@ -255,7 +256,7 @@ class Context():
         """Save parameters name as attributes"""
         if metadata is None:
             metadata = {
-                'version': '0.0',
+                'version': apt.__version__,
                 'date': datetime.now().strftime('%Y%m%d_%H:%M:%S'),
             }
         if self.backend_h5 is not None:
@@ -268,6 +269,10 @@ class Context():
                 opt[name].attrs['post_parameters'] = json.dumps(self.get_post_parameters())
                 # the order of parameters saved in backend
                 opt[name].attrs['parameter_fit'] = self.par_manager.parameter_fit
+                # instructions
+                opt[name].attrs['config'] = json.dumps(self.config)
+                # configurations, maybe users will manually add some maps
+                opt[name].attrs['_cached_configs'] = json.dumps(_cached_configs)
 
     def get_template(self,
                      likelihood_name: str,
