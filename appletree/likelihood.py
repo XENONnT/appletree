@@ -75,6 +75,11 @@ class Likelihood:
             if self._dim != 2:
                 raise RuntimeError('only 2D irregular binned likelihood is supported!')
             self.component_bins_type = 'irreg'
+            # order
+            mask0 = not len(self._bins[0]) == len(self._bins[1]) + 1
+            mask1 = not all(len(b) == len(self._bins[1][0]) for b in self._bins[1])
+            if mask0 or mask1:
+                raise ValueError(f'Please check the binning in {self.name}!')
             self.data_hist = make_hist_irreg_bin_2d(
                 self.data,
                 bins_x=jnp.array(self._bins[0]),
@@ -82,7 +87,7 @@ class Likelihood:
                 weights=jnp.ones(len(self.data)),
             )
         else:
-            raise ValueError("'bins_type' should either be meshgrid or equiprob")
+            raise ValueError("'bins_type' should either be meshgrid, equiprob or irreg")
 
     def __getitem__(self, keys):
         """Get component in likelihood"""
