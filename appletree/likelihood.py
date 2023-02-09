@@ -71,6 +71,16 @@ class Likelihood:
                 bins_y=self._bins[1],
                 weights=jnp.ones(len(self.data)),
             )
+        elif self._bins_type == 'irreg':
+            if self._dim != 2:
+                raise RuntimeError('only 2D irregular binned likelihood is supported!')
+            self.component_bins_type = 'irreg'
+            self.data_hist = make_hist_irreg_bin_2d(
+                self.data,
+                bins_x=jnp.array(self._bins[0]),
+                bins_y=jnp.array(self._bins[1]),
+                weights=jnp.ones(len(self.data)),
+            )
         else:
             raise ValueError("'bins_type' should either be meshgrid or equiprob")
 
