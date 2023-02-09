@@ -75,15 +75,16 @@ class Likelihood:
             if self._dim != 2:
                 raise RuntimeError('only 2D irregular binned likelihood is supported!')
             self.component_bins_type = 'irreg'
-            # order
-            mask0 = not len(self._bins[0]) == len(self._bins[1]) + 1
+            # x-binning should 1 longer than y-binning
+            mask0 = len(self._bins[0]) != len(self._bins[1]) + 1
+            # all y-binning should have the same length
             mask1 = not all(len(b) == len(self._bins[1][0]) for b in self._bins[1])
             if mask0 or mask1:
                 raise ValueError(f'Please check the binning in {self.name}!')
             self.data_hist = make_hist_irreg_bin_2d(
                 self.data,
-                bins_x=jnp.array(self._bins[0]),
-                bins_y=jnp.array(self._bins[1]),
+                bins_x=self._bins[0],
+                bins_y=self._bins[1],
                 weights=jnp.ones(len(self.data)),
             )
         else:
