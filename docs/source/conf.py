@@ -2,12 +2,14 @@
 
 # -- Project information
 
+import appletree as apt
+
 project = 'Appletree'
 copyright = '2022, appletree contributors and the XENON collaboration'
 author = 'Zihao Xu, Dacheng Xu'
 
-release = '0.0'
-version = '0.0.0'
+release = apt.__version__
+version = apt.__version__
 
 # -- General configuration
 
