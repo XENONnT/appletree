@@ -29,7 +29,7 @@ def takes_config(*configs):
         """
         :param plugin_class: plugin needs configuration
         """
-        result = {}
+        result = dict()
         for config in configs:
             if not isinstance(config, Config):
                 raise RuntimeError("Specify config options by Config objects")
@@ -296,14 +296,14 @@ class SigmaMap(Config):
 
         self._configs_default = self.get_default()
 
-        maps = {}
+        maps = dict()
         sigmas = ['median', 'lower', 'upper']
         for i, sigma in enumerate(sigmas):
             maps[sigma] = Map(
                 name=self.name + f'_{sigma}',
                 default=self._configs_default[i])
             if maps[sigma].name not in _cached_configs.keys():
-                _cached_configs[maps[sigma].name] = {}
+                _cached_configs[maps[sigma].name] = dict()
             if isinstance(_cached_configs[maps[sigma].name], dict):
                 # In case some plugins only use the median
                 # and may already update the map name in `_cached_configs`
@@ -341,7 +341,14 @@ class SigmaMap(Config):
 
 @export
 class ConstantSet(Config):
-    """ConstantSet is a special config which takes a set of values"""
+    """
+    ConstantSet is a special config which takes a set of values
+
+    We will not specify any hard-coded distribution or function here.
+    User should be careful with the actual function implemented.
+    Fortunately, we only use these values as keyword arguments,
+    so mismatch will be catched when running.
+    """
 
     def build(self, llh_name: str = None):
         """Set value of Constant"""
@@ -370,6 +377,8 @@ class ConstantSet(Config):
 
     def _sanity_check(self):
         """Check if parameter set lengths are same."""
+        mesg = 'The given values should follow [names, values] format.'
+        assert len(self.value) == 2, mesg
         mesg = 'Parameters and their names should have same length'
         assert len(self.value[0]) == len(self.value[1]), mesg
         volumes = [len(v) for v in self.value[1]]

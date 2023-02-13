@@ -28,3 +28,12 @@ def test_neutron_context():
 
     context.print_context_summary()
     context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
+
+
+def test_literature_context():
+    """Test Context of neutron combine fitting"""
+    config = get_file_path('literature_lyqy.json')
+    context = apt.Context(config)
+
+    context.print_context_summary()
+    context.fitting(nwalkers=100, iteration=2, batch_size=int(1))

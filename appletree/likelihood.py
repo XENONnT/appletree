@@ -3,6 +3,8 @@ from warnings import warn
 import numpy as np
 from jax import numpy as jnp
 
+from scipy.stats import norm
+
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 from appletree.utils import load_data, get_equiprob_bins_2d
 from appletree.component import Component, ComponentSim, ComponentFixed
@@ -26,7 +28,7 @@ class Likelihood:
             self.name = self.__class__.__name__
         else:
             self.name = name
-        self.components = {}
+        self.components = dict()
         self._config = config
         self._data_file_name = config['data_file_name']
         self._bins_type = config['bins_type']
@@ -240,7 +242,14 @@ class Likelihood:
 
 
 class LikelihoodLit(Likelihood):
-    """Using literature constraint to build LLH"""
+    """
+    Using literature constraint to build LLH
+
+    The idea is to simulate light and charge yields directly with given energy distribution.
+    And then fit the result with provided literature measurement points.
+    The energy distribution will always be twohalfnorm(TwoHalfNorm) or norm,
+    which is specified by 
+    """
 
     def __init__(self, name: str = None, **config):
         """Create an appletree likelihood
@@ -251,7 +260,7 @@ class LikelihoodLit(Likelihood):
             self.name = self.__class__.__name__
         else:
             self.name = name
-        self.components = {}
+        self.components = dict()
         self._config = config
         self._bins = None
         self._bins_type = None
@@ -269,6 +278,9 @@ class LikelihoodLit(Likelihood):
 
         if self.variable_type == 'twohalfnorm':
             setattr(self, 'logpdf', lambda x: TwoHalfNorm.logpdf(
+                x=x, **self.logpdf_args))
+        elif self.variable_type == 'norm':
+            setattr(self, 'logpdf', lambda x: norm.logpdf(
                 x=x, **self.logpdf_args))
         else:
             raise NotImplementedError
@@ -291,12 +303,18 @@ class LikelihoodLit(Likelihood):
         """
         if len(self.components) != 1:
             raise AssertionError(self.warning)
-        component = list(self.components.keys())[0]
-        key, result = self.components[component].simulate(
+        key, result = self.components[self.only_component].simulate(
             key, batch_size, parameters)
         # Move data to CPU
         result = [np.array(r) for r in result]
         return key, result
+
+    def register_component(self, *args, **kwargs):
+        if len(self.components) != 0:
+            raise AssertionError(self.warning)
+        super().register_component(*args, **kwargs)
+        # cache the component name
+        self.only_component = list(self.components.keys())[0]
 
     def get_log_likelihood(self, key, batch_size, parameters):
         """Get log likelihood of given parameters.

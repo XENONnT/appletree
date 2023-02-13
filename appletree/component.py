@@ -160,7 +160,7 @@ class ComponentSim(Component):
                  *args, **kwargs):
         """Initialization"""
         super().__init__(*args, **kwargs)
-        self._plugin_class_registry = {}
+        self._plugin_class_registry = dict()
 
     def register(self, plugin_class):
         """Register a plugin to the component."""
@@ -336,7 +336,7 @@ class ComponentSim(Component):
     def code(self, code):
         self._code = code
         if self.llh_name not in _cached_functions.keys():
-            _cached_functions[self.llh_name] = {}
+            _cached_functions[self.llh_name] = dict()
         self._compile = partial(exec, self.code, _cached_functions[self.llh_name])
 
     def deduce(self,

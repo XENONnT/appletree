@@ -10,7 +10,6 @@ import h5py
 import appletree as apt
 from appletree import randgen
 from appletree import Parameter
-from appletree import Likelihood
 from appletree.utils import load_json
 from appletree.share import _cached_configs, set_global_config
 
@@ -39,7 +38,7 @@ class Context():
 
         self.backend_h5 = config.get('backend_h5', None)
 
-        self.likelihoods = {}
+        self.likelihoods = dict()
 
         self.par_config = self.get_parameter_config(config['par_config'])
         self.needed_parameters = self.update_parameter_config(config['likelihoods'])
