@@ -11,7 +11,7 @@ from appletree.utils import exporter
 export, __all__ = exporter(export_self=False)
 
 # These scripts are copied from https://github.com/NESTCollaboration/nest/releases/tag/v2.3.7
-# and https://github.com/NESTCollaboration/nest/blob/f4d0da0149b5b2322da78c4a540e3737502bc35c/src/NEST.cpp
+# and https://github.com/NESTCollaboration/nest/blob/f4d0da0149b5b2322da78c4a540e3737502bc35c/src/NEST.cpp#L715-L794
 # Priors of the distribution is copied from https://drive.google.com/file/d/1urVT3htFjIC1pQKyaCcFonvWLt74Kgvn/view
 
 
