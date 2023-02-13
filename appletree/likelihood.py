@@ -157,6 +157,12 @@ class Likelihood:
         return key, hist
 
     def simulate_weighed_data(self, key, batch_size, parameters):
+        """Simulate weighted histogram.
+
+        :param key: a pseudo-random number generator (PRNG) key
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
         result = []
         for component_name, component in self.components.items():
             if isinstance(component, ComponentSim):
@@ -166,7 +172,7 @@ class Likelihood:
             else:
                 raise TypeError(f'unsupported component type for {component_name}!')
             result.append(_result)
-        result = [r for r in np.hstack(result)]
+        result = list(r for r in np.hstack(result))
         return key, result
 
     def get_log_likelihood(self, key, batch_size, parameters):
