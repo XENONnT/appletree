@@ -133,6 +133,42 @@ class Likelihood:
         # Update needed parameters
         self.needed_parameters |= self.components[component_name].needed_parameters
 
+    def _sanity_check(self):
+        """Check equality between number of bins group and observables"""
+        if len(self._bins_on) != len(self._bins):
+            raise RuntimeError('Length of bins must be the same as length of bins_on!')
+
+    def _simulate_model_hist(self, key, batch_size, parameters):
+        """Histogram of simulated observables.
+
+        :param key: a pseudo-random number generator (PRNG) key
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        hist = jnp.zeros_like(self.data_hist)
+        for component_name, component in self.components.items():
+            if isinstance(component, ComponentSim):
+                key, _hist = component.simulate_hist(key, batch_size, parameters)
+            elif isinstance(component, ComponentFixed):
+                _hist = component.simulate_hist(parameters)
+            else:
+                raise TypeError(f'unsupported component type for {component_name}!')
+            hist += _hist
+        return key, hist
+
+    def simulate_weighed_data(self, key, batch_size, parameters):
+        result = []
+        for component_name, component in self.components.items():
+            if isinstance(component, ComponentSim):
+                key, _result = component.simulate_weighed_data(key, batch_size, parameters)
+            elif isinstance(component, ComponentFixed):
+                _result = component.simulate_weighed_data(parameters)
+            else:
+                raise TypeError(f'unsupported component type for {component_name}!')
+            result.append(_result)
+        result = [r for r in np.hstack(result)]
+        return key, result
+
     def get_log_likelihood(self, key, batch_size, parameters):
         """Get log likelihood of given parameters.
 
@@ -196,42 +232,6 @@ class Likelihood:
 
         print('-'*40)
 
-    def _sanity_check(self):
-        """Check equality between number of bins group and observables"""
-        if len(self._bins_on) != len(self._bins):
-            raise RuntimeError('Length of bins must be the same as length of bins_on!')
-
-    def _simulate_model_hist(self, key, batch_size, parameters):
-        """Histogram of simulated observables.
-
-        :param key: a pseudo-random number generator (PRNG) key
-        :param batch_size: int of number of simulated events
-        :param parameters: dict of parameters used in simulation
-        """
-        hist = jnp.zeros_like(self.data_hist)
-        for component_name, component in self.components.items():
-            if isinstance(component, ComponentSim):
-                key, _hist = component.simulate_hist(key, batch_size, parameters)
-            elif isinstance(component, ComponentFixed):
-                _hist = component.simulate_hist(parameters)
-            else:
-                raise TypeError(f'unsupported component type for {component_name}!')
-            hist += _hist
-        return key, hist
-
-    def simulate_weighed_data(self, key, batch_size, parameters):
-        result = []
-        for component_name, component in self.components.items():
-            if isinstance(component, ComponentSim):
-                key, _result = component.simulate_weighed_data(key, batch_size, parameters)
-            elif isinstance(component, ComponentFixed):
-                _result = component.simulate_weighed_data(parameters)
-            else:
-                raise TypeError(f'unsupported component type for {component_name}!')
-            result.append(_result)
-        result = [r for r in np.hstack(result)]
-        return key, result
-
 
 class LikelihoodLit(Likelihood):
     """Using literature constraint to build LLH"""
@@ -276,22 +276,6 @@ class LikelihoodLit(Likelihood):
         if self._dim != 1:
             raise AssertionError(self.warning)
 
-    def get_log_likelihood(self, key, batch_size, parameters):
-        """Get log likelihood of given parameters.
-
-        :param key: a pseudo-random number generator (PRNG) key
-        :param batch_size: int of number of simulated events
-        :param parameters: dict of parameters used in simulation
-        """
-        key, result = self._simulate_yields(key, batch_size, parameters)
-        yields, eff = result
-        llh = self.logpdf(yields)
-        llh = (llh * eff).sum()
-        llh = float(llh)
-        if np.isnan(llh):
-            llh = -np.inf
-        return key, llh
-
     def _simulate_yields(self, key, batch_size, parameters):
         """Histogram of simulated observables.
 
@@ -307,6 +291,22 @@ class LikelihoodLit(Likelihood):
         # Move data to CPU
         result = [np.array(r) for r in result]
         return key, result
+
+    def get_log_likelihood(self, key, batch_size, parameters):
+        """Get log likelihood of given parameters.
+
+        :param key: a pseudo-random number generator (PRNG) key
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        key, result = self._simulate_yields(key, batch_size, parameters)
+        yields, eff = result
+        llh = self.logpdf(yields)
+        llh = (llh * eff).sum()
+        llh = float(llh)
+        if np.isnan(llh):
+            llh = -np.inf
+        return key, llh
 
     def print_likelihood_summary(self,
                                  indent: str = ' '*4,

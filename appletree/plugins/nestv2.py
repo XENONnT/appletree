@@ -105,5 +105,5 @@ class ClipEff(Plugin):
     def simulate(self, key, parameters, energy):
         eff = jnp.where(
             (energy >= self.clip_lower_energy.value) & (energy <= self.clip_upper_energy.value),
-            1.0, 0.0)
+            1., 0.)
         return key, eff
