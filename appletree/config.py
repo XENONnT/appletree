@@ -343,8 +343,6 @@ class SigmaMap(Config):
 class ConstantSet(Config):
     """ConstantSet is a special config which takes a set of values"""
 
-    value = dict()
-
     def build(self, llh_name: str = None):
         """Set value of Constant"""
         if self.name in _cached_configs:
@@ -368,7 +366,7 @@ class ConstantSet(Config):
 
         self._sanity_check()
         self.set_volume = len(self.value[1][0])
-        self.value = {k: jnp.array(v) for k, v in zip(self.value[0], self.value[1])}
+        self.value = {k: jnp.array(v) for k, v in zip(*self.value)}
 
     def _sanity_check(self):
         """Check if parameter set lengths are same."""

@@ -35,7 +35,7 @@ class ParameterizedEnergySpectra(Plugin):
 
 
 @export
-class Nq(Plugin):
+class TotalQuanta(Plugin):
     depends_on = ['energy']
     provides = ['Nq']
     parameters = ('alpha', 'beta')

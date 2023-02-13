@@ -86,7 +86,7 @@ class Context():
         """
         if likelihood_name in self.likelihoods:
             raise ValueError(f'Likelihood named {likelihood_name} already existed!')
-        likelihood = getattr(apt, likelihood_config['type'], Likelihood)
+        likelihood = getattr(apt, likelihood_config.get('type', 'Likelihood'))
         self.likelihoods[likelihood_name] = likelihood(
             name=likelihood_name,
             **likelihood_config,

@@ -256,7 +256,7 @@ class LikelihoodLit(Likelihood):
         self.component_bins_type = None
         logpdf_args = self._config['logpdf_args']
         self.logpdf_args = {
-            k: np.array(v) for k, v in zip(logpdf_args[0], logpdf_args[1])}
+            k: np.array(v) for k, v in zip(*logpdf_args)}
 
         self.variable_type = config['variable_type']
         self._sanity_check()
@@ -273,7 +273,8 @@ class LikelihoodLit(Likelihood):
         """Check sanities of supported distribution and dimension"""
         if self.variable_type != 'twohalfnorm':
             raise RuntimeError('Currently only twohalfnorm is supported')
-        assert self._dim == 1, self.warning
+        if self._dim != 1:
+            raise AssertionError(self.warning)
 
     def get_log_likelihood(self, key, batch_size, parameters):
         """Get log likelihood of given parameters.
@@ -298,8 +299,10 @@ class LikelihoodLit(Likelihood):
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
         """
-        assert len(self.components) == 1, self.warning
-        key, result = self.components[list(self.components.keys())[0]].simulate(
+        if len(self.components) != 1:
+            raise AssertionError(self.warning)
+        component = list(self.components.keys())[0]
+        key, result = self.components[component].simulate(
             key, batch_size, parameters)
         # Move data to CPU
         result = [np.array(r) for r in result]
