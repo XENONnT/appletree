@@ -27,7 +27,7 @@ export, __all__ = exporter(export_self=False)
 )
 class ParameterizedEnergySpectra(Plugin):
     depends_on = ['batch_size']
-    provides = ['energy']
+    provides = ['energy', 'energy_center']
 
     @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
@@ -35,7 +35,10 @@ class ParameterizedEnergySpectra(Plugin):
             key,
             shape=(batch_size, self.energy_twohalfnorm.set_volume),
             **self.energy_twohalfnorm.value)
-        return key, energy
+        energy = jnp.clip(energy, a_min=0., a_max=jnp.inf)
+        energy_center = jnp.broadcast_to(
+            self.energy_twohalfnorm.value['mu'], jnp.shape(energy)).astype(float)
+        return key, energy, energy_center
 
 
 @export
@@ -102,12 +105,12 @@ class Ly(Plugin):
         help='Largest energy considered in inference'),
 )
 class ClipEff(Plugin):
-    depends_on = ['energy']
+    depends_on = ['energy_center']
     provides = ['eff']
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, energy):
-        eff = jnp.where(
-            (energy >= self.clip_lower_energy.value) & (energy <= self.clip_upper_energy.value),
-            1., 0.)
+    def simulate(self, key, parameters, energy_center):
+        mask = energy_center >= self.clip_lower_energy.value
+        mask &= energy_center <= self.clip_upper_energy.value
+        eff = jnp.where(mask, 1., 0.)
         return key, eff
