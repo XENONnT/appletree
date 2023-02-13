@@ -6,6 +6,7 @@ from jax import numpy as jnp
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 from appletree.utils import load_data, get_equiprob_bins_2d
 from appletree.component import Component, ComponentSim, ComponentFixed
+from appletree.randgen import TwoHalfNorm
 
 
 class Likelihood:
@@ -230,3 +231,123 @@ class Likelihood:
             result.append(_result)
         result = [r for r in np.hstack(result)]
         return key, result
+
+
+class LikelihoodLit(Likelihood):
+    """Using literature constraint to build LLH"""
+
+    def __init__(self, name: str = None, **config):
+        """Create an appletree likelihood
+
+        :param config: Dictionary with configuration options that will be applied, should include:
+        """
+        if name is None:
+            self.name = self.__class__.__name__
+        else:
+            self.name = name
+        self.components = {}
+        self._config = config
+        self._bins = None
+        self._bins_type = None
+        self._bins_on = config['bins_on']
+        self._dim = len(self._bins_on)
+
+        self.needed_parameters = set()
+        self.component_bins_type = None
+        logpdf_args = self._config['logpdf_args']
+        self.logpdf_args = {
+            k: np.array(v) for k, v in zip(logpdf_args[0], logpdf_args[1])}
+
+        self.variable_type = config['variable_type']
+        self._sanity_check()
+
+        if self.variable_type == 'twohalfnorm':
+            setattr(self, 'logpdf', lambda x: TwoHalfNorm.logpdf(
+                x=x, **self.logpdf_args))
+        else:
+            raise NotImplementedError
+
+        self.warning = 'Currently only support one dimensional inference'
+
+    def _sanity_check(self):
+        """Check sanities of supported distribution and dimension"""
+        if self.variable_type != 'twohalfnorm':
+            raise RuntimeError('Currently only twohalfnorm is supported')
+        assert self._dim == 1, self.warning
+
+    def get_log_likelihood(self, key, batch_size, parameters):
+        """Get log likelihood of given parameters.
+
+        :param key: a pseudo-random number generator (PRNG) key
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        key, result = self._simulate_yields(key, batch_size, parameters)
+        yields, eff = result
+        llh = self.logpdf(yields)
+        llh = (llh * eff).sum()
+        llh = float(llh)
+        if np.isnan(llh):
+            llh = -np.inf
+        return key, llh
+
+    def _simulate_yields(self, key, batch_size, parameters):
+        """Histogram of simulated observables.
+
+        :param key: a pseudo-random number generator (PRNG) key
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        assert len(self.components) == 1, self.warning
+        key, result = self.components[list(self.components.keys())[0]].simulate(
+            key, batch_size, parameters)
+        # Move data to CPU
+        result = [np.array(r) for r in result]
+        return key, result
+
+    def print_likelihood_summary(self,
+                                 indent: str = ' '*4,
+                                 short: bool = True):
+        """Print likelihood summary: components, bins, file names.
+
+        :param indent: str of indent
+        :param short: bool, whether only print short summary
+        """
+        print('\n'+'-'*40)
+
+        print(f'BINNING\n')
+        print(f'{indent}variable_type: {self.variable_type}')
+        print(f'{indent}variable: {self._bins_on}')
+        print('\n'+'-'*40)
+
+        print(f'LOGPDF\n')
+        print(f'{indent}logpdf_args:')
+        for k, v in self.logpdf_args.items():
+            print(f'{indent*2}{k}: {v}')
+        print('\n'+'-'*40)
+
+        print('MODEL\n')
+        for i, component_name in enumerate(self.components):
+            name = component_name
+            component = self[component_name]
+            need = component.needed_parameters
+
+            print(f'{indent}COMPONENT {i}: {name}')
+            if isinstance(component, ComponentSim):
+                print(f'{indent*2}type: simulation')
+                print(f'{indent*2}rate_par: {component.rate_name}')
+                print(f'{indent*2}pars: {need}')
+                if not short:
+                    print(f'{indent*2}worksheet: {component.worksheet}')
+            elif isinstance(component, ComponentFixed):
+                print(f'{indent*2}type: fixed')
+                print(f'{indent*2}file_name: {component._file_name}')
+                print(f'{indent*2}rate_par: {component.rate_name}')
+                print(f'{indent*2}pars: {need}')
+                if not short:
+                    print(f'{indent*2}from_file: {component.file_name}')
+            else:
+                pass
+            print()
+
+        print('-'*40)

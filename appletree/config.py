@@ -4,6 +4,8 @@ from immutabledict import immutabledict
 from jax import numpy as jnp
 from warnings import warn
 
+import numpy as np
+
 from appletree.share import _cached_configs
 from appletree.utils import exporter, load_json, get_file_path, integrate_midpoint, cum_integrate_midpoint
 from appletree import interpolation
@@ -335,3 +337,43 @@ class SigmaMap(Config):
         add_neg = (median - lower) * sigma
         add = jnp.where(sigma > 0, add_pos, add_neg)
         return median + add
+
+
+@export
+class ConstantSet(Config):
+    """ConstantSet is a special config which takes a set of values"""
+
+    value = dict()
+
+    def build(self, llh_name: str = None):
+        """Set value of Constant"""
+        if self.name in _cached_configs:
+            value = _cached_configs[self.name]
+        else:
+            value = self.get_default()
+            # Update values to sharing dictionary
+            _cached_configs[self.name] = value
+
+        if isinstance(value, dict):
+            try:
+                self.value = value[llh_name]
+            except KeyError:
+                mesg = f'You specified {self.name} as a dictionary. '
+                mesg += f'The key of it should be the name of one '
+                mesg += f'of the likelihood, '
+                mesg += f'but it is {llh_name}.'
+                raise ValueError(mesg)
+        else:
+            self.value = value
+
+        self._sanity_check()
+        self.set_volume = len(self.value[1][0])
+        self.value = {k: jnp.array(v) for k, v in zip(self.value[0], self.value[1])}
+
+    def _sanity_check(self):
+        """Check if parameter set lengths are same."""
+        mesg = 'Parameters and their names should have same length'
+        assert len(self.value[0]) == len(self.value[1]), mesg
+        volumes = [len(v) for v in self.value[1]]
+        mesg = 'Parameter set lengths should be the same'
+        assert np.all(np.isclose(volumes, volumes[0])), mesg

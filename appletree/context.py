@@ -62,11 +62,6 @@ class Context():
         for key, value in config['likelihoods'].items():
             likelihood = copy.deepcopy(value)
 
-            # update data file path
-            data_file_name = likelihood["data_file_name"]
-            if not os.path.exists(data_file_name):
-                likelihood["data_file_name"] = data_file_name
-
             self.register_likelihood(key, likelihood)
 
             for k, v in likelihood['components'].items():
@@ -91,7 +86,8 @@ class Context():
         """
         if likelihood_name in self.likelihoods:
             raise ValueError(f'Likelihood named {likelihood_name} already existed!')
-        self.likelihoods[likelihood_name] = Likelihood(
+        likelihood = getattr(apt, likelihood_config['type'], Likelihood)
+        self.likelihoods[likelihood_name] = likelihood(
             name=likelihood_name,
             **likelihood_config,
         )

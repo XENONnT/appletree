@@ -227,8 +227,36 @@ class TwoHalfNorm:
         :param size: int or tuple of ints, Output shape.
         :return: log probability density function
         """
-        assert (sigma_pos > 0) and (sigma_neg > 0), 'sigma should be positive'
+        assert np.all(sigma_pos > 0) and np.all(sigma_neg > 0), 'sigma should be positive'
         norm = 2 / (sigma_pos + sigma_neg) / np.sqrt(2 * np.pi)
         logpdf = np.where(x < mu, -(x - mu)**2 / sigma_neg**2 / 2, -(x - mu)**2 / sigma_pos**2 / 2)
         logpdf += np.log(norm)
         return logpdf
+
+
+@export
+@partial(jit, static_argnums=(4, ))
+def twohalfnorm(key, mu, sigma_pos, sigma_neg, shape=()):
+    """JAX version of TwoHalfNorm.rvs.
+
+    :param key: seed for random generator.
+    :param shape: output shape. If not given, output has shape
+    jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std)).
+    :return: an updated seed, random variables.
+    """
+    key, seed = random.split(key)
+
+    shape = shape or jnp.broadcast_shapes(jnp.shape(mu), jnp.shape(sigma_pos), jnp.shape(sigma_neg))
+    mu = jnp.broadcast_to(mu, shape).astype(FLOAT)
+    sigma_pos = jnp.broadcast_to(sigma_pos, shape).astype(FLOAT)
+    sigma_neg = jnp.broadcast_to(sigma_neg, shape).astype(FLOAT)
+
+    pos_half_prob = sigma_pos / (sigma_pos + sigma_neg)
+    use_pos_half = random.uniform(seed, shape, minval=0., maxval=1.) < pos_half_prob
+    use_neg_half = ~use_pos_half
+
+    n_sigma = jnp.abs(random.normal(seed, shape=shape))
+    offset = use_pos_half * n_sigma * sigma_pos - use_neg_half * n_sigma * sigma_neg
+    rvs = offset + mu
+
+    return key, rvs.astype(FLOAT)
