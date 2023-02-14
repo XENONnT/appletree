@@ -473,13 +473,14 @@ class ComponentSim(Component):
         # straxen.dataframe_to_wiki(df, title=f'{data_names}', float_digits=1)
         return df
 
-    def new_component(self):
+    def new_component(self, llh_name: str = None):
         """
         Generate new component with same binning,
         usually used on predicting yields
         """
         component = self.__class__(
             name=self.name + '_copy',
+            llh_name=llh_name,
             bins=self.bins,
             bins_type=self.bins_type,
         )

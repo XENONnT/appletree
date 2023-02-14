@@ -11,6 +11,8 @@ def test_rn220_context():
     context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
     context.dump_post_parameters('_temp.json')
 
+    context['rn220_llh']['rn220_er'].new_component()
+
 
 def test_rn220_ar37_context():
     """Test Context of Rn220 & Ar37 combine fitting"""
