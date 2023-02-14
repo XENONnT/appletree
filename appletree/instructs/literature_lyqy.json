@@ -18,8 +18,14 @@
                 ]
             ]
         },
-        "clip_lower_energy": 0.9,
-        "clip_upper_energy": 1.9
+        "clip_lower_energy": {
+            "qy_llh": 0.921,
+            "ly_llh": 0.921
+        },
+        "clip_upper_energy": {
+            "qy_llh": 1.869,
+            "ly_llh": 1.869
+        }
     },
 
     "likelihoods": {
