@@ -10,9 +10,11 @@ from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
-# These scripts are copied from https://github.com/NESTCollaboration/nest/releases/tag/v2.3.7
-# and https://github.com/NESTCollaboration/nest/blob/f4d0da0149b5b2322da78c4a540e3737502bc35c/src/NEST.cpp#L715-L794
-# Priors of the distribution is copied from https://drive.google.com/file/d/1urVT3htFjIC1pQKyaCcFonvWLt74Kgvn/view
+# These scripts are copied from
+# https://github.com/NESTCollaboration/nest/releases/tag/v2.3.7
+# and https://github.com/NESTCollaboration/nest/blob/v2.3.7/src/NEST.cpp#L715-L794
+# Priors of the distribution is copied from https://arxiv.org/abs/2211.10726
+# and https://drive.google.com/file/d/1urVT3htFjIC1pQKyaCcFonvWLt74Kgvn/view
 
 
 @export
@@ -54,15 +56,21 @@ class TotalQuanta(Plugin):
 
 
 @export
+@appletree.takes_config(
+    Constant(name='literature_field',
+        type=float,
+        default=23.0,
+        help='Drift field in each literature'),
+)
 class TIB(Plugin):
     depends_on = ['energy']
     provides = ['ThomasImel']
-    parameters = ('gamma', 'delta', 'field', 'liquid_xe_density')
+    parameters = ('gamma', 'delta', 'liquid_xe_density')
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
         ThomasImel = jnp.ones(shape=jnp.shape(energy))
-        ThomasImel *= parameters['gamma'] * parameters['field'] ** parameters['delta']
+        ThomasImel *= parameters['gamma'] * self.literature_field.value ** parameters['delta']
         ThomasImel *= (parameters['liquid_xe_density'] / 2.9) ** 0.3
         return key, ThomasImel
 
@@ -77,6 +85,7 @@ class Qy(Plugin):
     def simulate(self, key, parameters, energy, ThomasImel):
         charge_yield = 1 / ThomasImel / jnp.sqrt(energy + parameters['epsilon'])
         charge_yield *= (1 - 1 / (1 + (energy / parameters['zeta']) ** parameters['eta']))
+        charge_yield = jnp.clip(charge_yield, 0, jnp.inf)
         return key, charge_yield
 
 
@@ -90,6 +99,7 @@ class Ly(Plugin):
     def simulate(self, key, parameters, energy, Nq, charge_yield):
         light_yield = Nq / energy - charge_yield
         light_yield *= (1 - 1 / (1 + (energy / parameters['theta']) ** parameters['iota']))
+        light_yield = jnp.clip(light_yield, 0, jnp.inf)
         return key, light_yield
 
 

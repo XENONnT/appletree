@@ -1,15 +1,4 @@
 {
-    "field": {
-        "prior_type": "fixed",
-        "prior_args": {
-            "val": 23.0
-        },
-        "allowed_range": null,
-        "init_mean": null,
-        "init_std": null,
-        "unit": "V/cm",
-        "doc": "Drift field"
-    },
     "liquid_xe_density": {
         "prior_type": "fixed",
         "prior_args": {
