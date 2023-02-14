@@ -35,8 +35,6 @@ def test_fixed_component():
     ac.rate_name = 'ac_rate'
     ac.deduce(data_names = ('cs1', 'cs2'))
     ac.simulate_hist(parameters)
-    batch_size = int(1e3)
-    key = apt.randgen.get_key(seed=137)
     ac.simulate_weighed_data(parameters)
 
 
