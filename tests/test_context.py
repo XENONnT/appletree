@@ -4,8 +4,6 @@ from appletree.utils import get_file_path
 
 def test_rn220_context():
     """Test Context of Rn220 combine fitting"""
-    # config = get_file_path('rn220.json')
-    # context = apt.Context(config)
     context = apt.ContextRn220()
 
     context.print_context_summary()
@@ -17,8 +15,6 @@ def test_rn220_context():
 
 def test_rn220_ar37_context():
     """Test Context of Rn220 & Ar37 combine fitting"""
-    # config = get_file_path('rn220_ar37.json')
-    # context = apt.Context(config)
     context = apt.ContextRn220Ar37()
 
     context.print_context_summary()
