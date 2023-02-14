@@ -1,7 +1,7 @@
 {
     "configs": {
         "energy_twohalfnorm": {
-            "ly_llh": [
+            "ly_lux_2016": [
                 ["mu", "sigma_pos", "sigma_neg"],
                 [
                     [1.080, 1.920, 3.130, 4.450, 5.890, 7.440, 9.100, 10.900, 12.800],
@@ -9,7 +9,7 @@
                     [0.130, 0.090, 0.110, 0.110, 0.130, 0.170, 0.200, 0.300, 0.300]
                 ]
             ],
-            "qy_llh": [
+            "qy_lenardo_2019": [
                 ["mu", "sigma_pos", "sigma_neg"],
                 [
                     [6.080, 4.650, 3.610, 2.950, 2.110, 1.610, 0.970, 0.930, 0.442, 0.296],
@@ -19,27 +19,27 @@
             ]
         },
         "clip_lower_energy": {
-            "ly_llh": 0.0,
-            "qy_llh": 0.0
+            "ly_lux_2016": 0.0,
+            "qy_lenardo_2019": 0.0
         },
         "clip_upper_energy": {
-            "ly_llh": 2.5,
-            "qy_llh": 2.5
+            "ly_lux_2016": 2.5,
+            "qy_lenardo_2019": 2.5
         },
         "literature_field": {
-            "ly_llh": 180.0,
-            "qy_llh": 220.0
+            "ly_lux_2016": 180.0,
+            "qy_lenardo_2019": 220.0
         }
     },
 
     "likelihoods": {
-        "ly_llh": {
+        "ly_lux_2016": {
             "type": "LikelihoodLit",
             "components": {
-                "ly_nr_lux_2016": "Yields"
+                "ly_lux_2016_nr": "Yields"
             },
             "copy_parameters": {
-                "ly_nr_lux_2016_rate": "rate"
+                "ly_lux_2016_nr_rate": "rate"
             },
 
             "bins_on": ["light_yield"],
@@ -53,13 +53,13 @@
                 ]
             ]
         },
-        "qy_llh": {
+        "qy_lenardo_2019": {
             "type": "LikelihoodLit",
             "components": {
-                "qy_nr_lenardo_2019": "Yields"
+                "qy_lenardo_2019_nr": "Yields"
             },
             "copy_parameters": {
-                "qy_nr_lenardo_2019_rate": "rate"
+                "qy_lenardo_2019_nr_rate": "rate"
             },
 
             "bins_on": ["charge_yield"],
