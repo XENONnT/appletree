@@ -162,6 +162,7 @@ class Context():
                     nwalkers=100,
                     read_only=True,
                     batch_size=1_000_000):
+        """Prepare for fitting, initialize backend and sampler"""
         self._set_backend(nwalkers, read_only=read_only)
         self.sampler = emcee.EnsembleSampler(
             nwalkers,
