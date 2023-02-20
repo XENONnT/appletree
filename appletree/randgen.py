@@ -192,7 +192,7 @@ class TwoHalfNorm:
     """Continuous distribution, two half Normal"""
 
     @staticmethod
-    def rvs(mu=0, sigma_pos=1, sigma_neg=1, size=1):
+    def rvs(mu=0, sigma_pos=1, sigma_neg=1, size=None):
         """
         Get random variables
         :param mu: float, 'center' value of the distribution
