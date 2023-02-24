@@ -8,7 +8,7 @@ from scipy.stats import norm
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 from appletree.utils import load_data, get_equiprob_bins_2d
 from appletree.component import Component, ComponentSim, ComponentFixed
-from appletree.randgen import TwoHalfNorm
+from appletree.randgen import TwoHalfNorm, BandTwoHalfNorm
 
 
 class Likelihood:
@@ -247,7 +247,7 @@ class LikelihoodLit(Likelihood):
 
     The idea is to simulate light and charge yields directly with given energy distribution.
     And then fit the result with provided literature measurement points.
-    The energy distribution will always be twohalfnorm(TwoHalfNorm) or norm,
+    The energy distribution will always be twohalfnorm(TwoHalfNorm), norm or band,
     which is specified by 
     """
 
@@ -282,6 +282,9 @@ class LikelihoodLit(Likelihood):
         elif self.variable_type == 'norm':
             setattr(self, 'logpdf', lambda x: norm.logpdf(
                 x=x, **self.logpdf_args))
+        elif self.variable_type == 'band':
+            self.bandtwohalfnorm = BandTwoHalfNorm(**self.logpdf_args)
+            setattr(self, 'logpdf', lambda x, y: self.bandtwohalfnorm.logpdf(x=x, y=y))
         else:
             raise NotImplementedError
 
@@ -289,8 +292,8 @@ class LikelihoodLit(Likelihood):
 
     def _sanity_check(self):
         """Check sanities of supported distribution and dimension"""
-        if self.variable_type != 'twohalfnorm':
-            raise RuntimeError('Currently only twohalfnorm is supported')
+        if self.variable_type not in ['twohalfnorm', 'norm', 'band']:
+            raise RuntimeError('Currently only twohalfnorm, norm and band are supported')
         if self._dim != 1:
             raise AssertionError(self.warning)
 

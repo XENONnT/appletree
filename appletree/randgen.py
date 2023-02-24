@@ -7,6 +7,7 @@ from jax import numpy as jnp
 import numpy as np
 from jax import random, lax, jit, vmap
 from numpyro.distributions.util import _binomial_dispatch as _binomial_dispatch_numpyro
+from scipy.interpolate import interp1d
 
 from appletree.utils import exporter
 
@@ -231,6 +232,21 @@ class TwoHalfNorm:
         norm = 2 / (sigma_pos + sigma_neg) / np.sqrt(2 * np.pi)
         logpdf = np.where(x < mu, -(x - mu)**2 / sigma_neg**2 / 2, -(x - mu)**2 / sigma_pos**2 / 2)
         logpdf += np.log(norm)
+        return logpdf
+
+
+class BandTwoHalfNorm:
+    def __init__(self, x, y, yerr_upper, yerr_lower):
+        self.y = interp1d(x, y, bounds_error=False)
+        self.yerr_upper = interp1d(x, yerr_upper, bounds_error=False)
+        self.yerr_lower = interp1d(x, yerr_lower, bounds_error=False)
+
+    def logpdf(self, x, y):
+        mu = self.y(x)
+        sigma_pos = self.yerr_upper(x)
+        sigma_neg = self.yerr_lower(x)
+        logpdf = TwoHalfNorm.logpdf(
+            x=y, mu=mu, sigma_pos=sigma_pos, sigma_neg=sigma_neg)
         return logpdf
 
 

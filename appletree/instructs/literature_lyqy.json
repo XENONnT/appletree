@@ -36,7 +36,7 @@
         "ly_lux_2016": {
             "type": "LikelihoodLit",
             "components": {
-                "ly_lux_2016_nr": "Yields"
+                "ly_lux_2016_nr": "MonoEnergyYields"
             },
             "copy_parameters": {
                 "ly_lux_2016_nr_rate": "rate"
@@ -56,7 +56,7 @@
         "qy_lenardo_2019": {
             "type": "LikelihoodLit",
             "components": {
-                "qy_lenardo_2019_nr": "Yields"
+                "qy_lenardo_2019_nr": "MonoEnergyYields"
             },
             "copy_parameters": {
                 "qy_lenardo_2019_nr_rate": "rate"

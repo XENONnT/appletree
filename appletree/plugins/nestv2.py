@@ -27,7 +27,7 @@ export, __all__ = exporter(export_self=False)
         ],
         help='Parameterized energy spectrum'),
 )
-class ParameterizedEnergySpectra(Plugin):
+class MonoEnergySpectra(Plugin):
     depends_on = ['batch_size']
     provides = ['energy', 'energy_center']
 
@@ -41,6 +41,30 @@ class ParameterizedEnergySpectra(Plugin):
         energy_center = jnp.broadcast_to(
             self.energy_twohalfnorm.value['mu'], jnp.shape(energy)).astype(float)
         return key, energy, energy_center
+
+
+@export
+@appletree.takes_config(
+    Constant(name='clip_lower_energy',
+        type=float,
+        default=0.5,
+        help='Smallest energy considered in inference'),
+    Constant(name='clip_upper_energy',
+        type=float,
+        default=2.5,
+        help='Largest energy considered in inference'),
+)
+class BandEnergySpectra(Plugin):
+
+    @partial(jit, static_argnums=(0, 3))
+    def simulate(self, key, parameters, batch_size):
+        key, energy = randgen.uniform(
+            key,
+            self.clip_lower_energy.value,
+            self.clip_upper_energy.value,
+            shape=(batch_size, ),
+        )
+        return key, energy
 
 
 @export
@@ -114,7 +138,12 @@ class Ly(Plugin):
         default=2.5,
         help='Largest energy considered in inference'),
 )
-class ClipEff(Plugin):
+class MonoEnergyClipEff(Plugin):
+    """
+    For mono-energy-like yields constrain,
+    we need to filter out the energies out of range.
+    The method is set their weights to 0.
+    """
     depends_on = ['energy_center']
     provides = ['eff']
 
@@ -123,4 +152,20 @@ class ClipEff(Plugin):
         mask = energy_center >= self.clip_lower_energy.value
         mask &= energy_center <= self.clip_upper_energy.value
         eff = jnp.where(mask, 1., 0.)
+        return key, eff
+
+
+@export
+class BandEnergyClipEff(Plugin):
+    """
+    For band-like yields constrain,
+    we only need a placeholder here.
+    Because BandEnergySpectra has already selected energy for us.
+    """
+    depends_on = ['energy']
+    provides = ['eff']
+
+    @partial(jit, static_argnums=(0, ))
+    def simulate(self, key, parameters, energy):
+        eff = jnp.ones(len(energy))
         return key, eff
