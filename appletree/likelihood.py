@@ -274,27 +274,26 @@ class LikelihoodLit(Likelihood):
             k: np.array(v) for k, v in zip(*logpdf_args)}
 
         self.variable_type = config['variable_type']
+        self.warning = 'Currently only support one dimensional inference'
         self._sanity_check()
 
         if self.variable_type == 'twohalfnorm':
-            setattr(self, 'logpdf', lambda x: TwoHalfNorm.logpdf(
-                x=x, **self.logpdf_args))
+            setattr(self, 'logpdf', lambda x, y: TwoHalfNorm.logpdf(
+                x=y, **self.logpdf_args))
         elif self.variable_type == 'norm':
-            setattr(self, 'logpdf', lambda x: norm.logpdf(
-                x=x, **self.logpdf_args))
+            setattr(self, 'logpdf', lambda x, y: norm.logpdf(
+                x=y, **self.logpdf_args))
         elif self.variable_type == 'band':
             self.bandtwohalfnorm = BandTwoHalfNorm(**self.logpdf_args)
             setattr(self, 'logpdf', lambda x, y: self.bandtwohalfnorm.logpdf(x=x, y=y))
         else:
             raise NotImplementedError
 
-        self.warning = 'Currently only support one dimensional inference'
-
     def _sanity_check(self):
         """Check sanities of supported distribution and dimension"""
         if self.variable_type not in ['twohalfnorm', 'norm', 'band']:
             raise RuntimeError('Currently only twohalfnorm, norm and band are supported')
-        if self._dim != 1:
+        if self._dim != 2:
             raise AssertionError(self.warning)
 
     def _simulate_yields(self, key, batch_size, parameters):
@@ -327,8 +326,8 @@ class LikelihoodLit(Likelihood):
         :param parameters: dict of parameters used in simulation
         """
         key, result = self._simulate_yields(key, batch_size, parameters)
-        yields, eff = result
-        llh = self.logpdf(yields)
+        energies, yields, eff = result
+        llh = self.logpdf(energies, yields)
         llh = (llh * eff).sum()
         llh = float(llh)
         if np.isnan(llh):

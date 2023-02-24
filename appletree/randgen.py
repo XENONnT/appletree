@@ -236,17 +236,31 @@ class TwoHalfNorm:
 
 
 class BandTwoHalfNorm:
+    """
+    This is a TwoHalfNorm which quantifies uncertainty in y-axis,
+    but we need to interpolate from x-axis.
+    """
     def __init__(self, x, y, yerr_upper, yerr_lower):
-        self.y = interp1d(x, y, bounds_error=False)
-        self.yerr_upper = interp1d(x, yerr_upper, bounds_error=False)
-        self.yerr_lower = interp1d(x, yerr_lower, bounds_error=False)
+        self.x = x
+        self.y = interp1d(x, y, bounds_error=False, fill_value='extrapolate')
+        self.yerr_upper = interp1d(x, yerr_upper, bounds_error=False, fill_value='extrapolate')
+        self.yerr_lower = interp1d(x, yerr_lower, bounds_error=False, fill_value='extrapolate')
 
     def logpdf(self, x, y):
+        """
+        We calculate along LLH where y-axis is random variable.
+        We need to interpolate along x-axis to get y-axis's arguments.
+        """
         mu = self.y(x)
         sigma_pos = self.yerr_upper(x)
         sigma_neg = self.yerr_lower(x)
+        _mu = np.where(np.isnan(mu), 0, mu)
+        _sigma_pos = np.where(np.isnan(sigma_pos), 1, sigma_pos)
+        _sigma_neg = np.where(np.isnan(sigma_neg), 1, sigma_neg)
         logpdf = TwoHalfNorm.logpdf(
-            x=y, mu=mu, sigma_pos=sigma_pos, sigma_neg=sigma_neg)
+            x=y, mu=_mu, sigma_pos=_sigma_pos, sigma_neg=_sigma_neg)
+        # If x out of range of self.x, return -np.inf
+        logpdf = np.where(np.isnan(mu), -np.inf, logpdf)
         return logpdf
 
 

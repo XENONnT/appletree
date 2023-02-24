@@ -36,13 +36,13 @@
         "ly_lux_2016": {
             "type": "LikelihoodLit",
             "components": {
-                "ly_lux_2016_nr": "MonoEnergyYields"
+                "ly_lux_2016_nr": "MonoEnergiesYields"
             },
             "copy_parameters": {
                 "ly_lux_2016_nr_rate": "rate"
             },
 
-            "bins_on": ["light_yield"],
+            "bins_on": ["energy", "light_yield"],
             "variable_type": "twohalfnorm",
             "logpdf_args": [
                 ["mu", "sigma_pos", "sigma_neg"],
@@ -56,13 +56,13 @@
         "qy_lenardo_2019": {
             "type": "LikelihoodLit",
             "components": {
-                "qy_lenardo_2019_nr": "MonoEnergyYields"
+                "qy_lenardo_2019_nr": "MonoEnergiesYields"
             },
             "copy_parameters": {
                 "qy_lenardo_2019_nr_rate": "rate"
             },
 
-            "bins_on": ["charge_yield"],
+            "bins_on": ["energy", "charge_yield"],
             "variable_type": "twohalfnorm",
             "logpdf_args": [
                 ["mu", "sigma_pos", "sigma_neg"],

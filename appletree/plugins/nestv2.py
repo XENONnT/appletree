@@ -27,7 +27,7 @@ export, __all__ = exporter(export_self=False)
         ],
         help='Parameterized energy spectrum'),
 )
-class MonoEnergySpectra(Plugin):
+class MonoEnergiesSpectra(Plugin):
     depends_on = ['batch_size']
     provides = ['energy', 'energy_center']
 
@@ -54,7 +54,9 @@ class MonoEnergySpectra(Plugin):
         default=2.5,
         help='Largest energy considered in inference'),
 )
-class BandEnergySpectra(Plugin):
+class UniformEnergiesSpectra(Plugin):
+    depends_on = ['batch_size']
+    provides = ['energy']
 
     @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
@@ -138,12 +140,13 @@ class Ly(Plugin):
         default=2.5,
         help='Largest energy considered in inference'),
 )
-class MonoEnergyClipEff(Plugin):
+class MonoEnergiesClipEff(Plugin):
     """
     For mono-energy-like yields constrain,
     we need to filter out the energies out of range.
     The method is set their weights to 0.
     """
+
     depends_on = ['energy_center']
     provides = ['eff']
 
@@ -156,12 +159,13 @@ class MonoEnergyClipEff(Plugin):
 
 
 @export
-class BandEnergyClipEff(Plugin):
+class BandEnergiesClipEff(Plugin):
     """
     For band-like yields constrain,
     we only need a placeholder here.
     Because BandEnergySpectra has already selected energy for us.
     """
+
     depends_on = ['energy']
     provides = ['eff']
 
