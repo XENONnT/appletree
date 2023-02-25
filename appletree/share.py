@@ -16,7 +16,7 @@ def set_global_config(configs):
             file_path = get_file_path(v)
             _cached_configs.update({k: file_path})
         elif isinstance(v, dict):
-            file_path_dict = {}
+            file_path_dict = dict()
             for kk, vv in v.items():
                 if isinstance(vv, (float, int, list)):
                     file_path_dict[kk] = vv

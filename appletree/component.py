@@ -160,7 +160,7 @@ class ComponentSim(Component):
                  *args, **kwargs):
         """Initialization"""
         super().__init__(*args, **kwargs)
-        self._plugin_class_registry = {}
+        self._plugin_class_registry = dict()
 
     def register(self, plugin_class):
         """Register a plugin to the component."""
@@ -336,7 +336,7 @@ class ComponentSim(Component):
     def code(self, code):
         self._code = code
         if self.llh_name not in _cached_functions.keys():
-            _cached_functions[self.llh_name] = {}
+            _cached_functions[self.llh_name] = dict()
         self._compile = partial(exec, self.code, _cached_functions[self.llh_name])
 
     def deduce(self,
@@ -473,13 +473,14 @@ class ComponentSim(Component):
         # straxen.dataframe_to_wiki(df, title=f'{data_names}', float_digits=1)
         return df
 
-    def new_component(self):
+    def new_component(self, llh_name: str = None):
         """
         Generate new component with same binning,
         usually used on predicting yields
         """
         component = self.__class__(
             name=self.name + '_copy',
+            llh_name=llh_name,
             bins=self.bins,
             bins_type=self.bins_type,
         )

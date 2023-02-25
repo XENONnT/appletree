@@ -3,9 +3,12 @@ from warnings import warn
 import numpy as np
 from jax import numpy as jnp
 
+from scipy.stats import norm
+
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 from appletree.utils import load_data, get_equiprob_bins_2d
 from appletree.component import Component, ComponentSim, ComponentFixed
+from appletree.randgen import TwoHalfNorm, BandTwoHalfNorm
 
 
 class Likelihood:
@@ -25,7 +28,7 @@ class Likelihood:
             self.name = self.__class__.__name__
         else:
             self.name = name
-        self.components = {}
+        self.components = dict()
         self._config = config
         self._data_file_name = config['data_file_name']
         self._bins_type = config['bins_type']
@@ -132,6 +135,48 @@ class Likelihood:
         # Update needed parameters
         self.needed_parameters |= self.components[component_name].needed_parameters
 
+    def _sanity_check(self):
+        """Check equality between number of bins group and observables"""
+        if len(self._bins_on) != len(self._bins):
+            raise RuntimeError('Length of bins must be the same as length of bins_on!')
+
+    def _simulate_model_hist(self, key, batch_size, parameters):
+        """Histogram of simulated observables.
+
+        :param key: a pseudo-random number generator (PRNG) key
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        hist = jnp.zeros_like(self.data_hist)
+        for component_name, component in self.components.items():
+            if isinstance(component, ComponentSim):
+                key, _hist = component.simulate_hist(key, batch_size, parameters)
+            elif isinstance(component, ComponentFixed):
+                _hist = component.simulate_hist(parameters)
+            else:
+                raise TypeError(f'unsupported component type for {component_name}!')
+            hist += _hist
+        return key, hist
+
+    def simulate_weighed_data(self, key, batch_size, parameters):
+        """Simulate weighted histogram.
+
+        :param key: a pseudo-random number generator (PRNG) key
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        result = []
+        for component_name, component in self.components.items():
+            if isinstance(component, ComponentSim):
+                key, _result = component.simulate_weighed_data(key, batch_size, parameters)
+            elif isinstance(component, ComponentFixed):
+                _result = component.simulate_weighed_data(parameters)
+            else:
+                raise TypeError(f'unsupported component type for {component_name}!')
+            result.append(_result)
+        result = list(r for r in np.hstack(result))
+        return key, result
+
     def get_log_likelihood(self, key, batch_size, parameters):
         """Get log likelihood of given parameters.
 
@@ -195,38 +240,143 @@ class Likelihood:
 
         print('-'*40)
 
-    def _sanity_check(self):
-        """Check equality between number of bins group and observables"""
-        if len(self._bins_on) != len(self._bins):
-            raise RuntimeError('Length of bins must be the same as length of bins_on!')
 
-    def _simulate_model_hist(self, key, batch_size, parameters):
+class LikelihoodLit(Likelihood):
+    """
+    Using literature constraint to build LLH
+
+    The idea is to simulate light and charge yields directly with given energy distribution.
+    And then fit the result with provided literature measurement points.
+    The energy distribution will always be twohalfnorm(TwoHalfNorm), norm or band,
+    which is specified by 
+    """
+
+    def __init__(self, name: str = None, **config):
+        """Create an appletree likelihood
+
+        :param config: Dictionary with configuration options that will be applied, should include:
+        """
+        if name is None:
+            self.name = self.__class__.__name__
+        else:
+            self.name = name
+        self.components = dict()
+        self._config = config
+        self._bins = None
+        self._bins_type = None
+        self._bins_on = config['bins_on']
+        self._dim = len(self._bins_on)
+
+        self.needed_parameters = set()
+        self.component_bins_type = None
+        logpdf_args = self._config['logpdf_args']
+        self.logpdf_args = {
+            k: np.array(v) for k, v in zip(*logpdf_args)}
+
+        self.variable_type = config['variable_type']
+        self.warning = 'Currently only support one dimensional inference'
+        self._sanity_check()
+
+        if self.variable_type == 'twohalfnorm':
+            setattr(self, 'logpdf', lambda x, y: TwoHalfNorm.logpdf(
+                x=y, **self.logpdf_args))
+        elif self.variable_type == 'norm':
+            setattr(self, 'logpdf', lambda x, y: norm.logpdf(
+                x=y, **self.logpdf_args))
+        elif self.variable_type == 'band':
+            self.bandtwohalfnorm = BandTwoHalfNorm(**self.logpdf_args)
+            setattr(self, 'logpdf', lambda x, y: self.bandtwohalfnorm.logpdf(x=x, y=y))
+        else:
+            raise NotImplementedError
+
+    def _sanity_check(self):
+        """Check sanities of supported distribution and dimension"""
+        if self.variable_type not in ['twohalfnorm', 'norm', 'band']:
+            raise RuntimeError('Currently only twohalfnorm, norm and band are supported')
+        if self._dim != 2:
+            raise AssertionError(self.warning)
+
+    def _simulate_yields(self, key, batch_size, parameters):
         """Histogram of simulated observables.
 
         :param key: a pseudo-random number generator (PRNG) key
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
         """
-        hist = jnp.zeros_like(self.data_hist)
-        for component_name, component in self.components.items():
-            if isinstance(component, ComponentSim):
-                key, _hist = component.simulate_hist(key, batch_size, parameters)
-            elif isinstance(component, ComponentFixed):
-                _hist = component.simulate_hist(parameters)
-            else:
-                raise TypeError(f'unsupported component type for {component_name}!')
-            hist += _hist
-        return key, hist
-
-    def simulate_weighed_data(self, key, batch_size, parameters):
-        result = []
-        for component_name, component in self.components.items():
-            if isinstance(component, ComponentSim):
-                key, _result = component.simulate_weighed_data(key, batch_size, parameters)
-            elif isinstance(component, ComponentFixed):
-                _result = component.simulate_weighed_data(parameters)
-            else:
-                raise TypeError(f'unsupported component type for {component_name}!')
-            result.append(_result)
-        result = [r for r in np.hstack(result)]
+        if len(self.components) != 1:
+            raise AssertionError(self.warning)
+        key, result = self.components[self.only_component].simulate(
+            key, batch_size, parameters)
+        # Move data to CPU
+        result = [np.array(r) for r in result]
         return key, result
+
+    def register_component(self, *args, **kwargs):
+        if len(self.components) != 0:
+            raise AssertionError(self.warning)
+        super().register_component(*args, **kwargs)
+        # cache the component name
+        self.only_component = list(self.components.keys())[0]
+
+    def get_log_likelihood(self, key, batch_size, parameters):
+        """Get log likelihood of given parameters.
+
+        :param key: a pseudo-random number generator (PRNG) key
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        key, result = self._simulate_yields(key, batch_size, parameters)
+        energies, yields, eff = result
+        llh = self.logpdf(energies, yields)
+        llh = (llh * eff).sum()
+        llh = float(llh)
+        if np.isnan(llh):
+            llh = -np.inf
+        return key, llh
+
+    def print_likelihood_summary(self,
+                                 indent: str = ' '*4,
+                                 short: bool = True):
+        """Print likelihood summary: components, bins, file names.
+
+        :param indent: str of indent
+        :param short: bool, whether only print short summary
+        """
+        print('\n'+'-'*40)
+
+        print(f'BINNING\n')
+        print(f'{indent}variable_type: {self.variable_type}')
+        print(f'{indent}variable: {self._bins_on}')
+        print('\n'+'-'*40)
+
+        print(f'LOGPDF\n')
+        print(f'{indent}logpdf_args:')
+        for k, v in self.logpdf_args.items():
+            print(f'{indent*2}{k}: {v}')
+        print('\n'+'-'*40)
+
+        print('MODEL\n')
+        for i, component_name in enumerate(self.components):
+            name = component_name
+            component = self[component_name]
+            need = component.needed_parameters
+
+            print(f'{indent}COMPONENT {i}: {name}')
+            if isinstance(component, ComponentSim):
+                print(f'{indent*2}type: simulation')
+                print(f'{indent*2}rate_par: {component.rate_name}')
+                print(f'{indent*2}pars: {need}')
+                if not short:
+                    print(f'{indent*2}worksheet: {component.worksheet}')
+            elif isinstance(component, ComponentFixed):
+                print(f'{indent*2}type: fixed')
+                print(f'{indent*2}file_name: {component._file_name}')
+                print(f'{indent*2}rate_par: {component.rate_name}')
+                print(f'{indent*2}pars: {need}')
+                if not short:
+                    print(f'{indent*2}from_file: {component.file_name}')
+            else:
+                pass
+            print()
+
+        print('-'*40)

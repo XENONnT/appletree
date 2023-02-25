@@ -4,6 +4,8 @@ from immutabledict import immutabledict
 from jax import numpy as jnp
 from warnings import warn
 
+import numpy as np
+
 from appletree.share import _cached_configs
 from appletree.utils import exporter, load_json, get_file_path, integrate_midpoint, cum_integrate_midpoint
 from appletree import interpolation
@@ -27,7 +29,7 @@ def takes_config(*configs):
         """
         :param plugin_class: plugin needs configuration
         """
-        result = {}
+        result = dict()
         for config in configs:
             if not isinstance(config, Config):
                 raise RuntimeError("Specify config options by Config objects")
@@ -294,14 +296,14 @@ class SigmaMap(Config):
 
         self._configs_default = self.get_default()
 
-        maps = {}
+        maps = dict()
         sigmas = ['median', 'lower', 'upper']
         for i, sigma in enumerate(sigmas):
             maps[sigma] = Map(
                 name=self.name + f'_{sigma}',
                 default=self._configs_default[i])
             if maps[sigma].name not in _cached_configs.keys():
-                _cached_configs[maps[sigma].name] = {}
+                _cached_configs[maps[sigma].name] = dict()
             if isinstance(_cached_configs[maps[sigma].name], dict):
                 # In case some plugins only use the median
                 # and may already update the map name in `_cached_configs`
@@ -335,3 +337,50 @@ class SigmaMap(Config):
         add_neg = (median - lower) * sigma
         add = jnp.where(sigma > 0, add_pos, add_neg)
         return median + add
+
+
+@export
+class ConstantSet(Config):
+    """
+    ConstantSet is a special config which takes a set of values
+
+    We will not specify any hard-coded distribution or function here.
+    User should be careful with the actual function implemented.
+    Fortunately, we only use these values as keyword arguments,
+    so mismatch will be catched when running.
+    """
+
+    def build(self, llh_name: str = None):
+        """Set value of Constant"""
+        if self.name in _cached_configs:
+            value = _cached_configs[self.name]
+        else:
+            value = self.get_default()
+            # Update values to sharing dictionary
+            _cached_configs[self.name] = value
+
+        if isinstance(value, dict):
+            try:
+                self.value = value[llh_name]
+            except KeyError:
+                mesg = f'You specified {self.name} as a dictionary. '
+                mesg += f'The key of it should be the name of one '
+                mesg += f'of the likelihood, '
+                mesg += f'but it is {llh_name}.'
+                raise ValueError(mesg)
+        else:
+            self.value = value
+
+        self._sanity_check()
+        self.set_volume = len(self.value[1][0])
+        self.value = {k: jnp.array(v) for k, v in zip(*self.value)}
+
+    def _sanity_check(self):
+        """Check if parameter set lengths are same."""
+        mesg = 'The given values should follow [names, values] format.'
+        assert len(self.value) == 2, mesg
+        mesg = 'Parameters and their names should have same length'
+        assert len(self.value[0]) == len(self.value[1]), mesg
+        volumes = [len(v) for v in self.value[1]]
+        mesg = 'Parameter set lengths should be the same'
+        assert np.all(np.isclose(volumes, volumes[0])), mesg

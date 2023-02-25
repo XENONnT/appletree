@@ -1,0 +1,161 @@
+{
+    "liquid_xe_density": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 2.8619
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "g/cm^3",
+        "doc": "Density of the lXe"
+    },
+    "alpha": {
+        "prior_type": "twohalfnorm",
+        "prior_args": {
+            "mu": 11.0,
+            "sigma_pos": 2.0,
+            "sigma_neg": 0.5
+        },
+        "allowed_range": [
+            1e-10,
+            1e10
+        ],
+        "init_mean": 11.0,
+        "init_std": 0.5,
+        "unit": "1",
+        "doc": "NEST parameter alpha"
+    },
+    "beta": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 1.1,
+            "std": 0.05
+        },
+        "allowed_range": [
+            -1e10,
+            1e10
+        ],
+        "init_mean": 1.1,
+        "init_std": 0.05,
+        "unit": "1",
+        "doc": "NEST parameter beta"
+    },
+    "gamma": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0480,
+            "std": 0.0021
+        },
+        "allowed_range": [
+            1e-10,
+            1e10
+        ],
+        "init_mean": 0.0480,
+        "init_std": 0.0021,
+        "unit": "1",
+        "doc": "NEST parameter gamma"
+    },
+    "delta": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": -0.0533,
+            "std": 0.0068
+        },
+        "allowed_range": [
+            -1e10,
+            1e10
+        ],
+        "init_mean": -0.0533,
+        "init_std": 0.0068,
+        "unit": "1",
+        "doc": "NEST parameter delta"
+    },
+    "epsilon": {
+        "prior_type": "twohalfnorm",
+        "prior_args": {
+            "mu": 12.6,
+            "sigma_pos": 3.4,
+            "sigma_neg": 2.9
+        },
+        "allowed_range": [
+            1e-10,
+            1e10
+        ],
+        "init_mean": 12.6,
+        "init_std": 2.9,
+        "unit": "1",
+        "doc": "NEST parameter epsilon"
+    },
+    "zeta": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.3,
+            "std": 0.1
+        },
+        "allowed_range": [
+            1e-10,
+            1e10
+        ],
+        "init_mean": 0.3,
+        "init_std": 0.1,
+        "unit": "keV",
+        "doc": "NEST parameter zeta"
+    },
+    "eta": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 2.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -1e10,
+            1e10
+        ],
+        "init_mean": 2.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "NEST parameter eta"
+    },
+    "theta": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.3,
+            "std": 0.05
+        },
+        "allowed_range": [
+            -1e10,
+            1e10
+        ],
+        "init_mean": 0.3,
+        "init_std": 0.05,
+        "unit": "keV",
+        "doc": "NEST parameter theta"
+    },
+    "iota": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 2.0,
+            "std": 0.5
+        },
+        "allowed_range": [
+            -1e10,
+            1e10
+        ],
+        "init_mean": 2.0,
+        "init_std": 0.5,
+        "unit": "1",
+        "doc": "NEST parameter iota"
+    },
+    "rate": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 1.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "Placeholder for compatibility"
+    }
+}
