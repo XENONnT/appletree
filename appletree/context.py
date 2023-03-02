@@ -40,7 +40,7 @@ class Context():
 
         self.likelihoods = dict()
 
-        if not par_config is None:
+        if par_config is not None:
             self.par_config = copy.deepcopy(par_config)
             print('Manually set a parameters list!')
         else:
