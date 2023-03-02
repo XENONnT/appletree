@@ -21,7 +21,7 @@ class Context():
     handle MCMC and post-fitting analysis
     """
 
-    def __init__(self, config):
+    def __init__(self, config, par_config=None):
         """Create an appletree context
 
         :param config: dict or str, configuration file name or dictionary
@@ -40,7 +40,11 @@ class Context():
 
         self.likelihoods = dict()
 
-        self.par_config = self.get_parameter_config(config['par_config'])
+        if not par_config is None:
+            self.par_config = copy.deepcopy(par_config)
+            print('Manually set a parameters list!')
+        else:
+            self.par_config = self.get_parameter_config(config['par_config'])
         self.needed_parameters = self.update_parameter_config(config['likelihoods'])
 
         self.par_manager = Parameter(self.par_config)
