@@ -325,7 +325,11 @@ class LikelihoodLit(Likelihood):
         :param batch_size: int of number of simulated events
         :param parameters: dict of parameters used in simulation
         """
-        key, result = self._simulate_yields(key, batch_size, parameters)
+        if batch_size != 1:
+            warning = f'You specified the batch_size larger than 1, '\
+                'but it should and will be changed to 1 in literature fitting!'
+            warn(warning)
+        key, result = self._simulate_yields(key, 1, parameters)
         energies, yields, eff = result
         llh = self.logpdf(energies, yields)
         llh = (llh * eff).sum()
