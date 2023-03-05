@@ -33,6 +33,7 @@ class Context():
         if 'url_base' in instruct.keys():
             self.update_url_base(instruct['url_base'])
 
+        self.set_instruct(instruct)
         if 'configs' in instruct.keys():
             self.set_config(instruct['configs'])
 
