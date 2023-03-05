@@ -21,22 +21,22 @@ class Context():
     handle MCMC and post-fitting analysis
     """
 
-    def __init__(self, config, par_config=None):
+    def __init__(self, instruct, par_config=None):
         """Create an appletree context
 
-        :param config: dict or str, configuration file name or dictionary
+        :param instruct: dict or str, instruct file name or dictionary
         """
-        if isinstance(config, str):
-            config = load_json(config)
+        if isinstance(instruct, str):
+            instruct = load_json(instruct)
 
         # url_base and configs are not mandatory
-        if 'url_base' in config.keys():
-            self.update_url_base(config['url_base'])
+        if 'url_base' in instruct.keys():
+            self.update_url_base(instruct['url_base'])
 
-        if 'configs' in config.keys():
-            self.set_config(config['configs'])
+        if 'configs' in instruct.keys():
+            self.set_config(instruct['configs'])
 
-        self.backend_h5 = config.get('backend_h5', None)
+        self.backend_h5 = instruct.get('backend_h5', None)
 
         self.likelihoods = dict()
 
@@ -44,12 +44,12 @@ class Context():
             self.par_config = copy.deepcopy(par_config)
             print('Manually set a parameters list!')
         else:
-            self.par_config = self.get_parameter_config(config['par_config'])
-        self.needed_parameters = self.update_parameter_config(config['likelihoods'])
+            self.par_config = self.get_parameter_config(instruct['par_config'])
+        self.needed_parameters = self.update_parameter_config(instruct['likelihoods'])
 
         self.par_manager = Parameter(self.par_config)
 
-        self.register_all_likelihood(config)
+        self.register_all_likelihood(instruct)
 
     def __getitem__(self, keys):
         """Get likelihood in context"""
@@ -277,6 +277,8 @@ class Context():
                 # the order of parameters saved in backend
                 opt[name].attrs['parameter_fit'] = self.par_manager.parameter_fit
                 # instructions
+                opt[name].attrs['instruct'] = json.dumps(self.instruct)
+                # configs
                 opt[name].attrs['config'] = json.dumps(self.config)
                 # configurations, maybe users will manually add some maps
                 opt[name].attrs['_cached_configs'] = json.dumps(_cached_configs)
@@ -343,6 +345,17 @@ class Context():
                 # Drop unused parameters
                 self.par_config.pop(p)
         return needed_parameters
+
+    def set_instruct(self, instructs):
+        """Set instruction
+
+        :param instructs: dict, instruction file name or dictionary
+        """
+        if not hasattr(self, 'instruct'):
+            self.instruct = dict()
+
+        # update instructuration only in this Context
+        self.instruct.update(instructs)
 
     def set_config(self, configs):
         """Set new configuration options
