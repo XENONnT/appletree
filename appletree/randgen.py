@@ -242,9 +242,9 @@ class BandTwoHalfNorm:
     """
     def __init__(self, x, y, yerr_upper, yerr_lower):
         self.x = x
-        self.y = interp1d(x, y, bounds_error=False, fill_value='extrapolate')
-        self.yerr_upper = interp1d(x, yerr_upper, bounds_error=False, fill_value='extrapolate')
-        self.yerr_lower = interp1d(x, yerr_lower, bounds_error=False, fill_value='extrapolate')
+        self.y = interp1d(x, y, bounds_error=False, fill_value=np.nan)
+        self.yerr_upper = interp1d(x, yerr_upper, bounds_error=False, fill_value=np.nan)
+        self.yerr_lower = interp1d(x, yerr_lower, bounds_error=False, fill_value=np.nan)
 
     def logpdf(self, x, y):
         """

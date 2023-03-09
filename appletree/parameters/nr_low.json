@@ -77,6 +77,21 @@
         "unit": "1",
         "doc": "DPE probability"
     },
+    "elife_sigma": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 0.02
+        },
+        "allowed_range": [
+            -1.0,
+            1.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 0.02,
+        "unit": "1",
+        "doc": "elife shifter"
+    },
     "s1_eff_3f_sigma": {
         "prior_type": "norm",
         "prior_args": {

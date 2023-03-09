@@ -80,12 +80,12 @@ class S1PE(Plugin):
 class DriftLoss(Plugin):
     depends_on = ['z']
     provides = ['drift_survive_prob']
-    parameters = ('drift_velocity',)
+    parameters = ('drift_velocity', 'elife_sigma')
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, z):
         key, p = randgen.uniform(key, 0, 1., shape=jnp.shape(z))
-        lifetime = self.elife.apply(p)
+        lifetime = self.elife.apply(p) * (1 + parameters['elife_sigma'])
         drift_survive_prob = jnp.exp(- jnp.abs(z) / parameters['drift_velocity'] / lifetime)
         return key, drift_survive_prob
 
