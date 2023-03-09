@@ -194,19 +194,15 @@ class Context():
         self._dump_meta()
         return result
 
-    def continue_fitting(self, context, iteration=500, batch_size=1_000_000):
-        """Continue a fitting of another context
-
-        :param context: appletree context
-        :param iteration: int, number of steps to generate
-        """
+    def restore_fitting(self, batch_size=1_000_000):
+        """Restore self.sampler from self.backend_h5"""
         # Final iteration
-        final_iteration = context.sampler.get_chain()[-1, :, :]
+        backend = emcee.backends.HDFBackend(self.backend_h5)
+        final_iteration = backend.get_chain()[-1, :, :]
         p0 = final_iteration.tolist()
 
         ndim = len(self.par_manager.parameter_fit)
         # Init sampler for current context
-        backend = self._get_backend(len(p0), ndim)
         self.sampler = emcee.EnsembleSampler(
             len(p0),
             ndim,
@@ -217,8 +213,15 @@ class Context():
             kwargs = {'batch_size': batch_size},
         )
 
+    def continue_fitting(self, iteration=500, batch_size=1_000_000):
+        """Continue a fitting of another context
+
+        :param context: appletree context
+        :param iteration: int, number of steps to generate
+        """
+        self.restore_fitting(batch_size)
         result = self.sampler.run_mcmc(
-            p0,
+            None,
             iteration,
             store=True,
             progress=True,
