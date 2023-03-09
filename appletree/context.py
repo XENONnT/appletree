@@ -10,7 +10,6 @@ import h5py
 import appletree as apt
 from appletree import randgen
 from appletree import Parameter
-from appletree import Likelihood
 from appletree.utils import load_json
 from appletree.share import _cached_configs, set_global_config
 
@@ -39,7 +38,7 @@ class Context():
 
         self.backend_h5 = config.get('backend_h5', None)
 
-        self.likelihoods = {}
+        self.likelihoods = dict()
 
         self.par_config = self.get_parameter_config(config['par_config'])
         self.needed_parameters = self.update_parameter_config(config['likelihoods'])
@@ -61,11 +60,6 @@ class Context():
 
         for key, value in config['likelihoods'].items():
             likelihood = copy.deepcopy(value)
-
-            # update data file path
-            data_file_name = likelihood["data_file_name"]
-            if not os.path.exists(data_file_name):
-                likelihood["data_file_name"] = data_file_name
 
             self.register_likelihood(key, likelihood)
 
@@ -91,7 +85,8 @@ class Context():
         """
         if likelihood_name in self.likelihoods:
             raise ValueError(f'Likelihood named {likelihood_name} already existed!')
-        self.likelihoods[likelihood_name] = Likelihood(
+        likelihood = getattr(apt, likelihood_config.get('type', 'Likelihood'))
+        self.likelihoods[likelihood_name] = likelihood(
             name=likelihood_name,
             **likelihood_config,
         )
@@ -148,15 +143,36 @@ class Context():
 
         return log_posterior, log_prior
 
-    def _get_backend(self, nwalkers, ndim):
+    @property
+    def _ndim(self):
+        return len(self.par_manager.parameter_fit_array)
+
+    def _set_backend(self, nwalkers=100, read_only=True):
         if self.backend_h5 is None:
-            backend = None
+            self._backend = None
             print('With no backend')
         else:
-            backend = emcee.backends.HDFBackend(self.backend_h5)
-            backend.reset(nwalkers, ndim)
+            self._backend = emcee.backends.HDFBackend(
+                self.backend_h5, read_only=read_only)
+            if not read_only:
+                self._backend.reset(nwalkers, self._ndim)
             print(f'With h5 backend {self.backend_h5}')
-        return backend
+
+    def pre_fitting(self,
+                    nwalkers=100,
+                    read_only=True,
+                    batch_size=1_000_000):
+        """Prepare for fitting, initialize backend and sampler"""
+        self._set_backend(nwalkers, read_only=read_only)
+        self.sampler = emcee.EnsembleSampler(
+            nwalkers,
+            self._ndim,
+            self.log_posterior,
+            backend=self._backend,
+            blobs_dtype=np.float32,
+            parameter_names=self.par_manager.parameter_fit,
+            kwargs = {'batch_size': batch_size},
+        )
 
     def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000):
         """Fitting posterior distribution of needed parameters
@@ -171,18 +187,10 @@ class Context():
             self.par_manager.sample_init()
             p0.append(self.par_manager.parameter_fit_array)
 
-        ndim = len(self.par_manager.parameter_fit_array)
-
-        backend = self._get_backend(nwalkers, ndim)
-        self.sampler = emcee.EnsembleSampler(
-            nwalkers,
-            ndim,
-            self.log_posterior,
-            backend=backend,
-            blobs_dtype=np.float32,
-            parameter_names=self.par_manager.parameter_fit,
-            kwargs = {'batch_size': batch_size},
-        )
+        self.pre_fitting(
+            nwalkers=nwalkers,
+            read_only=False,
+            batch_size=batch_size)
 
         result = self.sampler.run_mcmc(
             p0,
@@ -201,7 +209,8 @@ class Context():
         final_iteration = backend.get_chain()[-1, :, :]
         p0 = final_iteration.tolist()
 
-        ndim = len(self.par_manager.parameter_fit)
+        nwalkers = len(p0)
+
         # Init sampler for current context
         self.sampler = emcee.EnsembleSampler(
             len(p0),

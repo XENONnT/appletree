@@ -4,6 +4,7 @@ from jax import numpy as jnp
 import appletree as apt
 from appletree.utils import get_file_path
 
+
 # Get parameters
 par_config_file_name = get_file_path('er.json')
 par_manager = apt.Parameter(par_config_file_name)
@@ -34,6 +35,7 @@ def test_fixed_component():
     ac.rate_name = 'ac_rate'
     ac.deduce(data_names = ('cs1', 'cs2'))
     ac.simulate_hist(parameters)
+    ac.simulate_weighed_data(parameters)
 
 
 def test_sim_component():
@@ -47,6 +49,20 @@ def test_sim_component():
         func_name = 'er_sim',
     )
     er.compile()
+    er.save_code('_temp.json')
     er.rate_name = 'er_rate'
+    batch_size = int(1e3)
     key = apt.randgen.get_key(seed=137)
-    er.simulate_hist(key, int(1e3), parameters)
+    er.simulate_hist(key, batch_size, parameters)
+    er.simulate_weighed_data(key, batch_size, parameters)
+
+    @apt.utils.timeit
+    def test(key, batch_size, parameters):
+        return er.simulate_hist(key, batch_size, parameters)
+
+    @apt.utils.timeit
+    def benchmark(key):
+        for _ in range(100):
+            key, _ = test(key, batch_size, parameters)
+
+    benchmark(key)
