@@ -9,9 +9,9 @@ class MonoEnergiesYields(ComponentSim):
 
         self.register(apt.plugins.MonoEnergiesSpectra)
         self.register(apt.plugins.TotalQuanta)
-        self.register(apt.plugins.TIB)
-        self.register(apt.plugins.Qy)
-        self.register(apt.plugins.Ly)
+        self.register(apt.plugins.ThomasImelBox)
+        self.register(apt.plugins.QyNR)
+        self.register(apt.plugins.LyNR)
         self.register(apt.plugins.MonoEnergiesClipEff)
 
 
@@ -21,7 +21,7 @@ class BandEnergiesYields(ComponentSim):
 
         self.register(apt.plugins.UniformEnergiesSpectra)
         self.register(apt.plugins.TotalQuanta)
-        self.register(apt.plugins.TIB)
-        self.register(apt.plugins.Qy)
-        self.register(apt.plugins.Ly)
+        self.register(apt.plugins.ThomasImelBox)
+        self.register(apt.plugins.QyNR)
+        self.register(apt.plugins.LyNR)
         self.register(apt.plugins.BandEnergiesClipEff)
