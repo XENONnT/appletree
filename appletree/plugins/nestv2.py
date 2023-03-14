@@ -202,6 +202,7 @@ class TruePhotonElectronNR(Plugin):
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, recombProb, Variance, Ni, Nq):
+        # these parameters will make mean num_electron is just (1. - recombProb) * Ni
         widthCorrection = (1. - (2. / jnp.pi) * parameters['alpha2'] ** 2 / (1. + parameters['alpha2'] ** 2)) ** 0.5
         muCorrection = (jnp.sqrt(Variance) / widthCorrection) * (parameters['alpha2'] / (1. + parameters['alpha2'] ** 2) ** 0.5) * 2. * (1. / (2. * jnp.pi) ** 0.5)
 
