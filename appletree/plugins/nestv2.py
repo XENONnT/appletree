@@ -169,10 +169,12 @@ class TrueExcitonIonNR(Plugin):
     def simulate(self, key, parameters, _Nph, _Ne, nex_ni_ratio, alf):
         Nq_mean = _Nph + _Ne
         key, Ni = randgen.truncate_normal(
-            key, Nq_mean * alf, jnp.sqrt(parameters['fano_ni'] * Nq_mean * alf), vmin=0)
+            key, Nq_mean * alf,
+            jnp.sqrt(parameters['fano_ni'] * Nq_mean * alf), vmin=0)
         Ni = Ni.round().astype(int)
         key, Nex = randgen.truncate_normal(
-            key, Nq_mean * nex_ni_ratio * alf, jnp.sqrt(parameters['fano_nex'] * Nq_mean * nex_ni_ratio * alf), vmin=0)
+            key, Nq_mean * nex_ni_ratio * alf,
+            jnp.sqrt(parameters['fano_nex'] * Nq_mean * nex_ni_ratio * alf), vmin=0)
         Nex = Nex.round().astype(int)
         Nq = Nex + Ni
         return key, Ni, Nex, Nq
