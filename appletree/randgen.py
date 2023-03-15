@@ -111,6 +111,39 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
 
 
 @export
+@partial(jit, static_argnums=(4, ))
+def skewnormal(key, a, loc, scale, shape=()):
+    """Skew-normal distribution random sampler.
+
+    :param key: seed for random generator.
+    :param a: <jnp.array>-like skewness in skewnormal distribution.
+    :param loc: <jnp.array>-like loc in skewnormal distribution.
+    :param scale: <jnp.array>-like scale in skewnormal distribution.
+    :param shape: output shape. If not given, output has shape
+    jnp.broadcast_shapes(jnp.shape(loc), jnp.shape(scale)).
+    :return: an updated seed, random variables.
+
+    References
+    ----------
+    .. [1] `"A Method to Simulate the Skew Normal Distribution"
+            <https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.588.8>`_
+    """
+    shape = shape or jnp.broadcast_shapes(
+        jnp.shape(a), jnp.shape(loc), jnp.shape(scale))
+    a = jnp.broadcast_to(a, shape).astype(FLOAT)
+    loc = jnp.broadcast_to(loc, shape).astype(FLOAT)
+    scale = jnp.broadcast_to(scale, shape).astype(FLOAT)
+
+    key, seed = random.split(key)
+    rvs0 = random.normal(seed, shape=shape)
+    key, seed = random.split(key)
+    rvs1 = random.normal(seed, shape=shape)
+    rvs = (a * jnp.abs(rvs0) + rvs1) / jnp.sqrt(1 + a ** 2)
+    rvs = rvs * scale + loc
+    return key, rvs.astype(FLOAT)
+
+
+@export
 @partial(jit, static_argnums=(2, ))
 def bernoulli(key, p, shape=()):
     """Bernoulli random sampler.

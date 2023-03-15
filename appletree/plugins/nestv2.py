@@ -15,6 +15,7 @@ export, __all__ = exporter(export_self=False)
 # and https://github.com/NESTCollaboration/nest/blob/v2.3.7/src/NEST.cpp#L715-L794
 # Priors of the distribution is copied from https://arxiv.org/abs/2211.10726
 # and https://drive.google.com/file/d/1urVT3htFjIC1pQKyaCcFonvWLt74Kgvn/view
+# All variables begins with '_' are expectation values, such as `_Nph`, `_Ne`.
 
 
 @export
@@ -72,13 +73,13 @@ class UniformEnergiesSpectra(Plugin):
 @export
 class TotalQuanta(Plugin):
     depends_on = ['energy']
-    provides = ['Nq']
+    provides = ['_Nq']
     parameters = ('alpha', 'beta')
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, energy):
-        Nq = parameters['alpha'] * energy ** parameters['beta']
-        return key, Nq
+        _Nq = parameters['alpha'] * energy ** parameters['beta']
+        return key, _Nq
 
 
 @export
@@ -88,7 +89,7 @@ class TotalQuanta(Plugin):
         default=23.0,
         help='Drift field in each literature'),
 )
-class TIB(Plugin):
+class ThomasImelBox(Plugin):
     depends_on = ['energy']
     provides = ['ThomasImel']
     parameters = ('gamma', 'delta', 'liquid_xe_density')
@@ -102,7 +103,7 @@ class TIB(Plugin):
 
 
 @export
-class Qy(Plugin):
+class QyNR(Plugin):
     depends_on = ['energy', 'ThomasImel']
     provides = ['charge_yield']
     parameters = ('epsilon', 'zeta', 'eta')
@@ -116,17 +117,103 @@ class Qy(Plugin):
 
 
 @export
-class Ly(Plugin):
-    depends_on = ['energy', 'Nq', 'charge_yield']
+class LyNR(Plugin):
+    depends_on = ['energy', '_Nq', 'charge_yield']
     provides = ['light_yield']
     parameters = ('theta', 'iota')
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, energy, Nq, charge_yield):
-        light_yield = Nq / energy - charge_yield
+    def simulate(self, key, parameters, energy, _Nq, charge_yield):
+        light_yield = _Nq / energy - charge_yield
         light_yield *= (1 - 1 / (1 + (energy / parameters['theta']) ** parameters['iota']))
         light_yield = jnp.clip(light_yield, 0, jnp.inf)
         return key, light_yield
+
+
+@export
+class MeanNphNe(Plugin):
+    depends_on = ['light_yield', 'charge_yield', 'energy']
+    provides = ['_Nph', '_Ne']
+
+    @partial(jit, static_argnums=(0, ))
+    def simulate(self, key, parameters, light_yield, charge_yield, energy):
+        _Nph = light_yield * energy
+        _Ne = charge_yield * energy
+        return key, _Nph, _Ne
+
+
+@export
+class MeanExcitonIon(Plugin):
+    depends_on = ['ThomasImel', '_Nph', '_Ne']
+    provides = ['_Nex', '_Ni', 'nex_ni_ratio', 'alf', 'elecFrac', 'recombProb']
+
+    @partial(jit, static_argnums=(0, ))
+    def simulate(self, key, parameters, ThomasImel, _Nph, _Ne):
+        _Nex = (-1. / ThomasImel) * (
+            4. * jnp.exp(_Ne * ThomasImel / 4.) - (_Ne + _Nph) * ThomasImel - 4.)
+        _Ni = (4. / ThomasImel) * (jnp.exp(_Ne * ThomasImel / 4.) - 1.)
+        nex_ni_ratio = _Nex / _Ni
+        alf = 1. / (1. + nex_ni_ratio)
+        elecFrac = _Ne / (_Nph + _Ne)
+        recombProb = 1. - (nex_ni_ratio + 1.) * elecFrac
+        return key, _Nex, _Ni, nex_ni_ratio, alf, elecFrac, recombProb
+
+
+@export
+class TrueExcitonIonNR(Plugin):
+    depends_on = ['_Nph', '_Ne', 'nex_ni_ratio', 'alf']
+    provides = ['Ni', 'Nex', 'Nq']
+    parameters = ('fano_ni', 'fano_nex')
+
+    @partial(jit, static_argnums=(0, ))
+    def simulate(self, key, parameters, _Nph, _Ne, nex_ni_ratio, alf):
+        Nq_mean = _Nph + _Ne
+        key, Ni = randgen.truncate_normal(
+            key, Nq_mean * alf,
+            jnp.sqrt(parameters['fano_ni'] * Nq_mean * alf), vmin=0)
+        Ni = Ni.round().astype(int)
+        key, Nex = randgen.truncate_normal(
+            key, Nq_mean * nex_ni_ratio * alf,
+            jnp.sqrt(parameters['fano_nex'] * Nq_mean * nex_ni_ratio * alf), vmin=0)
+        Nex = Nex.round().astype(int)
+        Nq = Nex + Ni
+        return key, Ni, Nex, Nq
+
+
+@export
+class OmegaNR(Plugin):
+    depends_on = ['elecFrac', 'recombProb', 'Ni']
+    provides = ['omega', 'Variance']
+    parameters = ('A', 'xi', 'omega')
+
+    @partial(jit, static_argnums=(0, ))
+    def simulate(self, key, parameters, elecFrac, recombProb, Ni):
+        omega = parameters['A'] * jnp.exp(
+            -0.5 * (elecFrac - parameters['xi']) ** 2. / (parameters['omega'] ** 2))
+        Variance = recombProb * (1. - recombProb) * Ni + omega * omega * Ni * Ni
+        return key, omega, Variance
+
+
+@export
+class TruePhotonElectronNR(Plugin):
+    depends_on = ['recombProb', 'Variance', 'Ni', 'Nq']
+    provides = ['num_photon', 'num_electron']
+    parameters = ('alpha2',)
+
+    @partial(jit, static_argnums=(0, ))
+    def simulate(self, key, parameters, recombProb, Variance, Ni, Nq):
+        # these parameters will make mean num_electron is just (1. - recombProb) * Ni
+        widthCorrection = (1. - (2. / jnp.pi) * parameters['alpha2'] ** 2 / (1. + parameters['alpha2'] ** 2)) ** 0.5
+        muCorrection = (jnp.sqrt(Variance) / widthCorrection) * (parameters['alpha2'] / (1. + parameters['alpha2'] ** 2) ** 0.5) * 2. * (1. / (2. * jnp.pi) ** 0.5)
+
+        key, num_electron = randgen.skewnormal(
+            key,
+            jnp.full(len(recombProb), parameters['alpha2']),
+            (1. - recombProb) * Ni - muCorrection,
+            jnp.sqrt(Variance) / widthCorrection)
+        num_electron = jnp.clip(num_electron.round().astype(int), 0, jnp.inf)
+        num_photon = jnp.clip(Nq - num_electron, 0, jnp.inf)
+        return key, num_photon, num_electron
 
 
 @export
