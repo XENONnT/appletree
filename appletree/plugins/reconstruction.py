@@ -47,15 +47,15 @@ class PositionRecon(Plugin):
 )
 class S1(Plugin):
     depends_on = ['num_s1_phd', 'num_s1_pe']
-    provides = ['s1']
+    provides = ['s1_area']
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s1_phd, num_s1_pe):
         mean = self.s1_bias_3f.apply(num_s1_phd)
         std = self.s1_smear_3f.apply(num_s1_phd)
         key, bias = randgen.normal(key, mean, std)
-        s1 = num_s1_pe * (1. + bias)
-        return key, s1
+        s1_area = num_s1_pe * (1. + bias)
+        return key, s1_area
 
 
 @export
@@ -69,34 +69,34 @@ class S1(Plugin):
 )
 class S2(Plugin):
     depends_on = ['num_s2_pe']
-    provides = ['s2']
+    provides = ['s2_area']
 
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, num_s2_pe):
         mean = self.s2_bias.apply(num_s2_pe)
         std = self.s2_smear.apply(num_s2_pe)
         key, bias = randgen.normal(key, mean, std)
-        s2 = num_s2_pe * (1. + bias)
-        return key, s2
+        s2_area = num_s2_pe * (1. + bias)
+        return key, s2_area
 
 
 @export
 class cS1(Plugin):
-    depends_on = ['s1', 's1_correction']
+    depends_on = ['s1_area', 's1_correction']
     provides = ['cs1']
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, s1, s1_correction):
-        cs1 = s1 / s1_correction
+    def simulate(self, key, parameters, s1_area, s1_correction):
+        cs1 = s1_area / s1_correction
         return key, cs1
 
 
 @export
 class cS2(Plugin):
-    depends_on = ['s2', 's2_correction', 'drift_survive_prob']
+    depends_on = ['s2_area', 's2_correction', 'drift_survive_prob']
     provides = ['cs2']
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, s2, s2_correction, drift_survive_prob):
-        cs2 = s2 / s2_correction / drift_survive_prob
+    def simulate(self, key, parameters, s2_area, s2_correction, drift_survive_prob):
+        cs2 = s2_area / s2_correction / drift_survive_prob
         return key, cs2
