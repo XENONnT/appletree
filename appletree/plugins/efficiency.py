@@ -12,13 +12,13 @@ export, __all__ = exporter(export_self=False)
 
 @export
 class S2Threshold(Plugin):
-    depends_on = ['s2']
+    depends_on = ['s2_area']
     provides = ['acc_s2_threshold']
     parameters = ('s2_threshold',)
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, s2):
-        return key, jnp.where(s2 > parameters['s2_threshold'], 1., 0)
+    def simulate(self, key, parameters, s2_area):
+        return key, jnp.where(s2_area > parameters['s2_threshold'], 1., 0)
 
 
 @export
@@ -53,13 +53,13 @@ class S1ReconEff(Plugin):
         help='S1 cut acceptance'),
 )
 class S1CutAccept(Plugin):
-    depends_on = ['s1']
+    depends_on = ['s1_area']
     provides = ['cut_acc_s1']
     parameters = ('s1_cut_acc_sigma',)
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, s1):
-        cut_acc_s1 = self.s1_cut_acc.apply(s1, parameters)
+    def simulate(self, key, parameters, s1_area):
+        cut_acc_s1 = self.s1_cut_acc.apply(s1_area, parameters)
         cut_acc_s1 = jnp.clip(cut_acc_s1, 0., 1.)
         return key, cut_acc_s1
 
@@ -74,13 +74,13 @@ class S1CutAccept(Plugin):
         help='S2 cut acceptance'),
 )
 class S2CutAccept(Plugin):
-    depends_on = ['s2']
+    depends_on = ['s2_area']
     provides = ['cut_acc_s2']
     parameters = ('s2_cut_acc_sigma',)
 
     @partial(jit, static_argnums=(0, ))
-    def simulate(self, key, parameters, s2):
-        cut_acc_s2 = self.s2_cut_acc.apply(s2, parameters)
+    def simulate(self, key, parameters, s2_area):
+        cut_acc_s2 = self.s2_cut_acc.apply(s2_area, parameters)
         cut_acc_s2 = jnp.clip(cut_acc_s2, 0., 1.)
         return key, cut_acc_s2
 
