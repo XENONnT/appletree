@@ -5,6 +5,7 @@ from jax import numpy as jnp
 
 from scipy.stats import norm
 
+from appletree import randgen
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
 from appletree.utils import load_data, get_equiprob_bins_2d
 from appletree.component import Component, ComponentSim, ComponentFixed
@@ -191,6 +192,16 @@ class Likelihood:
         if np.isnan(llh):
             llh = -np.inf
         return key, llh
+
+    def get_n_events_in_hist(self, batch_size, parameters):
+        """Get number of events in the histogram under given parameters.
+
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        key = randgen.get_key()
+        _, model_hist = self._simulate_model_hist(key, batch_size, parameters)
+        return model_hist.sum()
 
     def print_likelihood_summary(self,
                                  indent: str = ' '*4,
