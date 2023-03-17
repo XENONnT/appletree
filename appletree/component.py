@@ -4,7 +4,6 @@ from functools import partial
 import numpy as np
 import pandas as pd
 from jax import numpy as jnp
-import pandas as pd
 
 import appletree
 from appletree import utils
