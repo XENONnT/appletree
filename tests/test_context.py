@@ -41,4 +41,9 @@ def test_literature_context():
     context = apt.Context(config)
 
     context.print_context_summary()
-    context.fitting(nwalkers=100, iteration=2, batch_size=int(1))
+
+    batch_size = int(1)
+    context.fitting(nwalkers=100, iteration=2, batch_size=batch_size)
+
+    parameters = context.get_post_parameters()
+    context.get_n_events_in_hist(parameters, batch_size=batch_size)
