@@ -9,7 +9,6 @@ import emcee
 import h5py
 
 import appletree as apt
-from appletree import Likelihood
 from appletree import randgen
 from appletree import Parameter
 from appletree.utils import load_json
