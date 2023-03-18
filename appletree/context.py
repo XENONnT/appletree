@@ -135,7 +135,7 @@ class Context():
         """
         n_events = 0
         for likelihood in self.likelihoods.values():
-            if isinstance(likelihood, Likelihood):
+            if hasattr(likelihood, 'data_hist'):
                 n_events += likelihood.get_n_events_in_hist(batch_size, parameters)
             else:
                 warning = f'{likelihood.name} will be omitted.'
