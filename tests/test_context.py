@@ -18,7 +18,12 @@ def test_rn220_ar37_context():
     context = apt.ContextRn220Ar37()
 
     context.print_context_summary()
-    context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
+
+    batch_size = int(1e4)
+    context.fitting(nwalkers=100, iteration=2, batch_size=batch_size)
+
+    parameters = context.get_post_parameters()
+    context.get_n_events_in_hist(parameters, batch_size=batch_size)
 
 
 def test_neutron_context():
