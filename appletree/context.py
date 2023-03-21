@@ -126,7 +126,7 @@ class Context():
             likelihood.print_likelihood_summary(short=short)
             print('\n'+'='*40)
 
-    def get_n_events_in_hist(self, parameters, batch_size=1_000_000):
+    def get_num_events_accepted(self, parameters, batch_size=1_000_000):
         """Get number of events in the histogram under given parameters.
 
         :param batch_size: int of number of simulated events
@@ -135,7 +135,7 @@ class Context():
         n_events = 0
         for likelihood in self.likelihoods.values():
             if hasattr(likelihood, 'data_hist'):
-                n_events += likelihood.get_n_events_in_hist(batch_size, parameters)
+                n_events += likelihood.get_num_events_accepted(batch_size, parameters)
             else:
                 warning = f'{likelihood.name} will be omitted.'
                 warn(warning)

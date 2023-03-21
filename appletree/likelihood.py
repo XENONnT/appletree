@@ -193,7 +193,7 @@ class Likelihood:
             llh = -np.inf
         return key, llh
 
-    def get_n_events_in_hist(self, batch_size, parameters):
+    def get_num_events_accepted(self, batch_size, parameters):
         """Get number of events in the histogram under given parameters.
 
         :param batch_size: int of number of simulated events

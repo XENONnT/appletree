@@ -23,7 +23,7 @@ def test_rn220_ar37_context():
     context.fitting(nwalkers=100, iteration=2, batch_size=batch_size)
 
     parameters = context.get_post_parameters()
-    context.get_n_events_in_hist(parameters, batch_size=batch_size)
+    context.get_num_events_accepted(parameters, batch_size=batch_size)
 
 
 def test_neutron_context():
@@ -46,4 +46,4 @@ def test_literature_context():
     context.fitting(nwalkers=100, iteration=2, batch_size=batch_size)
 
     parameters = context.get_post_parameters()
-    context.get_n_events_in_hist(parameters, batch_size=batch_size)
+    context.get_num_events_accepted(parameters, batch_size=batch_size)
