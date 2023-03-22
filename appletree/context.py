@@ -1,3 +1,4 @@
+from warnings import warn
 import os
 import copy
 import json
@@ -124,6 +125,21 @@ class Context():
             print(f'LIKELIHOOD {key}')
             likelihood.print_likelihood_summary(short=short)
             print('\n'+'='*40)
+
+    def get_num_events_accepted(self, parameters, batch_size=1_000_000):
+        """Get number of events in the histogram under given parameters.
+
+        :param batch_size: int of number of simulated events
+        :param parameters: dict of parameters used in simulation
+        """
+        n_events = 0
+        for likelihood in self.likelihoods.values():
+            if hasattr(likelihood, 'data_hist'):
+                n_events += likelihood.get_num_events_accepted(batch_size, parameters)
+            else:
+                warning = f'{likelihood.name} will be omitted.'
+                warn(warning)
+        return n_events
 
     def log_posterior(self, parameters, batch_size=1_000_000):
         """Get log likelihood of given parameters

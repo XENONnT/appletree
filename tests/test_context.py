@@ -18,7 +18,12 @@ def test_rn220_ar37_context():
     context = apt.ContextRn220Ar37()
 
     context.print_context_summary()
-    context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
+
+    batch_size = int(1e4)
+    context.fitting(nwalkers=100, iteration=2, batch_size=batch_size)
+
+    parameters = context.get_post_parameters()
+    context.get_num_events_accepted(parameters, batch_size=batch_size)
 
 
 def test_neutron_context():
@@ -36,4 +41,9 @@ def test_literature_context():
     context = apt.Context(config)
 
     context.print_context_summary()
-    context.fitting(nwalkers=100, iteration=2, batch_size=int(1))
+
+    batch_size = int(1)
+    context.fitting(nwalkers=100, iteration=2, batch_size=batch_size)
+
+    parameters = context.get_post_parameters()
+    context.get_num_events_accepted(parameters, batch_size=batch_size)
