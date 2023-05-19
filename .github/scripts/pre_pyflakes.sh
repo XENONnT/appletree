@@ -1,7 +1,7 @@
 #!/bin/bash
 # copied from https://github.com/XENONnT/straxen/blob/master/.github/scripts/pre_pyflakes.sh
 # Pyflakes does not like the way we do __all__ += []. This simple script
-# Changes all the files in straxen to abide by this convention and
+# Changes all the files in appletree to abide by this convention and
 # removes the lines that have such a signature.
 start="$(pwd)"
 echo $start
