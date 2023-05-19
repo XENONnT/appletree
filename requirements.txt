@@ -1,6 +1,6 @@
 corner
 emcee
-git+https://github.com/XENONnT/GOFevaluation
+GOFevaluation
 h5py
 immutabledict
 jax
