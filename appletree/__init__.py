@@ -40,3 +40,11 @@ from .contexts import *
 
 from . import context
 from .context import *
+
+try:
+    import aptext
+    HAVE_APTEXT = True
+    print('Using aptext package from https://github.com/XENONnT/applefiles')
+except ImportError:
+    HAVE_APTEXT = False
+    print('Can not find aptext')
