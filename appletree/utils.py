@@ -5,6 +5,7 @@ from warnings import warn
 import pkg_resources
 from time import time
 
+from jax.lib import xla_bridge
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
@@ -198,6 +199,12 @@ def timeit(indent=""):
         return lambda func: _timeit(func, indent)
     else:
         return _timeit(indent, "")
+
+
+@export
+def get_platform():
+    """Show the platform we are using, either cpu ot gpu"""
+    return xla_bridge.get_backend().platform
 
 
 @export
