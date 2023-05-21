@@ -11,9 +11,8 @@ build:
 
 python:
   version: "3.8"
-  find-links:
-    - https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
   install:
+    - requirements: requirements.txt
     - requirements: docs/requirements-docs.txt
     - method: pip
       path: .
