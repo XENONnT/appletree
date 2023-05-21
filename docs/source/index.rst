@@ -37,8 +37,9 @@ using `emcee <https://emcee.readthedocs.io/en/stable/>`_.
     :maxdepth: 1
     :caption: Example notebooks
 
-    notebooks/benchmark.ipynb
-    notebooks/component.ipynb
-    notebooks/likelihood.ipynb
-    notebooks/context.ipynb
-    notebooks/datastructure.ipynb
+    notebooks/1. component.ipynb
+    notebooks/2. likelihood.ipynb
+    notebooks/3. context.ipynb
+    notebooks/4. benchmark.ipynb
+    notebooks/5. datastructure.ipynb
+    notebooks/5. datastructure.ipynb

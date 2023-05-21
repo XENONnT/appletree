@@ -11,7 +11,7 @@ Appletree can be found on `pypi <https://pypi.org/project/appletree/>`_ now. To 
 .. code-block:: console
 
     pip install --upgrade pip
-    pip install appletree
+    pip install appletree -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 
 Option 2: install from source code
 -----------------------------------------------------
@@ -27,4 +27,4 @@ If you wanna install appletree in developer's mode, replace the last line with
 
 .. code-block:: console
 
-    python setup.py install --user
+    pip install -e ./ --user
