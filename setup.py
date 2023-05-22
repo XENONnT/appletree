@@ -35,6 +35,14 @@ setuptools.setup(
         ],
     },
     packages=setuptools.find_packages(),
+    package_data={
+        'appletree': [
+            'instructs/*',
+            'parameters/*',
+            'maps/*',
+            'data/*',
+        ],
+    },
     url="https://github.com/XENONnT/appletree",
     classifiers=[
         'Development Status :: 5 - Production/Stable',
