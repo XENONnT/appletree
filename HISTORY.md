@@ -1,3 +1,16 @@
+v0.2.1 / 2023-05-22
+-------------------
+* Change variables `s1` `s2` to `s1_area` `s2_area` by @dachengx in https://github.com/XENONnT/appletree/pull/86
+* Remove duplicated import pd by @xzh19980906 in https://github.com/XENONnT/appletree/pull/87
+* Generate number of events in the defined ROI by @dachengx in https://github.com/XENONnT/appletree/pull/88
+* Update DOI link by @dachengx in https://github.com/XENONnT/appletree/pull/89
+* Loosen requirement after beta phase and specify jax find-links by @dachengx in https://github.com/XENONnT/appletree/pull/90
+* Update notebooks by @dachengx in https://github.com/XENONnT/appletree/pull/91
+* Add more tests by @dachengx in https://github.com/XENONnT/appletree/pull/92
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.2.0...v0.2.1
+
+
 v0.2.0 / 2023-03-15
 -------------------
 * Add NESTv2 yields parameterization and literature constrain by @dachengx in https://github.com/XENONnT/appletree/pull/82
