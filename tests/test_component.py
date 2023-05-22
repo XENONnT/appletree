@@ -54,7 +54,7 @@ def test_sim_component():
     er.rate_name = 'er_rate'
     batch_size = int(1e3)
     key = apt.randgen.get_key(seed=137)
-    
+
     key, r = er.multiple_simulations(key, batch_size, parameters)
 
     key, h = er.simulate_hist(key, batch_size, parameters)
