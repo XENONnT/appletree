@@ -51,21 +51,29 @@ For example,
     {
         "w": {
             "prior_type": "norm",
-            "prior_args": {"mean": 0.0137, "std": 0.0002},
-            "allowed_range": [0, 1.0],
+            "prior_args": {
+                "mean": 0.0137,
+                "std": 0.0002
+            },
+            "allowed_range": [
+                0,
+                1.0
+            ],
             "init_mean": 0.0137,
             "init_std": 0.0002,
             "unit": "keV",
-            "doc": "the mean energy to generate a quanta in LXe",
+            "doc": "Mean energy to generate a quanta in liquid xenon"
         },
         "fano": {
             "prior_type": "fixed",
-            "prior_args": {"val": 0.059},
-            "allowed_range": None,
-            "init_mean": None,
-            "init_std": None,
-            "unit": "au",
-            "doc": "Fano factor of LXe",
+            "prior_args": {
+                "val": 0.059
+            },
+            "allowed_range": null,
+            "init_mean": null,
+            "init_std": null,
+            "unit": "1",
+            "doc": "Fano factor which describes the fluctuation of num of quanta"
         },
     }
 
