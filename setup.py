@@ -5,7 +5,7 @@ def open_requirements(path):
     with open(path) as f:
         requires = [
             r.split('/')[-1] if r.startswith('git+') else r
-            for r in f.read().splitlines()]
+            for r in f.read().splitlines() if not r.startswith('-')]
     return requires
 
 

@@ -15,8 +15,13 @@ export, __all__ = exporter(export_self=False)
 
 INT = np.int32
 FLOAT = np.float32
-ALWAYS_USE_NORMAL_APPROX_IN_BINOM = bool(
-    os.environ.get('ALWAYS_USE_NORMAL_APPROX_IN_BINOM', True))
+
+if os.environ.get('DO_NOT_USE_APPROX_IN_BINOM') is None:
+    ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
+    print('Using Normal as an approximation of Binomial')
+else:
+    ALWAYS_USE_NORMAL_APPROX_IN_BINOM = False
+    print('Using accurate Binomial, not Normal approximation')
 
 
 @export
@@ -193,8 +198,8 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
     key, seed = random.split(key)
 
     shape = shape or lax.broadcast_shapes(jnp.shape(p), jnp.shape(n))
-    p = jnp.reshape(jnp.broadcast_to(p, shape), -1).astype(FLOAT)
-    n = jnp.reshape(jnp.broadcast_to(n, shape), -1).astype(INT)
+    p = jnp.reshape(jnp.broadcast_to(p, shape), -1)
+    n = jnp.reshape(jnp.broadcast_to(n, shape), -1)
     seed = random.split(seed, jnp.size(p))
 
     if always_use_normal:
@@ -206,7 +211,7 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
         ret = lax.map(lambda x: dispatch(*x), (seed, p, n))
     else:
         ret = vmap(lambda *x: dispatch(*x))(seed, p, n)
-    return key, jnp.reshape(ret, shape).astype(INT)
+    return key, jnp.reshape(ret, shape)
 
 
 @export

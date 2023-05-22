@@ -1,6 +1,6 @@
-# Pipy upload straxen after a release (or manually).
+# PyPI upload appletree after a release (or manually).
 ## Mostly based on https://github.com/marketplace/actions/pypi-publish
-name: Pipy
+name: PyPI
 
 on:
   workflow_dispatch:

@@ -12,7 +12,7 @@ A high-Performance Program simuLatEs and fiTs REsponse of xEnon.
 
 ### Regular installation:
 ```
-pip install appletree
+pip install appletree -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 ```
 
 ### Developer setup:
@@ -22,15 +22,20 @@ Clone the repository:
 git clone https://github.com/XENONnT/appletree
 cd appletree
 ```
-Install the requirements in your environment:
+
+Install the package and requirements in your environment:
+
 ```
 pip install -r requirements.txt
-```
-
-Then install the package:
-```
 python setup.py install --user
 ```
+
+If you wanna install appletree in editable mode, replace the last line with
+
+```
+pip install -e ./ --user
+```
+
 You are now good to go!
 
 ## Usage

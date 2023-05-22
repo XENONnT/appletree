@@ -40,8 +40,16 @@ For example,
     {
         "components": {
             "rn220_er": "ERBand",
-            "rn220_ac": {"component_cls": "AC", "file_name": "AC_Rn220.pkl"}
+            "rn220_ac": {
+                "component_cls": "AC",
+                "file_name": "AC_Rn220.pkl"
+            }
         },
+        "copy_parameters": {
+            "rn220_er_rate": "er_rate",
+            "rn220_ac_rate": "ac_rate"
+        },
+
         "data_file_name": "data_Rn220.csv",
         "bins_type": "equiprob",
         "bins_on": ["cs1", "cs2"],
