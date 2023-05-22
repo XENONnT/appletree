@@ -37,7 +37,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     url="https://github.com/XENONnT/appletree",
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3.8',
