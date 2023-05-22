@@ -169,11 +169,6 @@ class ComponentSim(Component):
                 self.register(x)
             return
 
-        if not hasattr(plugin_class, 'provides'):
-            # No output name specified: construct one from the class name
-            snake_name = appletree.camel_to_snake(plugin_class.__name__)
-            plugin_class.provides = (snake_name,)
-
         # Ensure plugin_class.provides is a tuple
         if isinstance(plugin_class.provides, str):
             plugin_class.provides = tuple([plugin_class.provides])

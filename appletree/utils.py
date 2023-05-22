@@ -92,15 +92,6 @@ def load_json(file_name: str):
 
 
 @export
-def camel_to_snake(x):
-    """Convert x from CamelCase to snake_case,
-    from https://stackoverflow.com/questions/1175208
-    """
-    x = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', x)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', x).lower()
-
-
-@export
 def _get_abspath(file_name):
     """Get the abspath of the file. Raise FileNotFoundError when not found in any subfolder"""
     for sub_dir in ('maps', 'data', 'parameters', 'instructs'):

@@ -4,7 +4,7 @@ from appletree.utils import get_file_path
 
 def test_er_likelihood():
     """Test Likelihood"""
-    config = dict(
+    instruct = dict(
         data_file_name = get_file_path('data_Rn220.csv'),
         bins_type = 'equiprob',
         bins_on = ['cs1', 'cs2'],
@@ -12,14 +12,14 @@ def test_er_likelihood():
         x_clip = [0, 100],
         y_clip = [2e2, 1e4],
     )
-    llh = apt.Likelihood(**config)
+    llh = apt.Likelihood(**instruct)
     llh.register_component(apt.components.AC, 'rn220_ac', 'AC_Rn220.pkl')
     llh.register_component(apt.components.ERBand, 'rn220_er')
     llh.print_likelihood_summary(short=True)
 
     # Get parameters
-    par_config_file_name = get_file_path('er.json')
-    par_manager = apt.Parameter(par_config_file_name)
+    par_instruct_file_name = get_file_path('er.json')
+    par_manager = apt.Parameter(par_instruct_file_name)
     par_manager.sample_init()
     parameters = par_manager.get_all_parameter()
 
@@ -32,7 +32,7 @@ def test_er_likelihood():
 
 def test_nr_likelihood():
     """Test Likelihood"""
-    config = dict(
+    instruct = dict(
         data_file_name = get_file_path('data_Neutron.csv'),
         bins_type = 'equiprob',
         bins_on = ['num_s1_phd', 'cs2'],
@@ -40,13 +40,13 @@ def test_nr_likelihood():
         x_clip = [1.5, 9.5],
         y_clip = [1e2, 1e3],
     )
-    llh = apt.Likelihood(**config)
+    llh = apt.Likelihood(**instruct)
     llh.register_component(apt.components.NR, 'neutron_nr')
     llh.print_likelihood_summary(short=True)
 
     # Get parameters
-    par_config_file_name = get_file_path('nr_low.json')
-    par_manager = apt.Parameter(par_config_file_name)
+    par_instruct_file_name = get_file_path('nr_low.json')
+    par_manager = apt.Parameter(par_instruct_file_name)
     par_manager.sample_init()
     parameters = par_manager.get_all_parameter()
 
