@@ -1,4 +1,5 @@
 import pandas as pd
+import graphviz
 from jax import numpy as jnp
 
 import appletree as apt
@@ -6,8 +7,8 @@ from appletree.utils import get_file_path
 
 
 # Get parameters
-par_config_file_name = get_file_path('er.json')
-par_manager = apt.Parameter(par_config_file_name)
+par_instruct_file_name = get_file_path('er.json')
+par_manager = apt.Parameter(par_instruct_file_name)
 par_manager.sample_init()
 parameters = par_manager.get_all_parameter()
 
@@ -53,8 +54,17 @@ def test_sim_component():
     er.rate_name = 'er_rate'
     batch_size = int(1e3)
     key = apt.randgen.get_key(seed=137)
-    er.simulate_hist(key, batch_size, parameters)
+    
+    key, r = er.multiple_simulations(key, batch_size, parameters)
+
+    key, h = er.simulate_hist(key, batch_size, parameters)
+    apt.utils.plot_irreg_histogram_2d(*er.bins, h, density=False)
+
     er.simulate_weighed_data(key, batch_size, parameters)
+
+    graph_tree = graphviz.Digraph(format='svg', strict=True)
+    apt.utils.add_deps_to_graph_tree(er, graph_tree)
+    apt.utils.tree_to_svg(graph_tree, 'er_dtypes')
 
     @apt.utils.timeit
     def test(key, batch_size, parameters):
