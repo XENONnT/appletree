@@ -21,9 +21,9 @@ Option 2: install from source code
     git clone https://github.com/XENONnT/appletree
     cd appletree
     pip install -r requirements.txt
-    python setup.py install
+    python setup.py install --user
 
-If you wanna install appletree in developer's mode, replace the last line with
+If you wanna install appletree in editable mode, replace the last line with
 
 .. code-block:: console
 

@@ -24,8 +24,16 @@ cd appletree
 ```
 
 Install the package and requirements in your environment:
+
 ```
-pip install -r requirements.txt -e ./ --user
+pip install -r requirements.txt
+python setup.py install --user
+```
+
+If you wanna install appletree in editable mode, replace the last line with
+
+```
+pip install -e ./ --user
 ```
 
 You are now good to go!
