@@ -18,8 +18,10 @@ FLOAT = np.float32
 
 if os.environ.get('DO_NOT_USE_APPROX_IN_BINOM') is None:
     ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
+    print('Using Normal as an approximation of Binomial')
 else:
     ALWAYS_USE_NORMAL_APPROX_IN_BINOM = False
+    print('Using accurate Binomial, not Normal approximation')
 
 
 @export
