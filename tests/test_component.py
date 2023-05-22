@@ -1,5 +1,4 @@
 import pandas as pd
-import graphviz
 from jax import numpy as jnp
 
 import appletree as apt
@@ -61,10 +60,6 @@ def test_sim_component():
     apt.utils.plot_irreg_histogram_2d(*er.bins, h, density=False)
 
     er.simulate_weighed_data(key, batch_size, parameters)
-
-    graph_tree = graphviz.Digraph(format='svg', strict=True)
-    apt.utils.add_deps_to_graph_tree(er, graph_tree)
-    apt.utils.tree_to_svg(graph_tree, 'er_dtypes')
 
     @apt.utils.timeit
     def test(key, batch_size, parameters):

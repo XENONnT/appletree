@@ -42,7 +42,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get install graphviz
           python -m pip install --upgrade pip
           python -m pip install pytest coverage coveralls
           pip install -r requirements.txt
