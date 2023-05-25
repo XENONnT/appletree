@@ -1,3 +1,10 @@
+v0.2.2 / 2023-05-25
+-------------------
+* Stop using MANIFEST.in, move to a modern way of file system configuration by @dachengx in https://github.com/XENONnT/appletree/pull/94
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.2.1...v0.2.2
+
+
 v0.2.1 / 2023-05-22
 -------------------
 * Change variables `s1` `s2` to `s1_area` `s2_area` by @dachengx in https://github.com/XENONnT/appletree/pull/86
