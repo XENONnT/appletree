@@ -26,7 +26,7 @@ cd appletree
 Install the package and requirements in your environment:
 
 ```
-pip install -r requirements.txt
+pip install -r requirements.txt --user
 python3 -m pip install ./ --user
 ```
 

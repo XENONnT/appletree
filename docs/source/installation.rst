@@ -20,7 +20,7 @@ Option 2: install from source code
 
     git clone https://github.com/XENONnT/appletree
     cd appletree
-    pip install -r requirements.txt
+    pip install -r requirements.txt --user
     python3 -m pip install ./ --user
 
 If you wanna install appletree in editable mode, replace the last line with
