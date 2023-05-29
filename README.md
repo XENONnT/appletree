@@ -1,4 +1,5 @@
 # Appletree
+
 A high-Performance Program simuLatEs and fiTs REsponse of xEnon.
 
 [![DOI](https://zenodo.org/badge/534803881.svg)](https://zenodo.org/badge/latestdoi/534803881)
@@ -11,11 +12,27 @@ A high-Performance Program simuLatEs and fiTs REsponse of xEnon.
 ## Installation and Set-Up
 
 ### Regular installation:
+
+With cpu support:
+
 ```
-pip install appletree -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip install appletree[cpu]
+```
+
+With CUDA Toolkit 11.2 support:
+
+```
+pip install appletree[cuda112] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+```
+
+With CUDA Toolkit 12.1 support:
+
+```
+pip install appletree[cuda121] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 ```
 
 ### Developer setup:
+
 Clone the repository:
 
 ```
@@ -23,25 +40,24 @@ git clone https://github.com/XENONnT/appletree
 cd appletree
 ```
 
-Install the package and requirements in your environment:
+To install the package and requirements in your environment, replace `pip install appletree[*]` to `python3 -m pip install .[*] --user` in the above `pip` commands.
+
+To install appletree in editable mode, insert `--editable` argument after `install` in the above `pip install` or `python3 -m pip install` commands.
+
+For example, to install in your environment and in editable mode:
 
 ```
-pip install -r requirements.txt --user
-python3 -m pip install ./ --user
+python3 -m pip install --editable .[cuda121] --user -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 ```
 
-If you wanna install appletree in editable mode, replace the last line with
-
-```
-python3 -m pip install --editable ./ --user
-```
-
-You are now good to go!
+Then you are now good to go!
 
 ## Usage
+
 The best way to start with the `appletree` package is to have a look at the tutorial `notebooks`. 
 
 ## Contributing
+
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
