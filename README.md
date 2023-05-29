@@ -44,7 +44,7 @@ To install the package and requirements in your environment, replace `pip instal
 
 To install appletree in editable mode, insert `--editable` argument after `install` in the above `pip install` or `python3 -m pip install` commands.
 
-For example, to install in your environment and in editable mode:
+For example, to install in your environment and in editable mode with CUDA Toolkit 12.1 support:
 
 ```
 python3 -m pip install --editable .[cuda121] --user -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
