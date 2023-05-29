@@ -48,10 +48,10 @@ if platform == 'cpu':
     warning = 'You are running appletree on CPU, which usually results in low performance.'
     warn(warning)
 try:
-    import jax.numpy as jnp
+    import jax
     # try allocate something
-    jnp.ones(1)
-except:
+    jax.numpy.ones(1)
+except BaseException:
     if platform == 'gpu':
         print('Can not allocate memory on GPU, please check your CUDA version.')
     raise ImportError(f'Appletree is not correctly setup to be used on {platform.upper()}.')
