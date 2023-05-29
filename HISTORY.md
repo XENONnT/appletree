@@ -1,3 +1,11 @@
+v0.2.3 / 2023-05-29
+-------------------
+* Add pip install user by @dachengx in https://github.com/XENONnT/appletree/pull/96
+* Installation with various `extras_require`s for different CUDA support by @dachengx in https://github.com/XENONnT/appletree/pull/97
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.2.2...v0.2.3
+
+
 v0.2.2 / 2023-05-25
 -------------------
 * Stop using MANIFEST.in, move to a modern way of file system configuration by @dachengx in https://github.com/XENONnT/appletree/pull/94
