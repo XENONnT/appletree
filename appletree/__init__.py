@@ -41,6 +41,21 @@ from .contexts import *
 from . import context
 from .context import *
 
+# check CUDA support setup
+from warnings import warn
+platform = utils.get_platform()
+if platform == 'cpu':
+    warning = 'You are running appletree on CPU, which usually results in low performance.'
+    warn(warning)
+try:
+    import jax
+    # try allocate something
+    jax.numpy.ones(1)
+except BaseException:
+    if platform == 'gpu':
+        print('Can not allocate memory on GPU, please check your CUDA version.')
+    raise ImportError(f'Appletree is not correctly setup to be used on {platform.upper()}.')
+
 try:
     import aptext
     HAVE_APTEXT = True

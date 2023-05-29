@@ -4,3 +4,4 @@ __pycache__
 *.eggs
 *.svg
 docs/build
+build
