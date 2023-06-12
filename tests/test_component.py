@@ -35,7 +35,7 @@ def test_fixed_component():
     ac.rate_name = 'ac_rate'
     ac.deduce(data_names = ('cs1', 'cs2'))
     ac.simulate_hist(parameters)
-    ac.simulate_weighed_data(parameters)
+    ac.simulate_weighted_data(parameters)
 
 
 def test_sim_component():
@@ -59,7 +59,7 @@ def test_sim_component():
     key, h = er.simulate_hist(key, batch_size, parameters)
     apt.utils.plot_irreg_histogram_2d(*er.bins, h, density=False)
 
-    er.simulate_weighed_data(key, batch_size, parameters)
+    er.simulate_weighted_data(key, batch_size, parameters)
 
     @apt.utils.timeit
     def test(key, batch_size, parameters):
