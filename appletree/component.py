@@ -385,7 +385,7 @@ class ComponentSim(Component):
 
         return key, hist
 
-    def simulate_weighed_data(self,
+    def simulate_weighted_data(self,
                               key,
                               batch_size,
                               parameters):
@@ -516,7 +516,7 @@ class ComponentFixed(Component):
         normalization_factor = self.get_normalization(self.hist, parameters, len(self.data))
         return self.hist * normalization_factor
 
-    def simulate_weighed_data(self,
+    def simulate_weighted_data(self,
                               parameters,
                               *args, **kwargs):
         """Simulate and return histogram."""
