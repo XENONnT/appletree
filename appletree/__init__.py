@@ -1,5 +1,10 @@
 __version__ = '0.2.3'
 
+# stop jax to preallocate memory
+import os
+os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'
+os.environ['XLA_PYTHON_CLIENT_ALLOCATOR'] = 'platform'
+
 from . import utils
 from .utils import *
 
