@@ -35,6 +35,7 @@ class Likelihood:
         self._bins_type = config['bins_type']
         self._bins_on = config['bins_on']
         self._bins = config['bins']
+        self._bins = [np.array(bin) for bin in self._bins]
         self._dim = len(self._bins_on)
         if self._dim != 2:
             raise ValueError('Currently only support 2D fitting')
@@ -52,8 +53,14 @@ class Likelihood:
             warning = f'The usage of meshgrid binning is highly discouraged.'
             warn(warning)
             self.component_bins_type = 'meshgrid'
-            x_bins = jnp.linspace(*config['x_clip'], self._bins[0] + 1)
-            y_bins = jnp.linspace(*config['y_clip'], self._bins[1] + 1)
+            if type(self._bins[0]) == int:
+                x_bins = jnp.linspace(*config['x_clip'], self._bins[0] + 1)
+            else:
+                x_bins = jnp.array(self._bins[0])
+            if type(self._bins[1]) == int:
+                y_bins = jnp.linspace(*config['y_clip'], self._bins[1] + 1)
+            else:
+                y_bins = jnp.array(self._bins[1])
             self._bins = (x_bins, y_bins)
             self.data_hist = make_hist_mesh_grid(
                 self.data,
