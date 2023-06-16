@@ -53,11 +53,11 @@ class Likelihood:
             warning = f'The usage of meshgrid binning is highly discouraged.'
             warn(warning)
             self.component_bins_type = 'meshgrid'
-            if type(self._bins[0]) == int:
+            if isinstance(self._bins[0], int):
                 x_bins = jnp.linspace(*config['x_clip'], self._bins[0] + 1)
             else:
                 x_bins = jnp.array(self._bins[0])
-            if type(self._bins[1]) == int:
+            if isinstance(self._bins[1], int):
                 y_bins = jnp.linspace(*config['y_clip'], self._bins[1] + 1)
             else:
                 y_bins = jnp.array(self._bins[1])
