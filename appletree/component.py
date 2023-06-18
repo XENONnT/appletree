@@ -29,8 +29,6 @@ class Component:
     def __init__(self,
                  name: str = None,
                  llh_name: str = None,
-                 bins: list = [],
-                 bins_type: str = '',
                  **kwargs):
         """Initialization.
 
@@ -48,9 +46,17 @@ class Component:
             self.llh_name = self.__class__.__name__ + '_llh'
         else:
             self.llh_name = llh_name
-        self.bins = bins
-        self.bins_type = bins_type
         self.needed_parameters = set()
+
+        if 'bins' in kwargs.keys() and 'bins_type' in kwargs.keys():
+            self.set_binning(**kwargs)
+
+    def set_binning(self, **kwargs):
+        """Set binning of component"""
+        if 'bins' not in kwargs.keys() or 'bins_type' not in kwargs.keys():
+            raise ValueError('bins and bins_type must be set!')
+        self.bins = kwargs.get('bins')
+        self.bins_type = kwargs.get('bins_type')
 
         if self.bins_type == 'meshgrid':
             warning = 'The usage of meshgrid binning is highly discouraged.'
@@ -467,17 +473,26 @@ class ComponentSim(Component):
         # straxen.dataframe_to_wiki(df, title=f'{data_names}', float_digits=1)
         return df
 
-    def new_component(self, llh_name: str = None):
+    def new_component(self, llh_name: str = None, pass_binning: bool = True):
         """
         Generate new component with same binning,
         usually used on predicting yields
         """
-        component = self.__class__(
-            name=self.name + '_copy',
-            llh_name=llh_name,
-            bins=self.bins,
-            bins_type=self.bins_type,
-        )
+        if pass_binning:
+            if hasattr(self, 'bins') and hasattr(self, 'bins_type'):
+                component = self.__class__(
+                    name=self.name + '_copy',
+                    llh_name=llh_name,
+                    bins=self.bins,
+                    bins_type=self.bins,
+                )
+            else:
+                raise ValueError('Should provide bins and bins_type if you want to pass binning!')
+        else:
+            component = self.__class__(
+                name=self.name + '_copy',
+                llh_name=llh_name,
+            )
         return component
 
 
