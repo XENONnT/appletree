@@ -48,6 +48,14 @@ class Likelihood:
         mask &= (self.data[:, 1] < config['y_clip'][1])
         self.data = self.data[mask]
 
+        self.set_binning(config)
+
+    def __getitem__(self, keys):
+        """Get component in likelihood"""
+        return self.components[keys]
+
+    def set_binning(self, config):
+        """Set binning of likelihood"""
         if self._bins_type == 'meshgrid':
             warning = f'The usage of meshgrid binning is highly discouraged.'
             warn(warning)
@@ -112,10 +120,6 @@ class Likelihood:
             )
         else:
             raise ValueError("'bins_type' should either be meshgrid, equiprob or irreg")
-
-    def __getitem__(self, keys):
-        """Get component in likelihood"""
-        return self.components[keys]
 
     def register_component(self,
                            component_cls: Component,

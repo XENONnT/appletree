@@ -59,6 +59,7 @@ def test_nr_likelihood():
 def test_equiprob_likelihood():
     """Test Likelihood"""
     try:
+        error_raised = True
         instruct = dict(
             data_file_name = get_file_path('data_Neutron.csv'),
             bins_type = 'equiprob',
@@ -68,5 +69,9 @@ def test_equiprob_likelihood():
             y_clip = [1e2, 1e3],
         )
         llh = apt.Likelihood(**instruct)
+        error_raised = False
     except Exception:
-        raise RuntimeError('Should throw error when bins are not int in equiprob')
+        pass
+    else:
+        if not error_raised:
+            raise RuntimeError('Should throw error when bins are not int in equiprob')
