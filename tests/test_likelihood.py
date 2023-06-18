@@ -54,3 +54,19 @@ def test_nr_likelihood():
 
     key = apt.randgen.get_key()
     llh.get_log_likelihood(key, int(1e6), parameters)
+
+
+def test_equiprob_likelihood():
+    """Test Likelihood"""
+    try:
+        instruct = dict(
+            data_file_name = get_file_path('data_Neutron.csv'),
+            bins_type = 'equiprob',
+            bins_on = ['num_s1_phd', 'cs2'],
+            bins = [[1.5, 9.5], [1e2, 1e3]],
+            x_clip = [1.5, 9.5],
+            y_clip = [1e2, 1e3],
+        )
+        llh = apt.Likelihood(**instruct)
+    except:
+        raise RuntimeError('Should throw error when bins are not int in equiprob')

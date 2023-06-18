@@ -35,7 +35,6 @@ class Likelihood:
         self._bins_type = config['bins_type']
         self._bins_on = config['bins_on']
         self._bins = config['bins']
-        self._bins = [np.array(bin) for bin in self._bins]
         self._dim = len(self._bins_on)
         if self._dim != 2:
             raise ValueError('Currently only support 2D fitting')
