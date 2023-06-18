@@ -71,7 +71,7 @@ def test_equiprob_likelihood():
         llh = apt.Likelihood(**instruct)
         error_raised = False
     except Exception:
-        pass
+        print('Error correctly raised when bins are not int in equiprob')
     else:
         if not error_raised:
             raise RuntimeError('Should throw error when bins are not int in equiprob')
