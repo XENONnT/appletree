@@ -57,10 +57,16 @@ class Likelihood:
                 x_bins = jnp.linspace(*config['x_clip'], self._bins[0] + 1)
             else:
                 x_bins = jnp.array(self._bins[0])
+                if 'x_clip' in config:
+                    warning = f'x_clip is ignored when bins_type is meshgrid and bins is not int'
+                    warn(warning)
             if isinstance(self._bins[1], int):
                 y_bins = jnp.linspace(*config['y_clip'], self._bins[1] + 1)
             else:
                 y_bins = jnp.array(self._bins[1])
+                if 'y_clip' in config:
+                    warning = f'y_clip is ignored when bins_type is meshgrid and bins is not int'
+                    warn(warning)
             self._bins = (x_bins, y_bins)
             self.data_hist = make_hist_mesh_grid(
                 self.data,
@@ -70,6 +76,10 @@ class Likelihood:
         elif self._bins_type == 'equiprob':
             if self._dim != 2:
                 raise RuntimeError('only 2D equiprob binned likelihood is supported!')
+            if isinstance(self._bins[0], int) and isinstance(self._bins[1], int):
+                pass
+            else:
+                raise RuntimeError('bins can only be int if bins_type is equiprob')
             self._bins = get_equiprob_bins_2d(
                 self.data,
                 self._bins,
