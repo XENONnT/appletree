@@ -68,5 +68,5 @@ def test_equiprob_likelihood():
             y_clip = [1e2, 1e3],
         )
         llh = apt.Likelihood(**instruct)
-    except:
+    except Exception:
         raise RuntimeError('Should throw error when bins are not int in equiprob')
