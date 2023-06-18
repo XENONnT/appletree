@@ -49,7 +49,7 @@ class Component:
         self.needed_parameters = set()
 
         if 'bins' in kwargs.keys() and 'bins_type' in kwargs.keys():
-            self.set_binning(kwargs)
+            self.set_binning(**kwargs)
 
     def set_binning(self, **kwargs):
         """Set binning of component"""
