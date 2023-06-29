@@ -39,10 +39,10 @@ class PositionRecon(Plugin):
 @export
 @appletree.takes_config(
     Map(name='s1_bias_3f',
-        default='_3fold_s1_bias.json',
+        default='_s1_bias.json',
         help='3fold S1 reconstruction bias'),
     Map(name='s1_smear_3f',
-        default='_3fold_s1_smearing.json',
+        default='_s1_smearing.json',
         help='3fold S1 reconstruction smearing'),
 )
 class S1(Plugin):
