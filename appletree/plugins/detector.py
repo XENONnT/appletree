@@ -14,7 +14,7 @@ export, __all__ = exporter(export_self=False)
 @export
 @appletree.takes_config(
     Map(name='s1_lce',
-        default='s1_correction_map_regbin.json',
+        default='_s1_correction.json',
         help='S1 light collection efficiency correction'),
 )
 class S1Correction(Plugin):
@@ -31,7 +31,7 @@ class S1Correction(Plugin):
 @export
 @appletree.takes_config(
     Map(name='s2_lce',
-        default='s2_correction_map_regbin.json',
+        default='_s2_correction.json',
         help='S2 light collection efficiency correction'),
 )
 class S2Correction(Plugin):
@@ -74,7 +74,7 @@ class S1PE(Plugin):
 @export
 @appletree.takes_config(
     Map(name='elife',
-        default='elife.json',
+        default='_elife.json',
         help='Electron lifetime correction'),
 )
 class DriftLoss(Plugin):

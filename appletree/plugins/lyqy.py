@@ -14,7 +14,7 @@ export, __all__ = exporter(export_self=False)
 @export
 @appletree.takes_config(
     Map(name='ly_median',
-        default='nr_ly_median.json',
+        default='_nr_ly.json',
         help='Light yield curve from NESTv2'),
 )
 class LightYield(Plugin):
@@ -43,7 +43,7 @@ class NumberPhoton(Plugin):
 @export
 @appletree.takes_config(
     Map(name='qy_median',
-        default='nr_qy_median.json',
+        default='_nr_qy.json',
         help='Charge yield curve from NESTv2'),
 )
 class ChargeYield(Plugin):
