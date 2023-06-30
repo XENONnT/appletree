@@ -184,7 +184,7 @@ def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_
         q = 1. - p
         mean = n * p
         std = jnp.sqrt(n * p * q)
-        rvs = jnp.clip(random.normal(seed) * std + mean, a_min=0.)
+        rvs = jnp.clip(random.normal(seed) * std + mean, a_min=0., a_max=n)
         return rvs.round().astype(INT)
 
     def _binomial_dispatch(seed, p, n):

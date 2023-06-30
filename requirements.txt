@@ -10,6 +10,6 @@ multihist
 numpy
 numpyro
 pandas
-scikit-learn
+scikit-learn<=1.2.2
 scipy
 straxen
