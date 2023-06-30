@@ -15,7 +15,7 @@ export, __all__ = exporter(export_self=False)
 @export
 @appletree.takes_config(
     Map(name='posrec_reso',
-        default='posrec_reso.json',
+        default='_posrec_reso.json',
         help='Position reconstruction resolution'),
 )
 class PositionRecon(Plugin):
@@ -39,10 +39,10 @@ class PositionRecon(Plugin):
 @export
 @appletree.takes_config(
     Map(name='s1_bias_3f',
-        default='s1_bias_3f.json',
+        default='_s1_bias.json',
         help='3fold S1 reconstruction bias'),
     Map(name='s1_smear_3f',
-        default='s1_smearing_3f.json',
+        default='_s1_smearing.json',
         help='3fold S1 reconstruction smearing'),
 )
 class S1(Plugin):
@@ -61,10 +61,10 @@ class S1(Plugin):
 @export
 @appletree.takes_config(
     Map(name='s2_bias',
-        default='s2_bias.json',
+        default='_s2_bias.json',
         help='S2 reconstruction bias'),
     Map(name='s2_smear',
-        default='s2_smearing.json',
+        default='_s2_smearing.json',
         help='S2 reconstruction smearing'),
 )
 class S2(Plugin):

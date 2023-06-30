@@ -25,9 +25,9 @@ class S2Threshold(Plugin):
 @appletree.takes_config(
     SigmaMap(name='s1_eff_3f',
         default=[
-            '3fold_recon_eff.json',
-            '3fold_recon_eff.json',
-            '3fold_recon_eff.json'],
+            '_3fold_recon_eff.json',
+            '_3fold_recon_eff.json',
+            '_3fold_recon_eff.json'],
         help='3fold S1 reconstruction efficiency'),
 )
 class S1ReconEff(Plugin):
@@ -47,9 +47,9 @@ class S1ReconEff(Plugin):
 @appletree.takes_config(
     SigmaMap(name='s1_cut_acc',
         default=[
-            's1_cut_acc.json',
-            's1_cut_acc.json',
-            's1_cut_acc.json'],
+            '_s1_cut_acc.json',
+            '_s1_cut_acc.json',
+            '_s1_cut_acc.json'],
         help='S1 cut acceptance'),
 )
 class S1CutAccept(Plugin):
@@ -68,9 +68,9 @@ class S1CutAccept(Plugin):
 @appletree.takes_config(
     SigmaMap(name='s2_cut_acc',
         default=[
-            's2_cut_acc.json',
-            's2_cut_acc.json',
-            's2_cut_acc.json'],
+            '_s2_cut_acc.json',
+            '_s2_cut_acc.json',
+            '_s2_cut_acc.json'],
         help='S2 cut acceptance'),
 )
 class S2CutAccept(Plugin):

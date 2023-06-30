@@ -41,7 +41,7 @@ class UniformEnergySpectra(Plugin):
 @export
 @appletree.takes_config(
     Map(name='energy_spectrum',
-        default='nr_spectrum.json',
+        default='_nr_spectrum.json',
         help='Recoil energy spectrum'),
 )
 class FixedEnergySpectra(Plugin):
