@@ -5,7 +5,7 @@
 import appletree as apt
 
 project = 'Appletree'
-copyright = '2022, appletree contributors and the XENON collaboration'
+copyright = '2023, Appletree contributors and the XENON collaboration'
 author = 'Zihao Xu, Dacheng Xu'
 
 release = apt.__version__
