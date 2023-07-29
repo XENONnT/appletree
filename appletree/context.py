@@ -252,15 +252,20 @@ class Context():
         self._dump_meta()
         return result
 
-    def get_post_parameters(self):
-        """Get parameters correspondes to max posterior"""
-        logp = self.sampler.get_log_prob(flat=True)
-        chain = self.sampler.get_chain(flat=True)
-        mpe_parameters = chain[np.argmax(logp)]
-        mpe_parameters = emcee.ensemble.ndarray_to_list_of_dicts(
-            [mpe_parameters],
-            self.sampler.parameter_names,
-        )[0]
+    def get_post_parameters(self, method='max_posterior', discard=0):
+        """Get parameters correspondes to max posterior
+        :params: discard: Drop burn-in iterations as in https://emcee.readthedocs.io/en/v3.1.0/user/sampler/
+        :method: max_posterior or mean
+        """
+        logp = self.sampler.get_log_prob(flat=True, discard=discard)
+        chain = self.sampler.get_chain(flat=True, discard=discard)
+        if method == 'max_posterior':
+            mpe_parameters = chain[np.argmax(logp)]
+        elif method == 'mean':
+            mpe_parameters = np.mean(chain, axis=0)
+        mpe_parameters = emcee.ensemble.ndarray_to_list_of_dicts([mpe_parameters],
+                self.sampler.parameter_names,
+            )[0]
         parameters = copy.deepcopy(self.par_manager.get_all_parameter())
         parameters.update(mpe_parameters)
         return parameters
@@ -303,6 +308,8 @@ class Context():
     def get_template(self,
                      likelihood_name: str,
                      component_name: str,
+                     method: str,
+                     discard: int = 0,
                      batch_size: int = 1_000_000,
                      seed: int = None):
         """Get parameters correspondes to max posterior
@@ -312,7 +319,7 @@ class Context():
         :param batch_size: int of number of simulated events
         :param seed: random seed
         """
-        parameters = self.get_post_parameters()
+        parameters = self.get_post_parameters(method=method, discard=discard)
         key = randgen.get_key(seed=seed)
 
         key, result = self[likelihood_name][component_name].simulate(
