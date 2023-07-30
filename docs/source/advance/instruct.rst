@@ -3,7 +3,7 @@
 .. _head:
 
 Instruct file for context
-===============================
+=========================
 
 In appletree, we use an instruct json file to initialize `Context`. Some examples can be found in
 `instructs folder <https://github.com/XENONnT/appletree/tree/master/appletree/instructs>`_. In the json file,

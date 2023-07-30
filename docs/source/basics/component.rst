@@ -3,7 +3,7 @@
 .. _head:
 
 Component
-================
+=========
 
 Component is an ensemble of plugins. In general, users can register `Plugin`s to `Component`,
 and tell it the varibales you wanna get. Component will auto-deduce the workflow based

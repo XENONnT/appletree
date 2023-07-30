@@ -1,7 +1,7 @@
 :orphan:
 
 appletree.plugins.reconstruction
-===================================
+================================
 
 In `appletree.plugins.reconstruction`, we put some plugins to simulate reconstruction.
 

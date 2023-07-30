@@ -1,7 +1,7 @@
 :orphan:
 
 appletree.plugins.lyqy
-=================================
+======================
 
 In `appletree.plugins.lyqy`, we put some plugins to simulate quanta given light and charge yield.
 

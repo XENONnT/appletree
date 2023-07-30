@@ -3,7 +3,7 @@
 .. _head:
 
 Register maps and constants to plugins
-==========================================
+======================================
 
 Sometimes, a plugin could depend on some constants and maps, for example the energy range in an energy sampler, or a curve that gives
 the energy spectrum. In appletree, we recommend to use `appletree.takes_config` to systematically manage them.

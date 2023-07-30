@@ -1,7 +1,7 @@
 :orphan:
 
 appletree.plugins.er_microphys
-================================
+==============================
 
 In `appletree.plugins.er_microphys`, we put some plugins to simulate ER quanta generation.
 
