@@ -22,6 +22,8 @@ try:
 except ImportError:
     pass
 
+SKIP_MONGO_DB = True
+
 
 def exporter(export_self=False):
     """Export utility modified from https://stackoverflow.com/a/41895194
@@ -148,22 +150,23 @@ def get_file_path(fname):
             return fpath
 
     # 5. From MongoDB
-    try:
-        import straxen
-        # https://straxen.readthedocs.io/en/latest/config_storage.html
-        # downloading-xenonnt-files-from-the-database  # noqa
+    if not SKIP_MONGO_DB:
+        try:
+            import straxen
+            # https://straxen.readthedocs.io/en/latest/config_storage.html
+            # downloading-xenonnt-files-from-the-database  # noqa
 
-        # we need to add the straxen.MongoDownloader() in this
-        # try: except NameError: logic because the NameError
-        # gets raised if we don't have access to utilix.
-        downloader = straxen.MongoDownloader()
-        # FileNotFoundError, ValueErrors can be raised if we
-        # cannot load the requested config
-        fpath = downloader.download_single(fname)
-        warn(f'Loading {fname} from mongo downloader to {fpath}')
-        return fname  # Keep the name and let get_resource do its thing
-    except (FileNotFoundError, ValueError, NameError, AttributeError):
-        warn(f'Mongo downloader not possible or does not have {fname}')
+            # we need to add the straxen.MongoDownloader() in this
+            # try: except NameError: logic because the NameError
+            # gets raised if we don't have access to utilix.
+            downloader = straxen.MongoDownloader()
+            # FileNotFoundError, ValueErrors can be raised if we
+            # cannot load the requested config
+            fpath = downloader.download_single(fname)
+            warn(f'Loading {fname} from mongo downloader to {fpath}')
+            return fname  # Keep the name and let get_resource do its thing
+        except (FileNotFoundError, ValueError, NameError, AttributeError):
+            warn(f'Mongo downloader not possible or does not have {fname}')
 
     # raise error when can not find corresponding file
     raise RuntimeError(f'Can not find {fname}, please check your file system')

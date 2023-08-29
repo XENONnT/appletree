@@ -453,7 +453,7 @@ class ComponentSim(Component):
             for config in p.takes_config.values():
                 try:
                     default = config.get_default()
-                except:
+                except ValueError:
                     default = appletree.OMITTED
                 current = _cached_configs.get(config.name, None)
                 if isinstance(current, dict):
