@@ -156,7 +156,7 @@ class Map(Config):
 
         try:
             data = load_json(self.file_path)
-        except:
+        except Exception:
             raise ValueError(f"Cannot load {self.name} from {self.file_path}!")
 
         coordinate_type = data['coordinate_type']
