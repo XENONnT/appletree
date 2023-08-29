@@ -155,7 +155,7 @@ def get_file_path(fname):
             import straxen
             # https://straxen.readthedocs.io/en/latest/config_storage.html
             # downloading-xenonnt-files-from-the-database  # noqa
-    
+
             # we need to add the straxen.MongoDownloader() in this
             # try: except NameError: logic because the NameError
             # gets raised if we don't have access to utilix.
