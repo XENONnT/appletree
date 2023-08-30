@@ -13,7 +13,7 @@ export, __all__ = exporter(export_self=False)
 
 @export
 @appletree.takes_config(
-    Map(name='s1_lce',
+    Map(name='s1_correction',
         default='_s1_correction.json',
         help='S1 light collection efficiency correction'),
 )
@@ -24,13 +24,13 @@ class S1Correction(Plugin):
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, rec_x, rec_y, rec_z):
         pos = jnp.stack([rec_x, rec_y, rec_z]).T
-        s1_correction = self.s1_lce.apply(pos)
+        s1_correction = self.s1_correction.apply(pos)
         return key, s1_correction
 
 
 @export
 @appletree.takes_config(
-    Map(name='s2_lce',
+    Map(name='s2_correction',
         default='_s2_correction.json',
         help='S2 light collection efficiency correction'),
 )
@@ -41,7 +41,7 @@ class S2Correction(Plugin):
     @partial(jit, static_argnums=(0, ))
     def simulate(self, key, parameters, rec_x, rec_y):
         pos = jnp.stack([rec_x, rec_y]).T
-        s2_correction = self.s2_lce.apply(pos)
+        s2_correction = self.s2_correction.apply(pos)
         return key, s2_correction
 
 

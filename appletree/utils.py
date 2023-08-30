@@ -2,7 +2,7 @@ import os
 import re
 import json
 from warnings import warn
-import pkg_resources
+import importlib_resources
 from time import time
 
 from jax.lib import xla_bridge
@@ -105,7 +105,7 @@ def _get_abspath(file_name):
 
 def _package_path(sub_directory):
     """Get the abs path of the requested sub folder"""
-    return pkg_resources.resource_filename('appletree', f'{sub_directory}')
+    return importlib_resources.files('appletree') / sub_directory
 
 
 @export

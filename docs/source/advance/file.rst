@@ -3,7 +3,7 @@
 .. _head:
 
 File system and searching
-===============================
+=========================
 
 Any file name in appletree will be handled by a function `appletree.utils.get_file_path`, which will search the file and return its path
 

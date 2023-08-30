@@ -3,7 +3,7 @@
 .. _head:
 
 Parameters in appletree
-===============================
+=======================
 
 In general, all parameters including fixed parameters and fit parameters are handled by `appletree.Parameter`,
 which has many useful attributes

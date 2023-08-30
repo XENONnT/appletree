@@ -1,7 +1,7 @@
 :orphan:
 
 How to think in appletree
-===========================
+=========================
 
 To understand the structure of appletree, it's always helpful to keep an exemplar problem in mind.
 Think about that we wanna do a combined fitting, where multiple sets of calibration data need to 

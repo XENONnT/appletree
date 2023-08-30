@@ -1,5 +1,5 @@
 Appletree
-=========================
+=========
 
 Github page: https://github.com/XENONnT/appletree
 
@@ -43,3 +43,9 @@ using `emcee <https://emcee.readthedocs.io/en/stable/>`_.
     notebooks/benchmark.ipynb
     notebooks/datastructure.ipynb
     notebooks/maps.ipynb
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`

@@ -1,7 +1,7 @@
 :orphan:
 
 Plugin
-===============
+======
 
 Plugin is the smallest simulation unit in appletree. All plugins must inherit from the `appletree.Plugin`. 
 
@@ -16,16 +16,17 @@ There are many default plugins under `appletree.plugins`.
     :maxdepth: 1
 
     appletree.plugins.common
-    appletree.plugins.er_microphysics
-    appletree.plugins.nr_microphysics
     appletree.plugins.detector
-    appletree.plugins.reconstruction
     appletree.plugins.efficiency
+    appletree.plugins.er_microphysics
+    appletree.plugins.lyqy
+    appletree.plugins.nestv2
+    appletree.plugins.reconstruction
 
 Here is an example how a plugin works:
 
 .. code-block:: python
-    
+
     import appletree as apt
 
     # generate a key for pseudorandom generator
