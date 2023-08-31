@@ -21,6 +21,8 @@ from .randgen import *
 
 from .share import *
 
+from . import plugins
+
 from .plugin import *
 
 from .components import *
