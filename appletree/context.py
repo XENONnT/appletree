@@ -4,6 +4,8 @@ import copy
 import json
 import importlib
 from datetime import datetime
+from typing import Set, Optional
+
 import numpy as np
 import emcee
 import h5py
@@ -14,99 +16,94 @@ from appletree import Parameter
 from appletree.utils import load_json
 from appletree.share import _cached_configs, set_global_config
 
-os.environ['OMP_NUM_THREADS'] = '1'
+os.environ["OMP_NUM_THREADS"] = "1"
 
 
-class Context():
-    """Combine all likelihood (e.g. Rn220, Ar37),
-    handle MCMC and post-fitting analysis
-    """
+class Context:
+    """Combine all likelihood (e.g. Rn220, Ar37), handle MCMC and post-fitting analysis."""
 
     def __init__(self, instruct, par_config=None):
-        """Create an appletree context
+        """Create an appletree context.
 
         :param instruct: dict or str, instruct file name or dictionary
+
         """
         if isinstance(instruct, str):
             instruct = load_json(instruct)
 
         # url_base and configs are not mandatory
-        if 'url_base' in instruct.keys():
-            self.update_url_base(instruct['url_base'])
+        if "url_base" in instruct.keys():
+            self.update_url_base(instruct["url_base"])
 
         self.set_instruct(instruct)
-        if 'configs' in instruct.keys():
-            self.set_config(instruct['configs'])
+        if "configs" in instruct.keys():
+            self.set_config(instruct["configs"])
 
-        self.backend_h5 = instruct.get('backend_h5', None)
+        self.backend_h5 = instruct.get("backend_h5", None)
 
         self.likelihoods = dict()
 
         if par_config is not None:
             self.par_config = copy.deepcopy(par_config)
-            print('Manually set a parameters list!')
+            print("Manually set a parameters list!")
         else:
-            self.par_config = self.get_parameter_config(instruct['par_config'])
-        self.needed_parameters = self.update_parameter_config(instruct['likelihoods'])
+            self.par_config = self.get_parameter_config(instruct["par_config"])
+        self.needed_parameters = self.update_parameter_config(instruct["likelihoods"])
 
         self.par_manager = Parameter(self.par_config)
 
         self.register_all_likelihood(instruct)
 
     def __getitem__(self, keys):
-        """Get likelihood in context"""
+        """Get likelihood in context."""
         return self.likelihoods[keys]
 
     def register_all_likelihood(self, config):
-        """Create all appletree likelihoods
+        """Create all appletree likelihoods.
 
         :param config: dict, configuration file name or dictionary
-        """
-        components = importlib.import_module('appletree.components')
 
-        for key, value in config['likelihoods'].items():
+        """
+        components = importlib.import_module("appletree.components")
+
+        for key, value in config["likelihoods"].items():
             likelihood = copy.deepcopy(value)
 
             self.register_likelihood(key, likelihood)
 
-            for k, v in likelihood['components'].items():
+            for k, v in likelihood["components"].items():
                 # dynamically import components
                 if isinstance(v, str):
                     self.register_component(key, getattr(components, v), k)
                 else:
                     self.register_component(
                         key,
-                        getattr(components, v['component_cls']),
+                        getattr(components, v["component_cls"]),
                         k,
-                        v.get('file_name', None),
+                        v.get("file_name", None),
                     )
 
-    def register_likelihood(self,
-                            likelihood_name,
-                            likelihood_config):
-        """Create an appletree likelihood
+    def register_likelihood(self, likelihood_name, likelihood_config):
+        """Create an appletree likelihood.
 
-        :param likelihood_name: name of Likelihood
-        :param likelihood_config: dict of likelihood configuration
+        :param likelihood_name: name of Likelihood :param likelihood_config: dict of likelihood
+        configuration
+
         """
         if likelihood_name in self.likelihoods:
-            raise ValueError(f'Likelihood named {likelihood_name} already existed!')
-        likelihood = getattr(apt, likelihood_config.get('type', 'Likelihood'))
+            raise ValueError(f"Likelihood named {likelihood_name} already existed!")
+        likelihood = getattr(apt, likelihood_config.get("type", "Likelihood"))
         self.likelihoods[likelihood_name] = likelihood(
             name=likelihood_name,
             **likelihood_config,
         )
 
-    def register_component(self,
-                           likelihood_name,
-                           component_cls,
-                           component_name,
-                           file_name=None):
-        """Register component to likelihood
+    def register_component(self, likelihood_name, component_cls, component_name, file_name=None):
+        """Register component to likelihood.
 
-        :param likelihood_name: name of Likelihood
-        :param component_cls: class of Component
-        :param component_name: name of Component
+        :param likelihood_name: name of Likelihood :param component_cls: class of Component :param
+        component_name: name of Component
+
         """
         self[likelihood_name].register_component(
             component_cls,
@@ -120,32 +117,34 @@ class Context():
         """Print summary of the context."""
         self._sanity_check()
 
-        print('\n'+'='*40)
+        print("\n" + "=" * 40)
         for key, likelihood in self.likelihoods.items():
-            print(f'LIKELIHOOD {key}')
+            print(f"LIKELIHOOD {key}")
             likelihood.print_likelihood_summary(short=short)
-            print('\n'+'='*40)
+            print("\n" + "=" * 40)
 
     def get_num_events_accepted(self, parameters, batch_size=1_000_000):
         """Get number of events in the histogram under given parameters.
 
-        :param batch_size: int of number of simulated events
-        :param parameters: dict of parameters used in simulation
+        :param batch_size: int of number of simulated events :param parameters: dict of parameters
+        used in simulation
+
         """
         n_events = 0
         for likelihood in self.likelihoods.values():
-            if hasattr(likelihood, 'data_hist'):
+            if hasattr(likelihood, "data_hist"):
                 n_events += likelihood.get_num_events_accepted(batch_size, parameters)
             else:
-                warning = f'{likelihood.name} will be omitted.'
+                warning = f"{likelihood.name} will be omitted."
                 warn(warning)
         return n_events
 
     def log_posterior(self, parameters, batch_size=1_000_000):
-        """Get log likelihood of given parameters
+        """Get log likelihood of given parameters.
 
-        :param batch_size: int of number of simulated events
-        :param parameters: dict of parameters used in simulation
+        :param batch_size: int of number of simulated events :param parameters: dict of parameters
+        used in simulation
+
         """
         self.par_manager.set_parameter(parameters)
 
@@ -171,19 +170,15 @@ class Context():
     def _set_backend(self, nwalkers=100, read_only=True):
         if self.backend_h5 is None:
             self._backend = None
-            print('With no backend')
+            print("With no backend")
         else:
-            self._backend = emcee.backends.HDFBackend(
-                self.backend_h5, read_only=read_only)
+            self._backend = emcee.backends.HDFBackend(self.backend_h5, read_only=read_only)
             if not read_only:
                 self._backend.reset(nwalkers, self._ndim)
-            print(f'With h5 backend {self.backend_h5}')
+            print(f"With h5 backend {self.backend_h5}")
 
-    def pre_fitting(self,
-                    nwalkers=100,
-                    read_only=True,
-                    batch_size=1_000_000):
-        """Prepare for fitting, initialize backend and sampler"""
+    def pre_fitting(self, nwalkers=100, read_only=True, batch_size=1_000_000):
+        """Prepare for fitting, initialize backend and sampler."""
         self._set_backend(nwalkers, read_only=read_only)
         self.sampler = emcee.EnsembleSampler(
             nwalkers,
@@ -192,14 +187,15 @@ class Context():
             backend=self._backend,
             blobs_dtype=np.float32,
             parameter_names=self.par_manager.parameter_fit,
-            kwargs = {'batch_size': batch_size},
+            kwargs={"batch_size": batch_size},
         )
 
     def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000):
-        """Fitting posterior distribution of needed parameters
+        """Fitting posterior distribution of needed parameters.
 
-        :param nwalkers: int, number of walkers in the ensemble
-        :param iteration: int, number of steps to generate
+        :param nwalkers: int, number of walkers in the ensemble :param iteration: int, number of
+        steps to generate
+
         """
         self._sanity_check()
 
@@ -208,10 +204,7 @@ class Context():
             self.par_manager.sample_init()
             p0.append(self.par_manager.parameter_fit_array)
 
-        self.pre_fitting(
-            nwalkers=nwalkers,
-            read_only=False,
-            batch_size=batch_size)
+        self.pre_fitting(nwalkers=nwalkers, read_only=False, batch_size=batch_size)
 
         result = self.sampler.run_mcmc(
             p0,
@@ -224,10 +217,10 @@ class Context():
         return result
 
     def continue_fitting(self, context, iteration=500, batch_size=1_000_000):
-        """Continue a fitting of another context
+        """Continue a fitting of another context.
 
-        :param context: appletree context
-        :param iteration: int, number of steps to generate
+        :param context: appletree context :param iteration: int, number of steps to generate
+
         """
         # Final iteration
         final_iteration = context.sampler.get_chain()[-1, :, :]
@@ -236,10 +229,7 @@ class Context():
         nwalkers = len(p0)
 
         # Init sampler for current context
-        self.pre_fitting(
-            nwalkers=nwalkers,
-            read_only=False,
-            batch_size=batch_size)
+        self.pre_fitting(nwalkers=nwalkers, read_only=False, batch_size=batch_size)
 
         result = self.sampler.run_mcmc(
             p0,
@@ -253,7 +243,7 @@ class Context():
         return result
 
     def get_post_parameters(self):
-        """Get parameters correspondes to max posterior"""
+        """Get parameters correspondes to max posterior."""
         logp = self.sampler.get_log_prob(flat=True)
         chain = self.sampler.get_chain(flat=True)
         mpe_parameters = chain[np.argmax(logp)]
@@ -266,58 +256,60 @@ class Context():
         return parameters
 
     def get_all_post_parameters(self, **kwargs):
-        """Return all posterior parameters"""
+        """Return all posterior parameters."""
         chain = self.sampler.get_chain(**kwargs)
         return chain
 
     def dump_post_parameters(self, file_name):
-        """Dump max posterior parameter in .json file"""
+        """Dump max posterior parameter in .json file."""
         parameters = self.get_post_parameters()
-        with open(file_name, 'w') as fp:
+        with open(file_name, "w") as fp:
             json.dump(parameters, fp)
 
     def _dump_meta(self, metadata=None):
-        """Save parameters name as attributes"""
+        """Save parameters name as attributes."""
         if metadata is None:
             metadata = {
-                'version': apt.__version__,
-                'date': datetime.now().strftime('%Y%m%d_%H:%M:%S'),
+                "version": apt.__version__,
+                "date": datetime.now().strftime("%Y%m%d_%H:%M:%S"),
             }
         if self.backend_h5 is not None:
             name = self.sampler.backend.name
-            with h5py.File(self.backend_h5, 'r+') as opt:
-                opt[name].attrs['metadata'] = json.dumps(metadata)
+            with h5py.File(self.backend_h5, "r+") as opt:
+                opt[name].attrs["metadata"] = json.dumps(metadata)
                 # parameters prior configuration
-                opt[name].attrs['par_config'] = json.dumps(self.par_manager.par_config)
+                opt[name].attrs["par_config"] = json.dumps(self.par_manager.par_config)
                 # max posterior parameters
-                opt[name].attrs['post_parameters'] = json.dumps(self.get_post_parameters())
+                opt[name].attrs["post_parameters"] = json.dumps(self.get_post_parameters())
                 # the order of parameters saved in backend
-                opt[name].attrs['parameter_fit'] = self.par_manager.parameter_fit
+                opt[name].attrs["parameter_fit"] = self.par_manager.parameter_fit
                 # instructions
-                opt[name].attrs['instruct'] = json.dumps(self.instruct)
+                opt[name].attrs["instruct"] = json.dumps(self.instruct)
                 # configs
-                opt[name].attrs['config'] = json.dumps(self.config)
+                opt[name].attrs["config"] = json.dumps(self.config)
                 # configurations, maybe users will manually add some maps
-                opt[name].attrs['_cached_configs'] = json.dumps(_cached_configs)
+                opt[name].attrs["_cached_configs"] = json.dumps(_cached_configs)
 
-    def get_template(self,
-                     likelihood_name: str,
-                     component_name: str,
-                     batch_size: int = 1_000_000,
-                     seed: int = None):
-        """Get parameters correspondes to max posterior
+    def get_template(
+        self,
+        likelihood_name: str,
+        component_name: str,
+        batch_size: int = 1_000_000,
+        seed: Optional[int] = None,
+    ):
+        """Get parameters correspondes to max posterior.
 
-        :param likelihood_name: name of Likelihood
-        :param component_name: name of Component
-        :param batch_size: int of number of simulated events
-        :param seed: random seed
+        :param likelihood_name: name of Likelihood :param component_name: name of Component :param
+        batch_size: int of number of simulated events :param seed: random seed
+
         """
         parameters = self.get_post_parameters()
         key = randgen.get_key(seed=seed)
 
         key, result = self[likelihood_name][component_name].simulate(
             key,
-            batch_size, parameters,
+            batch_size,
+            parameters,
         )
         return result
 
@@ -327,36 +319,39 @@ class Context():
         provided = set(self.par_manager.get_all_parameter().keys())
         # We will not update unneeded parameters!
         if not provided.issubset(needed):
-            mes = f'Parameter manager should provide needed parameters only, '
-            mes += f'{provided - needed} not needed'
+            mes = (
+                f"Parameter manager should provide needed parameters only, "
+                f"{provided - needed} not needed."
+            )
             raise RuntimeError(mes)
 
     def update_url_base(self, url_base):
-        """Update url_base in appletree.share"""
-        print(f'Updated url_base to {url_base}')
-        set_global_config({'url_base': url_base})
+        """Update url_base in appletree.share."""
+        print(f"Updated url_base to {url_base}")
+        set_global_config({"url_base": url_base})
 
     def get_parameter_config(self, par_config):
-        """Get configuration for parameter manager
+        """Get configuration for parameter manager.
 
         :param par_config: str, parameters configuration file
+
         """
         par_config = load_json(par_config)
         return par_config
 
     def update_parameter_config(self, likelihoods):
-        needed_parameters = set()
+        needed_parameters: Set[str] = set()
         needed_rate_parameters = []
         from_parameters = []
         for likelihood in likelihoods.values():
-            for k, v in likelihood['copy_parameters'].items():
+            for k, v in likelihood["copy_parameters"].items():
                 # specify rate scale
                 # normalization factor, for AC & ER, etc.
                 self.par_config.update({k: self.par_config[v]})
                 from_parameters.append(v)
                 needed_parameters.add(k)
-            for k in likelihood['components'].keys():
-                needed_rate_parameters.append(k + '_rate')
+            for k in likelihood["components"].keys():
+                needed_rate_parameters.append(k + "_rate")
         for p in from_parameters:
             if p not in needed_rate_parameters and p in self.par_config:
                 # Drop unused parameters
@@ -364,22 +359,24 @@ class Context():
         return needed_parameters
 
     def set_instruct(self, instructs):
-        """Set instruction
+        """Set instruction.
 
         :param instructs: dict, instruction file name or dictionary
+
         """
-        if not hasattr(self, 'instruct'):
+        if not hasattr(self, "instruct"):
             self.instruct = dict()
 
         # update instructuration only in this Context
         self.instruct.update(instructs)
 
     def set_config(self, configs):
-        """Set new configuration options
+        """Set new configuration options.
 
         :param configs: dict, configuration file name or dictionary
+
         """
-        if not hasattr(self, 'config'):
+        if not hasattr(self, "config"):
             self.config = dict()
 
         # update configuration only in this Context
@@ -388,7 +385,7 @@ class Context():
         # also store required configurations to appletree.share
         set_global_config(configs)
 
-    def lineage(self, data_name: str = 'cs2'):
+    def lineage(self, data_name: str = "cs2"):
         """Return lineage of plugins."""
         assert isinstance(data_name, str)
         pass

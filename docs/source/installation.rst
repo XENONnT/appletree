@@ -38,9 +38,11 @@ Option 2: install from source code
     git clone https://github.com/XENONnT/appletree
     cd appletree
 
-To install the package and requirements in your environment, replace `pip install appletree[*]` to `python3 -m pip install .[*] --user` in the above `pip` commands.
+To install the package and requirements in your environment, replace `pip install appletree[*]`
+to `python3 -m pip install .[*] --user` in the above `pip` commands.
 
-To install appletree in editable mode, insert `--editable` argument after `install` in the above `pip install` or `python3 -m pip install` commands.
+To install appletree in editable mode, insert `--editable` argument after `install` in the above
+`pip install` or `python3 -m pip install` commands.
 
 For example, to install in your environment and in editable mode with CUDA Toolkit 12.1 support:
 

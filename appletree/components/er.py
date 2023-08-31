@@ -4,7 +4,7 @@ from appletree.component import ComponentSim
 
 
 class ERBand(ComponentSim):
-    norm_type = 'on_pdf'
+    norm_type = "on_pdf"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -18,7 +18,7 @@ class ERBand(ComponentSim):
 
 
 class ERPeak(ComponentSim):
-    norm_type = 'on_pdf'
+    norm_type = "on_pdf"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

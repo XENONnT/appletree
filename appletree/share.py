@@ -1,4 +1,5 @@
 import json
+from typing import Dict, Any, cast
 
 
 class RecordingDict(dict):
@@ -26,13 +27,14 @@ class RecordingDict(dict):
 
 
 _cached_configs = RecordingDict()
-_cached_functions = dict()
+_cached_functions = cast(Dict[str, Any], dict())
 
 
 def set_global_config(configs):
-    """Set new global configuration options
+    """Set new global configuration options.
 
     :param configs: dict, configuration file name or dictionary
+
     """
     from appletree.utils import get_file_path
 

@@ -1,5 +1,6 @@
 import inspect
 from copy import deepcopy
+from typing import List, Tuple, Optional
 
 from immutabledict import immutabledict
 
@@ -10,35 +11,33 @@ export, __all__ = exporter()
 
 
 @export
-class Plugin():
+class Plugin:
     """The smallest simulation unit."""
 
     # Do not initialize this class because it is base
     __is_base = True
 
     # the plugin's dependency(the arguments of `simulate`)
-    depends_on = []
+    depends_on: List[str] = []
 
     # the plugin can provide(`simulate` will return)
-    provides = []
+    provides: List[str] = []
 
     # relevant parameters, will be fitted in MCMC
-    parameters = ()
+    parameters: Tuple = ()
 
     # Set using the takes_config decorator
     takes_config = immutabledict()
 
-    def __init__(self, llh_name: str = None):
+    def __init__(self, llh_name: Optional[str] = None):
         """Initialization."""
         # llh_name will tell us which map to use
         self.llh_name = llh_name
         if not self.depends_on:
-            raise ValueError('depends_on not provided for '
-                             f'{self.__class__.__name__}')
+            raise ValueError("depends_on not provided for " f"{self.__class__.__name__}")
 
         if not self.provides:
-            raise ValueError('provides not provided for '
-                             f'{self.__class__.__name__}')
+            raise ValueError("provides not provided for " f"{self.__class__.__name__}")
 
         # configs are loaded when a plugin is initialized
         for config in self.takes_config.values():
@@ -51,7 +50,7 @@ class Plugin():
             setattr(self, config.name, deepcopy(config))
 
     def __call__(self, *args, **kwargs):
-        """Calls self.simulate"""
+        """Calls self.simulate."""
         return self.simulate(*args, **kwargs)
 
     def simulate(self, *args, **kwargs):
@@ -65,17 +64,19 @@ class Plugin():
             self.depends_on.
         :return: `key` and output simulated variables, ordered by self.provides. `key` will
             be updated if it's used inside self.simulate to generate random variables.
+
         """
         raise NotImplementedError
 
     def sanity_check(self):
-        """Check the consistency between `depends_on`, `provides` and in(out)put of `self.simulate`"""
+        """Check the consistency between `depends_on`, `provides` and in(out)put of
+        `self.simulate`"""
         arguments = inspect.getfullargspec(self.simulate)[0]
-        if arguments[1] != 'key':
+        if arguments[1] != "key":
             mesg = f"First argument of {self.__class__.__name__}"
             mesg += ".simulate should be 'key'."
             raise ValueError(mesg)
-        if arguments[2] != 'parameters':
+        if arguments[2] != "parameters":
             mesg = f"Second argument of {self.__class__.__name__}"
             mesg += ".simulate should be 'parameters'."
             raise ValueError(mesg)
@@ -83,18 +84,17 @@ class Plugin():
             if arguments[i] != depend:
                 mesg = f"{i}th argument of {self.__class__.__name__}"
                 mesg += f".simulate should be '{depend}'."
-                mesg += f'Plugin {self.__class__.__name__} is insane, check dependency!'
+                mesg += f"Plugin {self.__class__.__name__} is insane, check dependency!"
                 raise ValueError(mesg)
-
 
 
 @export
 def add_plugin_extensions(module1, module2, force=False):
-    """Add plugins of module2 to module1"""
+    """Add plugins of module2 to module1."""
     utils.add_extensions(module1, module2, Plugin, force=force)
 
 
 @export
 def _add_plugin_extension(module, plugin, force=False):
-    """Add plugin to module"""
+    """Add plugin to module."""
     utils._add_extension(module, plugin, Plugin, force=force)

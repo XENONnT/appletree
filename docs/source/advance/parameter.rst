@@ -5,8 +5,8 @@
 Parameters in appletree
 =======================
 
-In general, all parameters including fixed parameters and fit parameters are handled by `appletree.Parameter`,
-which has many useful attributes
+In general, all parameters including fixed parameters and fit
+parameters are handled by `appletree.Parameter`, which has many useful attributes
 
 .. autoclass:: appletree.Parameter
     :members:
@@ -37,9 +37,9 @@ For each `config_of_param`, it should be a dictionary containing the following i
 
 * **"prior_args"**: a dictionary like `{arg_name : arg_value}` which goes into prior.
 * **"allowed_range"**: a list like `[lower_boundary, upper_boundary]`, above which parameters
-  will be clipped and have `-np.inf` log prior.
-* **"init_mean"**: the gaussian mean as the initial guess of the MCMC walkers. The random initialzation of MCMC
-  will be clipped by "allowed_range".
+    will be clipped and have `-np.inf` log prior.
+* **"init_mean"**: the gaussian mean as the initial guess of the MCMC walkers.
+    The random initialzation of MCMC will be clipped by "allowed_range".
 * **"init_std"**: the gaussian std as the initial guess of the MCMC walkers.
 * **"unit"**: the unit of the parameter, only for documentation purpose.
 * **"doc"**: the addtional docstring for the parameter.
@@ -77,6 +77,7 @@ For example,
         },
     }
 
-All non-fixed parameters are called fit parameters in appletree, and will be the parameters that MCMC samples.
-`appletree.Plugin` needs a dictionary of parameters. With the `Parameter` class, it can be simply obtained by
-`Parameter.get_all_parameter()`.
+All non-fixed parameters are called fit parameters in appletree,
+and will be the parameters that MCMC samples.
+`appletree.Plugin` needs a dictionary of parameters. With the `Parameter` class,
+it can be simply obtained by `Parameter.get_all_parameter()`.

@@ -8,6 +8,7 @@ A high-Performance Program simuLatEs and fiTs REsponse of xEnon.
 [![PyPI version shields.io](https://img.shields.io/pypi/v/appletree.svg)](https://pypi.python.org/pypi/appletree/)
 [![Readthedocs Badge](https://readthedocs.org/projects/appletree/badge/?version=latest)](https://appletree.readthedocs.io/en/latest/?badge=latest)
 [![CodeFactor](https://www.codefactor.io/repository/github/xenonnt/appletree/badge)](https://www.codefactor.io/repository/github/xenonnt/appletree)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/XENONnT/appletree/master.svg)](https://results.pre-commit.ci/latest/github/XENONnT/appletree/master)
 
 ## Installation and Set-Up
 
@@ -54,7 +55,7 @@ Then you are now good to go!
 
 ## Usage
 
-The best way to start with the `appletree` package is to have a look at the tutorial `notebooks`. 
+The best way to start with the `appletree` package is to have a look at the tutorial `notebooks`.
 
 ## Contributing
 
