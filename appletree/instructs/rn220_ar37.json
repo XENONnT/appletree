@@ -1,7 +1,7 @@
 {
     "configs": {
-        "s1_lce":            "_s1_correction.json",
-        "s2_lce":            "_s2_correction.json",
+        "s1_correction":     "_s1_correction.json",
+        "s2_correction":     "_s2_correction.json",
         "elife":             "_elife.json",
         "posrec_reso":       "_posrec_reso.json",
         "s1_eff_3f":  [
