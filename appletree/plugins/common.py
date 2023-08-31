@@ -3,7 +3,6 @@ from functools import partial
 from jax import jit
 from jax import numpy as jnp
 
-import appletree
 from appletree import randgen
 from appletree.plugin import Plugin
 from appletree.config import takes_config, Constant, Map

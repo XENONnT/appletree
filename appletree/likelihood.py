@@ -59,7 +59,7 @@ class Likelihood:
     def set_binning(self, config):
         """Set binning of likelihood."""
         if self._bins_type == "meshgrid":
-            warning = f"The usage of meshgrid binning is highly discouraged."
+            warning = "The usage of meshgrid binning is highly discouraged."
             warn(warning)
             self.component_bins_type = "meshgrid"
             if isinstance(self._bins[0], int):
@@ -67,14 +67,14 @@ class Likelihood:
             else:
                 x_bins = jnp.array(self._bins[0])
                 if "x_clip" in config:
-                    warning = f"x_clip is ignored when bins_type is meshgrid and bins is not int"
+                    warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
                     warn(warning)
             if isinstance(self._bins[1], int):
                 y_bins = jnp.linspace(*config["y_clip"], self._bins[1] + 1)
             else:
                 y_bins = jnp.array(self._bins[1])
                 if "y_clip" in config:
-                    warning = f"y_clip is ignored when bins_type is meshgrid and bins is not int"
+                    warning = "y_clip is ignored when bins_type is meshgrid and bins is not int"
                     warn(warning)
             self._bins = (x_bins, y_bins)
             self.data_hist = make_hist_mesh_grid(
@@ -234,14 +234,14 @@ class Likelihood:
         """
         print("\n" + "-" * 40)
 
-        print(f"BINNING\n")
+        print("BINNING\n")
         print(f"{indent}bins_type: {self._bins_type}")
         print(f"{indent}bins_on: {self._bins_on}")
         if not short:
             print(f"{indent}bins: {self._bins}")
         print("\n" + "-" * 40)
 
-        print(f"DATA\n")
+        print("DATA\n")
         print(f"{indent}file_name: {self._data_file_name}")
         print(f"{indent}data_rate: {float(self.data_hist.sum())}")
         print("\n" + "-" * 40)
@@ -355,7 +355,7 @@ class LikelihoodLit(Likelihood):
         """
         if batch_size != 1:
             warning = (
-                f"You specified the batch_size larger than 1, "
+                "You specified the batch_size larger than 1, "
                 "but it should and will be changed to 1 in literature fitting!"
             )
             warn(warning)
@@ -376,12 +376,12 @@ class LikelihoodLit(Likelihood):
         """
         print("\n" + "-" * 40)
 
-        print(f"BINNING\n")
+        print("BINNING\n")
         print(f"{indent}variable_type: {self.variable_type}")
         print(f"{indent}variable: {self._bins_on}")
         print("\n" + "-" * 40)
 
-        print(f"LOGPDF\n")
+        print("LOGPDF\n")
         print(f"{indent}logpdf_args:")
         for k, v in self.logpdf_args.items():
             print(f"{indent*2}{k}: {v}")

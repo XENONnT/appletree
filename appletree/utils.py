@@ -1,5 +1,4 @@
 import os
-import re
 import json
 from warnings import warn
 import importlib_resources

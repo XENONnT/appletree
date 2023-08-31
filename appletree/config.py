@@ -21,7 +21,7 @@ export, __all__ = exporter()
 
 OMITTED = "<OMITTED>"
 
-__all__ += "OMITTED".split()
+__all__.extend(["OMITTED"])
 
 
 @export
@@ -118,10 +118,11 @@ class Constant(Config):
             try:
                 self.value = value[llh_name]
             except KeyError:
-                mesg = f"You specified {self.name} as a dictionary. "
-                mesg += f"The key of it should be the name of one "
-                mesg += f"of the likelihood, "
-                mesg += f"but it is {llh_name}."
+                mesg = (
+                    f"You specified {self.name} as a dictionary. "
+                    f"The key of it should be the name of one "
+                    f"of the likelihood, but it is {llh_name}."
+                )
                 raise ValueError(mesg)
         else:
             self.value = value
@@ -152,10 +153,11 @@ class Map(Config):
             try:
                 self.file_path = file_path[llh_name]
             except KeyError:
-                mesg = f"You specified {self.name} as a dictionary. "
-                mesg += f"The key of it should be the name of one "
-                mesg += f"of the likelihood, "
-                mesg += f"but it is {llh_name}."
+                mesg = (
+                    f"You specified {self.name} as a dictionary. "
+                    f"The key of it should be the name of one "
+                    f"of the likelihood, but it is {llh_name}."
+                )
                 raise ValueError(mesg)
         else:
             self.file_path = file_path
@@ -296,10 +298,11 @@ class SigmaMap(Config):
             try:
                 self._configs = _configs[llh_name]
             except KeyError:
-                mesg = f"You specified {self.name} as a dictionary. "
-                mesg += f"The key of it should be the name of one "
-                mesg += f"of the likelihood, "
-                mesg += f"but it is {llh_name}."
+                mesg = (
+                    f"You specified {self.name} as a dictionary. "
+                    f"The key of it should be the name of one "
+                    f"of the likelihood, but it is {llh_name}."
+                )
                 raise ValueError(mesg)
         else:
             self._configs = _configs
@@ -370,10 +373,11 @@ class ConstantSet(Config):
             try:
                 self.value = value[llh_name]
             except KeyError:
-                mesg = f"You specified {self.name} as a dictionary. "
-                mesg += f"The key of it should be the name of one "
-                mesg += f"of the likelihood, "
-                mesg += f"but it is {llh_name}."
+                mesg = (
+                    f"You specified {self.name} as a dictionary. "
+                    f"The key of it should be the name of one "
+                    f"of the likelihood, but it is {llh_name}."
+                )
                 raise ValueError(mesg)
         else:
             self.value = value

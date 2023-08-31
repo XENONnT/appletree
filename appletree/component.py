@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 from jax import numpy as jnp
 
-import appletree
 from appletree import utils
 from appletree.config import OMITTED
 from appletree.plugin import Plugin
@@ -196,13 +195,15 @@ class ComponentSim(Component):
                     if items.default == new_items.default:
                         continue
                     else:
-                        mes = f"Two plugins have a different file name"
-                        mes += f" for the same config. The config"
-                        mes += f' "{new_config}" in "{plugin.__name__}" takes'
-                        mes += f' the file name as "{new_items.default}"  while in'
-                        mes += f' "{plugin_class.__name__}" the file name'
-                        mes += f' is set to "{items.default}". Please change'
-                        mes += f" one of the file names."
+                        mes = (
+                            f"Two plugins have a different file name "
+                            f"for the same config. The config "
+                            f"'{new_config}' in '{plugin.__name__}' takes "
+                            f"the file name as '{new_items.default}'  while in "
+                            f"'{plugin_class.__name__}' the file name "
+                            f"is set to '{items.default}'. Please change "
+                            f"one of the file names."
+                        )
                         raise ValueError(mes)
 
     def register_all(self, module):

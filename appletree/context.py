@@ -319,8 +319,10 @@ class Context:
         provided = set(self.par_manager.get_all_parameter().keys())
         # We will not update unneeded parameters!
         if not provided.issubset(needed):
-            mes = f"Parameter manager should provide needed parameters only, "
-            mes += f"{provided - needed} not needed"
+            mes = (
+                f"Parameter manager should provide needed parameters only, "
+                f"{provided - needed} not needed."
+            )
             raise RuntimeError(mes)
 
     def update_url_base(self, url_base):

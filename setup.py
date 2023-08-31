@@ -35,11 +35,11 @@ setuptools.setup(
             "jax[cpu]",
         ],
         "cuda112": [
-            # pip install appletree[cuda112] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+            # pip install appletree[cuda112] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html  # noqa: E501
             "jax[cuda]==0.3.15",
         ],
         "cuda121": [
-            # pip install appletree[cuda121] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+            # pip install appletree[cuda121] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html  # noqa: E501
             # according to this commit, jax[cuda12_pip]==0.4.10 is valid for CUDA Toolkit 12.1
             "jax[cuda12_pip]",
         ],
