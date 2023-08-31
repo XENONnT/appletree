@@ -54,7 +54,7 @@ Then you are now good to go!
 
 ## Usage
 
-The best way to start with the `appletree` package is to have a look at the tutorial `notebooks`. 
+The best way to start with the `appletree` package is to have a look at the tutorial `notebooks`.
 
 ## Contributing
 

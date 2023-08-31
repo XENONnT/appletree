@@ -14,18 +14,22 @@ export, __all__ = exporter()
 
 @export
 @appletree.takes_config(
-    Constant(name='lower_energy',
+    Constant(
+        name="lower_energy",
         type=float,
         default=0.01,
-        help='Energy lower limit simulated in uniformly distribution'),
-    Constant(name='upper_energy',
+        help="Energy lower limit simulated in uniformly distribution",
+    ),
+    Constant(
+        name="upper_energy",
         type=float,
-        default=20.,
-        help='Energy upper limit simulated in uniformly distribution'),
+        default=20.0,
+        help="Energy upper limit simulated in uniformly distribution",
+    ),
 )
 class UniformEnergySpectra(Plugin):
-    depends_on = ['batch_size']
-    provides = ['energy']
+    depends_on = ["batch_size"]
+    provides = ["energy"]
 
     @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
@@ -33,38 +37,33 @@ class UniformEnergySpectra(Plugin):
             key,
             self.lower_energy.value,
             self.upper_energy.value,
-            shape=(batch_size, ),
+            shape=(batch_size,),
         )
         return key, energy
 
 
 @export
 @appletree.takes_config(
-    Map(name='energy_spectrum',
-        default='_nr_spectrum.json',
-        help='Recoil energy spectrum'),
+    Map(name="energy_spectrum", default="_nr_spectrum.json", help="Recoil energy spectrum"),
 )
 class FixedEnergySpectra(Plugin):
-    depends_on = ['batch_size']
-    provides = ['energy']
+    depends_on = ["batch_size"]
+    provides = ["energy"]
 
     @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
-        key, p = randgen.uniform(key, 0, 1., shape=(batch_size, ))
+        key, p = randgen.uniform(key, 0, 1.0, shape=(batch_size,))
         energy = self.energy_spectrum.apply(p)
         return key, energy
 
 
 @export
 @appletree.takes_config(
-    Constant(name='mono_energy',
-        type=float,
-        default=2.82,
-        help='Mono energy delta function'),
+    Constant(name="mono_energy", type=float, default=2.82, help="Mono energy delta function"),
 )
 class MonoEnergySpectra(Plugin):
-    depends_on = ['batch_size']
-    provides = ['energy']
+    depends_on = ["batch_size"]
+    provides = ["energy"]
 
     # default energy is Ar37 K shell
 
@@ -76,28 +75,34 @@ class MonoEnergySpectra(Plugin):
 
 @export
 @appletree.takes_config(
-    Constant(name='z_min',
+    Constant(
+        name="z_min",
         type=float,
         default=-133.97,
-        help='Z lower limit simulated in uniformly distribution'),
-    Constant(name='z_max',
+        help="Z lower limit simulated in uniformly distribution",
+    ),
+    Constant(
+        name="z_max",
         type=float,
         default=-13.35,
-        help='Z upper limit simulated in uniformly distribution'),
-    Constant(name='r_max',
+        help="Z upper limit simulated in uniformly distribution",
+    ),
+    Constant(
+        name="r_max",
         type=float,
-        default=60.,
-        help='Radius upper limit simulated in uniformly distribution'),
+        default=60.0,
+        help="Radius upper limit simulated in uniformly distribution",
+    ),
 )
 class PositionSpectra(Plugin):
-    depends_on = ['batch_size']
-    provides = ['x', 'y', 'z']
+    depends_on = ["batch_size"]
+    provides = ["x", "y", "z"]
 
     @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
-        key, z = randgen.uniform(key, self.z_min.value, self.z_max.value, shape=(batch_size, ))
-        key, r2 = randgen.uniform(key, 0, self.r_max.value**2, shape=(batch_size, ))
-        key, theta = randgen.uniform(key, 0, 2*jnp.pi, shape=(batch_size, ))
+        key, z = randgen.uniform(key, self.z_min.value, self.z_max.value, shape=(batch_size,))
+        key, r2 = randgen.uniform(key, 0, self.r_max.value**2, shape=(batch_size,))
+        key, theta = randgen.uniform(key, 0, 2 * jnp.pi, shape=(batch_size,))
 
         r = jnp.sqrt(r2)
         x = r * jnp.cos(theta)

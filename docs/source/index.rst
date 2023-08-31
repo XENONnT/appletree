@@ -4,8 +4,8 @@ Appletree
 Github page: https://github.com/XENONnT/appletree
 
 Appletree stands for "a high-performance program simulates and fits response of xenon".
-It's a software framework of fitting response of liquid xenon detector, based on 
-`jax <https://jax.readthedocs.io/en/latest/>`_ and affine invariant MCMC ensemble sampler 
+It's a software framework of fitting response of liquid xenon detector, based on
+`jax <https://jax.readthedocs.io/en/latest/>`_ and affine invariant MCMC ensemble sampler
 using `emcee <https://emcee.readthedocs.io/en/stable/>`_.
 
 .. toctree::

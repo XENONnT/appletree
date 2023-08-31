@@ -17,19 +17,16 @@ export, __all__ = exporter()
 
 @export
 class Component:
-    """Base class of component"""
+    """Base class of component."""
 
     # Do not initialize this class because it is base
     __is_base = True
 
-    rate_name: str = ''
-    norm_type: str = ''
+    rate_name: str = ""
+    norm_type: str = ""
     add_eps_to_hist: bool = True
 
-    def __init__(self,
-                 name: str = None,
-                 llh_name: str = None,
-                 **kwargs):
+    def __init__(self, name: str = None, llh_name: str = None, **kwargs):
         """Initialization.
 
         :param bins: bins to generate the histogram.
@@ -37,33 +34,34 @@ class Component:
           * For irreg bins_type, bins must be bin edges of the two dimensions.
           * For meshgrid bins_type, bins are sent to jnp.histogramdd.
         :param bins_type: binning scheme, can be either irreg or meshgrid.
+
         """
         if name is None:
             self.name = self.__class__.__name__
         else:
             self.name = name
         if llh_name is None:
-            self.llh_name = self.__class__.__name__ + '_llh'
+            self.llh_name = self.__class__.__name__ + "_llh"
         else:
             self.llh_name = llh_name
         self.needed_parameters = set()
 
-        if 'bins' in kwargs.keys() and 'bins_type' in kwargs.keys():
+        if "bins" in kwargs.keys() and "bins_type" in kwargs.keys():
             self.set_binning(**kwargs)
 
     def set_binning(self, **kwargs):
-        """Set binning of component"""
-        if 'bins' not in kwargs.keys() or 'bins_type' not in kwargs.keys():
-            raise ValueError('bins and bins_type must be set!')
-        self.bins = kwargs.get('bins')
-        self.bins_type = kwargs.get('bins_type')
+        """Set binning of component."""
+        if "bins" not in kwargs.keys() or "bins_type" not in kwargs.keys():
+            raise ValueError("bins and bins_type must be set!")
+        self.bins = kwargs.get("bins")
+        self.bins_type = kwargs.get("bins_type")
 
-        if self.bins_type == 'meshgrid':
-            warning = 'The usage of meshgrid binning is highly discouraged.'
+        if self.bins_type == "meshgrid":
+            warning = "The usage of meshgrid binning is highly discouraged."
             warn(warning)
 
     def _clip(self, result: list):
-        """Clip simulated result"""
+        """Clip simulated result."""
         mask = np.ones(len(result[-1]), dtype=bool)
         for i in range(len(result) - 1):
             mask &= result[i] > np.array(self.bins[i]).min()
@@ -74,16 +72,14 @@ class Component:
 
     @property
     def _use_mcinput(self):
-        return 'Bootstrap' in self._plugin_class_registry['energy'].__name__
+        return "Bootstrap" in self._plugin_class_registry["energy"].__name__
 
     def simulate_hist(self, *args, **kwargs):
         """Hook for simulation with histogram output."""
         raise NotImplementedError
 
     def multiple_simulations(self, key, batch_size, parameters, times):
-        """Simulate many times and
-        move results to CPU because the memory limit of GPU
-        """
+        """Simulate many times and move results to CPU because the memory limit of GPU."""
         results_pile = []
         for _ in range(times):
             key, results = self.simulate(key, batch_size, parameters)
@@ -91,19 +87,21 @@ class Component:
         return key, np.hstack(results_pile)
 
     def multiple_simulations_compile(self, key, batch_size, parameters, times):
-        """Simulate many times after new compilation and
-        move results to CPU because the memory limit of GPU
-        """
+        """Simulate many times after new compilation and move results to CPU because the memory
+        limit of GPU."""
         results_pile = []
         for _ in range(times):
-            if _cached_configs['g4'] and self._use_mcinput:
-                if isinstance(_cached_configs['g4'], dict):
-                    g4_file_name = _cached_configs['g4'][self.llh_name][0]
-                    _cached_configs['g4'][self.llh_name] = [
-                        g4_file_name, batch_size, key.sum().item()]
+            if _cached_configs["g4"] and self._use_mcinput:
+                if isinstance(_cached_configs["g4"], dict):
+                    g4_file_name = _cached_configs["g4"][self.llh_name][0]
+                    _cached_configs["g4"][self.llh_name] = [
+                        g4_file_name,
+                        batch_size,
+                        key.sum().item(),
+                    ]
                 else:
-                    g4_file_name = _cached_configs['g4'][0]
-                    _cached_configs['g4'] = [g4_file_name, batch_size, key.sum().item()]
+                    g4_file_name = _cached_configs["g4"][0]
+                    _cached_configs["g4"] = [g4_file_name, batch_size, key.sum().item()]
             self.compile()
             key, results = self.multiple_simulations(key, batch_size, parameters, 1)
             results_pile.append(results)
@@ -112,34 +110,37 @@ class Component:
     def implement_binning(self, mc, eff):
         """Apply binning to MC data.
 
-        :param mc: data from simulation.
-        :param eff: efficiency of each event, as the weight when making a histogram.
+        :param mc: data from simulation. :param eff: efficiency of each event, as the weight when
+        making a histogram.
+
         """
-        if self.bins_type == 'irreg':
+        if self.bins_type == "irreg":
             hist = make_hist_irreg_bin_2d(mc, *self.bins, weights=eff)
-        elif self.bins_type == 'meshgrid':
+        elif self.bins_type == "meshgrid":
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
         else:
-            raise ValueError(f'Unsupported bins_type {self.bins_type}!')
+            raise ValueError(f"Unsupported bins_type {self.bins_type}!")
         if self.add_eps_to_hist:
             # as an uncertainty to prevent blowing up
-            hist = jnp.clip(hist, 1., jnp.inf)
+            hist = jnp.clip(hist, 1.0, jnp.inf)
         return hist
 
     def get_normalization(self, hist, parameters, batch_size=None):
         """Return the normalization factor of the histogram."""
-        if self.norm_type == 'on_pdf':
+        if self.norm_type == "on_pdf":
             normalization_factor = 1 / jnp.sum(hist) * parameters[self.rate_name]
-        elif self.norm_type == 'on_sim':
+        elif self.norm_type == "on_sim":
             if self._use_mcinput:
-                bootstrap_name = self._plugin_class_registry['energy'].__name__
-                bootstrap_name = bootstrap_name + '_' + self.name
-                n_events_selected = _cached_functions[self.llh_name][bootstrap_name].g4.n_events_selected
+                bootstrap_name = self._plugin_class_registry["energy"].__name__
+                bootstrap_name = bootstrap_name + "_" + self.name
+                n_events_selected = _cached_functions[self.llh_name][
+                    bootstrap_name
+                ].g4.n_events_selected
                 normalization_factor = 1 / n_events_selected * parameters[self.rate_name]
             else:
                 normalization_factor = 1 / batch_size * parameters[self.rate_name]
         else:
-            raise ValueError(f'Unsupported norm_type {self.norm_type}!')
+            raise ValueError(f"Unsupported norm_type {self.norm_type}!")
         return normalization_factor
 
     def deduce(self, *args, **kwargs):
@@ -161,9 +162,8 @@ class ComponentSim(Component):
     code: str = None
     old_code: str = None
 
-    def __init__(self,
-                 *args, **kwargs):
-        """Initialization"""
+    def __init__(self, *args, **kwargs):
+        """Initialization."""
         super().__init__(*args, **kwargs)
         self._plugin_class_registry = dict()
 
@@ -184,7 +184,6 @@ class ComponentSim(Component):
 
         already_seen = []
         for plugin in self._plugin_class_registry.values():
-
             if plugin in already_seen:
                 continue
             already_seen.append(plugin)
@@ -198,18 +197,20 @@ class ComponentSim(Component):
                     if items.default == new_items.default:
                         continue
                     else:
-                        mes = f'Two plugins have a different file name'
-                        mes += f' for the same config. The config'
+                        mes = f"Two plugins have a different file name"
+                        mes += f" for the same config. The config"
                         mes += f' "{new_config}" in "{plugin.__name__}" takes'
                         mes += f' the file name as "{new_items.default}"  while in'
                         mes += f' "{plugin_class.__name__}" the file name'
                         mes += f' is set to "{items.default}". Please change'
-                        mes += f' one of the file names.'
+                        mes += f" one of the file names."
                         raise ValueError(mes)
 
     def register_all(self, module):
         """Register all plugins defined in module.
+
         Can pass a list/tuple of modules to register all in each.
+
         """
         if isinstance(module, (tuple, list)):
             # Shortcut for multiple registration
@@ -224,15 +225,17 @@ class ComponentSim(Component):
             if issubclass(x, Plugin):
                 self.register(x)
 
-    def dependencies_deduce(self,
-                            data_names: list = ('cs1', 'cs2', 'eff'),
-                            dependencies: list = None,
-                            nodep_data_name: str = 'batch_size') -> list:
+    def dependencies_deduce(
+        self,
+        data_names: list = ("cs1", "cs2", "eff"),
+        dependencies: list = None,
+        nodep_data_name: str = "batch_size",
+    ) -> list:
         """Deduce dependencies.
 
-        :param data_names: data names that simulation will output.
-        :param dependencies: dependency tree.
-        :param nodep_data_name: data_name without dependency will not be deduced
+        :param data_names: data names that simulation will output. :param dependencies: dependency
+        tree. :param nodep_data_name: data_name without dependency will not be deduced
+
         """
         if dependencies is None:
             dependencies = []
@@ -242,13 +245,15 @@ class ComponentSim(Component):
             if data_name == nodep_data_name:
                 continue
             try:
-                dependencies.append({
-                    'plugin': self._plugin_class_registry[data_name],
-                    'provides': data_name,
-                    'depends_on': self._plugin_class_registry[data_name].depends_on,
-                })
+                dependencies.append(
+                    {
+                        "plugin": self._plugin_class_registry[data_name],
+                        "provides": data_name,
+                        "depends_on": self._plugin_class_registry[data_name].depends_on,
+                    }
+                )
             except KeyError:
-                raise ValueError(f'Can not find dependency for {data_name}')
+                raise ValueError(f"Can not find dependency for {data_name}")
 
         for data_name in data_names:
             # `batch_size` has no dependency
@@ -268,63 +273,65 @@ class ComponentSim(Component):
         self.worksheet = []
         self.needed_parameters.add(self.rate_name)
         for plugin in dependencies[::-1]:
-            plugin = plugin['plugin']
+            plugin = plugin["plugin"]
             if plugin.__name__ in already_seen:
                 continue
             self.worksheet.append([plugin.__name__, plugin.provides, plugin.depends_on])
             already_seen.append(plugin.__name__)
             self.needed_parameters |= set(plugin.parameters)
 
-    def flush_source_code(self,
-                          data_names: list = ['cs1', 'cs2', 'eff'],
-                          func_name: str = 'simulate',
-                          nodep_data_name: str = 'batch_size'):
+    def flush_source_code(
+        self,
+        data_names: list = ["cs1", "cs2", "eff"],
+        func_name: str = "simulate",
+        nodep_data_name: str = "batch_size",
+    ):
         """Infer the simulation code from the dependency tree."""
         self.func_name = func_name
 
         if not isinstance(data_names, (list, str)):
-            raise RuntimeError(f'data_names must be list or str, but given {type(data_names)}')
+            raise RuntimeError(f"data_names must be list or str, but given {type(data_names)}")
         if isinstance(data_names, str):
             data_names = [data_names]
 
-        code = ''
-        indent = ' ' * 4
+        code = ""
+        indent = " " * 4
 
-        code += 'from functools import partial\n'
-        code += 'from jax import jit\n'
+        code += "from functools import partial\n"
+        code += "from jax import jit\n"
 
         # import needed plugins
         for work in self.worksheet:
             plugin = work[0]
-            code += f'from appletree.plugins import {plugin}\n'
+            code += f"from appletree.plugins import {plugin}\n"
 
         # initialize new instances
         for work in self.worksheet:
             plugin = work[0]
-            instance = plugin + '_' + self.name
+            instance = plugin + "_" + self.name
             code += f"{instance} = {plugin}('{self.llh_name}')\n"
 
         # define functions
-        code += '\n'
-        if nodep_data_name == 'batch_size':
-            code += '@partial(jit, static_argnums=(1, ))\n'
+        code += "\n"
+        if nodep_data_name == "batch_size":
+            code += "@partial(jit, static_argnums=(1, ))\n"
         else:
-            code += '@jit\n'
-        code += f'def {func_name}(key, {nodep_data_name}, parameters):\n'
+            code += "@jit\n"
+        code += f"def {func_name}(key, {nodep_data_name}, parameters):\n"
 
         for work in self.worksheet:
-            provides = 'key, ' + ', '.join(work[1])
-            depends_on = ', '.join(work[2])
-            instance = work[0] + '_' + self.name
-            code += f'{indent}{provides} = {instance}(key, parameters, {depends_on})\n'
-        output = 'key, ' + '[' + ', '.join(data_names) + ']'
-        code += f'{indent}return {output}\n'
+            provides = "key, " + ", ".join(work[1])
+            depends_on = ", ".join(work[2])
+            instance = work[0] + "_" + self.name
+            code += f"{indent}{provides} = {instance}(key, parameters, {depends_on})\n"
+        output = "key, " + "[" + ", ".join(data_names) + "]"
+        code += f"{indent}return {output}\n"
 
         self.code = code
 
         if func_name in _cached_functions[self.llh_name].keys():
-            warning = f'Function name {func_name} is already cached. '
-            warning += 'Running compile() will overwrite it.'
+            warning = f"Function name {func_name} is already cached. "
+            warning += "Running compile() will overwrite it."
             warn(warning)
 
     @property
@@ -339,26 +346,29 @@ class ComponentSim(Component):
             _cached_functions[self.llh_name] = dict()
         self._compile = partial(exec, self.code, _cached_functions[self.llh_name])
 
-    def deduce(self,
-               data_names: list = ('cs1', 'cs2'),
-               func_name: str = 'simulate',
-               nodep_data_name: str = 'batch_size',
-               force_no_eff: bool = False):
+    def deduce(
+        self,
+        data_names: list = ("cs1", "cs2"),
+        func_name: str = "simulate",
+        nodep_data_name: str = "batch_size",
+        force_no_eff: bool = False,
+    ):
         """Deduce workflow and code.
 
-        :param data_names: data names that simulation will output.
-        :param func_name: name of the simulation function, used to cache it.
-        :param nodep_data_name: data_name without dependency will not be deduced
-        :param force_no_eff: force to ignore the efficiency, used in yield prediction
+        :param data_names: data names that simulation will output. :param func_name: name of the
+        simulation function, used to cache it. :param nodep_data_name: data_name without dependency
+        will not be deduced :param force_no_eff: force to ignore the efficiency, used in yield
+        prediction
+
         """
         if not isinstance(data_names, (list, tuple)):
-            raise ValueError(f'Unsupported data_names type {type(data_names)}!')
+            raise ValueError(f"Unsupported data_names type {type(data_names)}!")
         # make sure that 'eff' is the last data_name
-        if 'eff' in data_names:
+        if "eff" in data_names:
             data_names = list(data_names)
-            data_names.remove('eff')
+            data_names.remove("eff")
         if not force_no_eff:
-            data_names = list(data_names) + ['eff']
+            data_names = list(data_names) + ["eff"]
 
         dependencies = self.dependencies_deduce(data_names, nodep_data_name=nodep_data_name)
         self.dependencies_simplify(dependencies)
@@ -369,15 +379,13 @@ class ComponentSim(Component):
         self._compile()
         self.simulate = _cached_functions[self.llh_name][self.func_name]
 
-    def simulate_hist(self,
-                      key,
-                      batch_size,
-                      parameters):
+    def simulate_hist(self, key, batch_size, parameters):
         """Simulate and return histogram.
 
-        :param key: key used for pseudorandom generator.
-        :param batch_size: number of events to be simulated.
-        :param parameters: a dictionary that contains all parameters needed in simulation.
+        :param key: key used for pseudorandom generator. :param batch_size: number of events to be
+        simulated. :param parameters: a dictionary that contains all parameters needed in
+        simulation.
+
         """
         key, result = self.simulate(key, batch_size, parameters)
         mc = result[:-1]
@@ -391,10 +399,7 @@ class ComponentSim(Component):
 
         return key, hist
 
-    def simulate_weighted_data(self,
-                              key,
-                              batch_size,
-                              parameters):
+    def simulate_weighted_data(self, key, batch_size, parameters):
         """Simulate and return histogram."""
         key, result = self.simulate(key, batch_size, parameters)
         # Move data to CPU
@@ -404,7 +409,9 @@ class ComponentSim(Component):
         mc = result[:-1]
         assert len(mc) == len(self.bins), "Length of bins must be the same as length of bins_on!"
         mc = jnp.asarray(mc).T
-        eff = jnp.asarray(result[-1])  # we guarantee that the last output is efficiency in self.deduce
+        eff = jnp.asarray(
+            result[-1]
+        )  # we guarantee that the last output is efficiency in self.deduce
 
         hist = self.implement_binning(mc, eff)
         normalization_factor = self.get_normalization(hist, parameters, batch_size)
@@ -414,36 +421,37 @@ class ComponentSim(Component):
 
     def save_code(self, file_path):
         """Save the code to file."""
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             f.write(self.code)
 
-    def lineage(self, data_name: str = 'cs2'):
+    def lineage(self, data_name: str = "cs2"):
         """Return lineage of plugins."""
         assert isinstance(data_name, str)
         pass
 
     def set_config(self, configs):
-        """Set new global configuration options
+        """Set new global configuration options.
 
         :param configs: dict, configuration file name or dictionary
+
         """
         set_global_config(configs)
 
-    def show_config(self, data_names: list = ('cs1', 'cs2', 'eff')):
-        """
-        Return configuration options that affect data_names.
+    def show_config(self, data_names: list = ("cs1", "cs2", "eff")):
+        """Return configuration options that affect data_names.
 
         :param data_names: Data type name
+
         """
         dependencies = self.dependencies_deduce(
             data_names,
-            nodep_data_name='batch_size',
+            nodep_data_name="batch_size",
         )
         r = []
         seen = []
 
         for dep in dependencies:
-            p = dep['plugin']
+            p = dep["plugin"]
             # Track plugins we already saw, so options from
             # multi-output plugins don't come up several times
             if p in seen:
@@ -458,12 +466,15 @@ class ComponentSim(Component):
                 current = _cached_configs.get(config.name, None)
                 if isinstance(current, dict):
                     current = current[self.llh_name]
-                r.append(dict(
-                    option=config.name,
-                    default=default,
-                    current=current,
-                    applies_to=p.provides,
-                    help=config.help))
+                r.append(
+                    dict(
+                        option=config.name,
+                        default=default,
+                        current=current,
+                        applies_to=p.provides,
+                        help=config.help,
+                    )
+                )
         if len(r):
             df = pd.DataFrame(r, columns=r[0].keys())
         else:
@@ -474,23 +485,20 @@ class ComponentSim(Component):
         return df
 
     def new_component(self, llh_name: str = None, pass_binning: bool = True):
-        """
-        Generate new component with same binning,
-        usually used on predicting yields
-        """
+        """Generate new component with same binning, usually used on predicting yields."""
         if pass_binning:
-            if hasattr(self, 'bins') and hasattr(self, 'bins_type'):
+            if hasattr(self, "bins") and hasattr(self, "bins_type"):
                 component = self.__class__(
-                    name=self.name + '_copy',
+                    name=self.name + "_copy",
                     llh_name=llh_name,
                     bins=self.bins,
                     bins_type=self.bins,
                 )
             else:
-                raise ValueError('Should provide bins and bins_type if you want to pass binning!')
+                raise ValueError("Should provide bins and bins_type if you want to pass binning!")
         else:
             component = self.__class__(
-                name=self.name + '_copy',
+                name=self.name + "_copy",
                 llh_name=llh_name,
             )
         return component
@@ -503,17 +511,15 @@ class ComponentFixed(Component):
     # Do not initialize this class because it is base
     __is_base = True
 
-    def __init__(self,
-                 *args, **kwargs):
-        """Initialization"""
-        if not kwargs.get('file_name', None):
-            raise ValueError('Should provide file_name for ComponentFixed!')
+    def __init__(self, *args, **kwargs):
+        """Initialization."""
+        if not kwargs.get("file_name", None):
+            raise ValueError("Should provide file_name for ComponentFixed!")
         else:
-            self._file_name = kwargs.get('file_name', None)
+            self._file_name = kwargs.get("file_name", None)
         super().__init__(*args, **kwargs)
 
-    def deduce(self,
-               data_names: list = ('cs1', 'cs2')):
+    def deduce(self, data_names: list = ("cs1", "cs2")):
         """Deduce the needed parameters and make the fixed histogram."""
         self.data = load_data(self._file_name)[list(data_names)].to_numpy()
         self.eff = jnp.ones(len(self.data))
@@ -524,16 +530,12 @@ class ComponentFixed(Component):
         """Fixed component does not need to simulate."""
         raise NotImplementedError
 
-    def simulate_hist(self,
-                      parameters,
-                      *args, **kwargs):
+    def simulate_hist(self, parameters, *args, **kwargs):
         """Return the fixed histogram."""
         normalization_factor = self.get_normalization(self.hist, parameters, len(self.data))
         return self.hist * normalization_factor
 
-    def simulate_weighted_data(self,
-                              parameters,
-                              *args, **kwargs):
+    def simulate_weighted_data(self, parameters, *args, **kwargs):
         """Simulate and return histogram."""
         result = [r for r in self.data.T]
         result.append(np.array(self.eff))
@@ -547,11 +549,11 @@ class ComponentFixed(Component):
 
 @export
 def add_component_extensions(module1, module2, force=False):
-    """Add components of module2 to module1"""
+    """Add components of module2 to module1."""
     utils.add_extensions(module1, module2, Component, force=force)
 
 
 @export
 def _add_component_extension(module, component, force=False):
-    """Add component to module"""
+    """Add component to module."""
     utils._add_extension(module, component, Component, force=force)

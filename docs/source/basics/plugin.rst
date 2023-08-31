@@ -3,7 +3,7 @@
 Plugin
 ======
 
-Plugin is the smallest simulation unit in appletree. All plugins must inherit from the `appletree.Plugin`. 
+Plugin is the smallest simulation unit in appletree. All plugins must inherit from the `appletree.Plugin`.
 
 .. autoclass:: appletree.Plugin
     :members:

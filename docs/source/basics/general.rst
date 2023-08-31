@@ -4,8 +4,8 @@ How to think in appletree
 =========================
 
 To understand the structure of appletree, it's always helpful to keep an exemplar problem in mind.
-Think about that we wanna do a combined fitting, where multiple sets of calibration data need to 
-be fit simultaneously. We have some model, i.e. parametrization of the physics and detector responses, 
+Think about that we wanna do a combined fitting, where multiple sets of calibration data need to
+be fit simultaneously. We have some model, i.e. parametrization of the physics and detector responses,
 and we have some prior knowledge on the parameters, but we do not know how much the calibration data
 favors the parametrization as well as the prior knowledge. Appletree solves this kind of problem in a
 Bayesian way, as shown in the following plot
@@ -21,7 +21,7 @@ point estimator on the parameters as the "best-fit".
 
 The idea of appletree is quite simple, but there are several things need special attention. First, the
 model is usually very hard to express in an analytical form, thus the model is usually realized by doing
-simulations. Second, models can be different to describe different calibration data, e.g. ER model 
+simulations. Second, models can be different to describe different calibration data, e.g. ER model
 and NR model etc. Last, the dataset is usually not pure, meaning that it's consist of events from different
 mechanism, which could be AC, wall events.
 

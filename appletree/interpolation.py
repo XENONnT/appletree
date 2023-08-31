@@ -15,9 +15,9 @@ FLOAT_POS_MAX = jnp.finfo(jnp.float32).max
 def _L2_dist2(pos1, pos2):
     """Calculate L2 distance between pos1 and pos2.
 
-    :param pos1: array with shape (N, D)
-    :param pos2: array with shape (M, D)
-    :return: L2 distance squared with shape (N, M)
+    :param pos1: array with shape (N, D) :param pos2: array with shape (M, D) :return: L2 distance
+    squared with shape (N, M)
+
     """
     dr = jnp.expand_dims(pos1, axis=1) - jnp.expand_dims(pos2, axis=0)
     return jnp.sum(dr * dr, axis=-1)
@@ -28,11 +28,11 @@ def _L2_dist2(pos1, pos2):
 def map_interpolator_knn(pos, ref_pos, ref_val, k=3):
     """Inverse distance weighting average as interpolation using KNN.
 
-    :param pos: array with shape (N, D), as the points to be interpolated.
-    :param ref_pos: array with shape (M, D), as the reference points.
-    :param ref_val: array with shape (M, ), as the reference values.
-    :return: interpolated values with shape (N, ), weighted by the inverse of
-    the distance to k nearest neighbors.
+    :param pos: array with shape (N, D), as the points to be interpolated. :param ref_pos: array
+    with shape (M, D), as the reference points. :param ref_val: array with shape (M, ), as the
+    reference values. :return: interpolated values with shape (N, ), weighted by the inverse of the
+    distance to k nearest neighbors.
+
     """
     pos = jnp.asarray(pos)
     ref_pos = jnp.asarray(ref_pos)
@@ -40,7 +40,7 @@ def map_interpolator_knn(pos, ref_pos, ref_val, k=3):
 
     dr2 = -_L2_dist2(pos, ref_pos)
     dr2, ind = lax.top_k(dr2, k)
-    weights = 1.0 / jnp.clip(jnp.sqrt(-dr2), 1e-6, float('inf'))
+    weights = 1.0 / jnp.clip(jnp.sqrt(-dr2), 1e-6, float("inf"))
     val = jnp.take(ref_val, ind)
     val = jnp.sum(val * weights, axis=1) / jnp.sum(weights, axis=1)
 
@@ -52,17 +52,17 @@ def map_interpolator_knn(pos, ref_pos, ref_val, k=3):
 def curve_interpolator(pos, ref_pos, ref_val):
     """Inverse distance weighting average as interpolation using KNN (K=2) for 1D map.
 
-    :param pos: array with shape (N, ), as the points to be interpolated.
-    :param ref_pos: array with shape (M, ), as the reference points.
-    :param ref_val: array with shape (M, ), as the reference values.
-    :return: interpolated values with shape (N, ), weighted by the inverse of
-        the distance to k nearest neighbors.
+    :param pos: array with shape (N, ), as the points to be interpolated. :param ref_pos: array with
+    shape (M, ), as the reference points. :param ref_val: array with shape (M, ), as the reference
+    values. :return: interpolated values with shape (N, ), weighted by the inverse of     the
+    distance to k nearest neighbors.
+
     """
     right = jnp.searchsorted(ref_pos, pos)
     left = right - 1
 
-    right = jnp.clip(right, 0, len(ref_pos)-1)
-    left = jnp.clip(left, 0, len(ref_pos)-1)
+    right = jnp.clip(right, 0, len(ref_pos) - 1)
+    left = jnp.clip(left, 0, len(ref_pos) - 1)
 
     val_right = ref_val[right]
     val_left = ref_val[left]
@@ -71,8 +71,8 @@ def curve_interpolator(pos, ref_pos, ref_val):
     dist_left = jnp.abs(pos - ref_pos[left])
 
     val = jnp.where(
-        (dist_right+dist_left) > 0,
-        (val_right*dist_left+val_left*dist_right)/(dist_right+dist_left),
+        (dist_right + dist_left) > 0,
+        (val_right * dist_left + val_left * dist_right) / (dist_right + dist_left),
         val_right,
     )
     return val
@@ -81,13 +81,14 @@ def curve_interpolator(pos, ref_pos, ref_val):
 @export
 @jit
 def map_interpolator_regular_binning_1d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
-    """Inverse distance weighting average as 1D interpolation using KNN(K=2).
-    A uniform mesh grid binning is assumed.
+    """Inverse distance weighting average as 1D interpolation using KNN(K=2). A uniform mesh grid
+    binning is assumed.
 
-    :param pos: array with shape (N, ), positions at which the interp is calculated.
-    :param ref_pos_lowers: array with shape (1, ), the lower edges of the binning on each dimension.
-    :param ref_pos_uppers: array with shape (1, ), the upper edges of the binning on each dimension.
-    :param ref_val: array with shape (M1, ), map values.
+    :param pos: array with shape (N, ), positions at which the interp is calculated. :param
+    ref_pos_lowers: array with shape (1, ), the lower edges of the binning on each dimension. :param
+    ref_pos_uppers: array with shape (1, ), the upper edges of the binning on each dimension. :param
+    ref_val: array with shape (M1, ), map values.
+
     """
     ref_pos = jnp.linspace(ref_pos_lowers, ref_pos_uppers, len(ref_val))
     val = curve_interpolator(pos, ref_pos, ref_val)
@@ -98,13 +99,14 @@ def map_interpolator_regular_binning_1d(pos, ref_pos_lowers, ref_pos_uppers, ref
 @export
 @jit
 def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
-    """Inverse distance weighting average as 2D interpolation using KNN(K=4).
-    A uniform mesh grid binning is assumed.
+    """Inverse distance weighting average as 2D interpolation using KNN(K=4). A uniform mesh grid
+    binning is assumed.
 
-    :param pos: array with shape (N, 2), positions at which the interp is calculated.
-    :param ref_pos_lowers: array with shape (2, ), the lower edges of the binning on each dimension.
-    :param ref_pos_uppers: array with shape (2, ), the upper edges of the binning on each dimension.
-    :param ref_val: array with shape (M1, M2), map values.
+    :param pos: array with shape (N, 2), positions at which the interp is calculated. :param
+    ref_pos_lowers: array with shape (2, ), the lower edges of the binning on each dimension. :param
+    ref_pos_uppers: array with shape (2, ), the upper edges of the binning on each dimension. :param
+    ref_val: array with shape (M1, M2), map values.
+
     """
     num_bins = jnp.asarray(jnp.shape(ref_val))
     bin_sizes = (ref_pos_uppers - ref_pos_lowers) / (num_bins - 1)
@@ -112,7 +114,7 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
     bin_sizes = bin_sizes[jnp.newaxis, :]
 
     ind1 = jnp.floor((pos - ref_pos_lowers) / bin_sizes)
-    ind1 = jnp.clip(ind1, a_min=0, a_max=num_bins-1)
+    ind1 = jnp.clip(ind1, a_min=0, a_max=num_bins - 1)
     ind1 = jnp.asarray(ind1, dtype=int)
     ind2 = ind1.at[:, 0].add(1)
     ind3 = ind1.at[:, 1].add(1)
@@ -128,13 +130,21 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
     ref_pos3 = ref_pos_lowers + bin_sizes * ind3
     ref_pos4 = ref_pos_lowers + bin_sizes * ind4
 
-    dr1 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos1 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
-    dr2 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos2 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
-    dr3 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos3 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
-    dr4 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos4 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr1 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos1 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
+    dr2 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos2 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
+    dr3 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos3 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
+    dr4 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos4 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
 
-    val = (val1/dr1+val2/dr2+val3/dr3+val4/dr4)
-    val /= (1./dr1+1./dr2+1./dr3+1./dr4)
+    val = val1 / dr1 + val2 / dr2 + val3 / dr3 + val4 / dr4
+    val /= 1.0 / dr1 + 1.0 / dr2 + 1.0 / dr3 + 1.0 / dr4
 
     return val
 
@@ -142,13 +152,14 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
 @export
 @jit
 def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
-    """Inverse distance weighting average as 3D interpolation using KNN(K=8).
-    A uniform mesh grid binning is assumed.
+    """Inverse distance weighting average as 3D interpolation using KNN(K=8). A uniform mesh grid
+    binning is assumed.
 
-    :param pos: array with shape (N, 3), positions at which the interp is calculated.
-    :param ref_pos_lowers: array with shape (3, ), the lower edges of the binning on each dimension.
-    :param ref_pos_uppers: array with shape (3, ), the upper edges of the binning on each dimension.
-    :param ref_val: array with shape (M1, M2, M3), map values.
+    :param pos: array with shape (N, 3), positions at which the interp is calculated. :param
+    ref_pos_lowers: array with shape (3, ), the lower edges of the binning on each dimension. :param
+    ref_pos_uppers: array with shape (3, ), the upper edges of the binning on each dimension. :param
+    ref_val: array with shape (M1, M2, M3), map values.
+
     """
     num_bins = jnp.asarray(jnp.shape(ref_val))
     bin_sizes = (ref_pos_uppers - ref_pos_lowers) / (num_bins - 1)
@@ -156,7 +167,7 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
     bin_sizes = bin_sizes[jnp.newaxis, :]
 
     ind1 = jnp.floor((pos - ref_pos_lowers) / bin_sizes)
-    ind1 = jnp.clip(ind1, a_min=0, a_max=num_bins-1)
+    ind1 = jnp.clip(ind1, a_min=0, a_max=num_bins - 1)
     ind1 = jnp.asarray(ind1, dtype=int)
     ind2 = ind1.at[:, 0].add(1)
     ind3 = ind1.at[:, 1].add(1)
@@ -184,16 +195,50 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
     ref_pos7 = ref_pos_lowers + bin_sizes * ind7
     ref_pos8 = ref_pos_lowers + bin_sizes * ind8
 
-    dr1 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos1 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
-    dr2 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos2 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
-    dr3 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos3 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
-    dr4 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos4 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
-    dr5 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos5 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
-    dr6 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos6 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
-    dr7 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos7 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
-    dr8 = jnp.clip(jnp.sqrt(jnp.sum((ref_pos8 - pos)**2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX)
+    dr1 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos1 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
+    dr2 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos2 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
+    dr3 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos3 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
+    dr4 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos4 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
+    dr5 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos5 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
+    dr6 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos6 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
+    dr7 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos7 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
+    dr8 = jnp.clip(
+        jnp.sqrt(jnp.sum((ref_pos8 - pos) ** 2, axis=-1)), a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX
+    )
 
-    val = (val1/dr1+val2/dr2+val3/dr3+val4/dr4+val5/dr5+val6/dr6+val7/dr7+val8/dr8)
-    val /= (1./dr1+1./dr2+1./dr3+1./dr4+1./dr5+1./dr6+1./dr7+1./dr8)
+    val = (
+        val1 / dr1
+        + val2 / dr2
+        + val3 / dr3
+        + val4 / dr4
+        + val5 / dr5
+        + val6 / dr6
+        + val7 / dr7
+        + val8 / dr8
+    )
+    val /= (
+        1.0 / dr1
+        + 1.0 / dr2
+        + 1.0 / dr3
+        + 1.0 / dr4
+        + 1.0 / dr5
+        + 1.0 / dr6
+        + 1.0 / dr7
+        + 1.0 / dr8
+    )
 
     return val
