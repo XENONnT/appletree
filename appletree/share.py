@@ -1,4 +1,31 @@
-_cached_configs = dict()
+import json
+
+
+class RecordingDict(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.accessed_keys = set()  # To store the accessed keys
+
+    def __getitem__(self, key):
+        self.accessed_keys.add(key)
+        return super().__getitem__(key)
+
+    def __setitem__(self, key, value):
+        self.accessed_keys.add(key)
+        return super().__setitem__(key, value)
+
+    def __repr__(self):
+        return json.dumps(self, indent=4)
+
+    def __str__(self):
+        return self.__repr__()
+
+    def clear(self):
+        super().clear()
+        self.accessed_keys.clear()
+
+
+_cached_configs = RecordingDict()
 _cached_functions = dict()
 
 

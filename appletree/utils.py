@@ -524,3 +524,12 @@ def cum_integrate_midpoint(x, y):
     x_mid = 0.5 * (x[1:] + x[:-1])
     y_mid = 0.5 * (y[1:] + y[:-1])
     return x_mid, np.cumsum(dx * y_mid)
+
+
+def check_unused_configs():
+    """Check if there are unused configs."""
+    unused_configs = set(_cached_configs.keys()) - _cached_configs.accessed_keys
+    if unused_configs:
+        warn(
+            f"Detected unused configs: {unused_configs}, you might set the configs incorrectly."
+        )
