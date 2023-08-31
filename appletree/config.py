@@ -1,4 +1,4 @@
-import typing as ty
+from typing import Optional, Union, Any
 
 from immutabledict import immutabledict
 from jax import numpy as jnp
@@ -66,8 +66,8 @@ class Config:
     def __init__(
         self,
         name: str,
-        type: ty.Union[type, tuple, list] = OMITTED,
-        default: ty.Any = OMITTED,
+        type: Union[type, tuple, list, str] = OMITTED,
+        default: Any = OMITTED,
         help: str = "",
     ):
         """Initialization.
@@ -94,7 +94,7 @@ class Config:
 
         raise ValueError(f"Missing option {self.name} " f"required by {self.taken_by}")
 
-    def build(self, llh_name: str = None):
+    def build(self, llh_name: Optional[str] = None):
         """Build configuration, set attributes to Config instance."""
         raise NotImplementedError
 
@@ -105,7 +105,7 @@ class Constant(Config):
 
     value = None
 
-    def build(self, llh_name: str = None):
+    def build(self, llh_name: Optional[str] = None):
         """Set value of Constant."""
         if self.name in _cached_configs:
             value = _cached_configs[self.name]
@@ -138,7 +138,7 @@ class Map(Config):
 
     """
 
-    def build(self, llh_name: str = None):
+    def build(self, llh_name: Optional[str] = None):
         """Cache the map to jnp.array."""
 
         if self.name in _cached_configs:
@@ -282,7 +282,7 @@ class SigmaMap(Config):
 
     """
 
-    def build(self, llh_name: str = None):
+    def build(self, llh_name: Optional[str] = None):
         """Read maps."""
         self.llh_name = llh_name
         if self.name in _cached_configs:
@@ -318,9 +318,9 @@ class SigmaMap(Config):
                 _cached_configs[maps[sigma].name].update({self.llh_name: self._configs[i]})
             setattr(self, sigma, maps[sigma])
 
-        self.median.build(llh_name=self.llh_name)
-        self.lower.build(llh_name=self.llh_name)
-        self.upper.build(llh_name=self.llh_name)
+        self.median.build(llh_name=self.llh_name)  # type: ignore
+        self.lower.build(llh_name=self.llh_name)  # type: ignore
+        self.upper.build(llh_name=self.llh_name)  # type: ignore
 
         if len(self._configs) > 4:
             raise ValueError(f"You give too much information in {self.name} configs.")
@@ -357,7 +357,7 @@ class ConstantSet(Config):
 
     """
 
-    def build(self, llh_name: str = None):
+    def build(self, llh_name: Optional[str] = None):
         """Set value of Constant."""
         if self.name in _cached_configs:
             value = _cached_configs[self.name]

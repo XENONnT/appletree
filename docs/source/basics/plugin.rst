@@ -3,7 +3,8 @@
 Plugin
 ======
 
-Plugin is the smallest simulation unit in appletree. All plugins must inherit from the `appletree.Plugin`.
+Plugin is the smallest simulation unit in appletree.
+All plugins must inherit from the `appletree.Plugin`.
 
 .. autoclass:: appletree.Plugin
     :members:
@@ -39,5 +40,5 @@ Here is an example how a plugin works:
         int(1e6),  # this is the batch_size, the only element in self.depends_on
     )
 
-Note that whatever `key` or `parameters` will be used in `Plugin.simulate` or not, they must be the first and second arguments, and `key`
-is always the first in the returned tuple.
+Note that whatever `key` or `parameters` will be used in `Plugin.simulate` or not,
+they must be the first and second arguments, and `key` is always the first in the returned tuple.

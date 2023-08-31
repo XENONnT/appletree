@@ -5,14 +5,14 @@ from functools import partial
 import appletree
 from appletree import randgen
 from appletree.plugin import Plugin
-from appletree.config import Map
+from appletree.config import takes_config, Map
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Map(
         name="s1_correction",
         default="_s1_correction.json",
@@ -31,7 +31,7 @@ class S1Correction(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Map(
         name="s2_correction",
         default="_s2_correction.json",
@@ -78,7 +78,7 @@ class S1PE(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Map(name="elife", default="_elife.json", help="Electron lifetime correction"),
 )
 class DriftLoss(Plugin):

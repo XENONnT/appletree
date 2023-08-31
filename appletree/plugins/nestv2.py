@@ -5,7 +5,7 @@ from functools import partial
 import appletree
 from appletree import randgen
 from appletree.plugin import Plugin
-from appletree.config import Constant, ConstantSet
+from appletree.config import takes_config, Constant, ConstantSet
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
@@ -19,7 +19,7 @@ export, __all__ = exporter(export_self=False)
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     ConstantSet(
         name="energy_twohalfnorm",
         default=[
@@ -48,7 +48,7 @@ class MonoEnergiesSpectra(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Constant(
         name="clip_lower_energy",
         type=float,
@@ -90,7 +90,7 @@ class TotalQuanta(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Constant(
         name="literature_field", type=float, default=23.0, help="Drift field in each literature"
     ),
@@ -236,7 +236,7 @@ class TruePhotonElectronNR(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Constant(
         name="clip_lower_energy",
         type=float,

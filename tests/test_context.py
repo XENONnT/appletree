@@ -8,7 +8,7 @@ def test_rn220_context():
     _cached_configs.clear()
     context = apt.ContextRn220()
 
-    context.print_context_summary()
+    context.print_context_summary(short=False)
     context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
     context.dump_post_parameters("_temp.json")
 
@@ -21,7 +21,7 @@ def test_rn220_ar37_context():
     _cached_configs.clear()
     context = apt.ContextRn220Ar37()
 
-    context.print_context_summary()
+    context.print_context_summary(short=False)
 
     batch_size = int(1e4)
     context.fitting(nwalkers=100, iteration=2, batch_size=batch_size)
@@ -37,7 +37,7 @@ def test_neutron_context():
     instruct = get_file_path("neutron_low.json")
     context = apt.Context(instruct)
 
-    context.print_context_summary()
+    context.print_context_summary(short=False)
     context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
     check_unused_configs()
 
@@ -48,7 +48,7 @@ def test_literature_context():
     instruct = get_file_path("literature_lyqy.json")
     context = apt.Context(instruct)
 
-    context.print_context_summary()
+    context.print_context_summary(short=False)
 
     batch_size = int(1)
     context.fitting(nwalkers=100, iteration=2, batch_size=batch_size)

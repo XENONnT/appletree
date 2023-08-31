@@ -1,4 +1,5 @@
 from warnings import warn
+from typing import Type, Dict, Set, Optional, cast
 
 import numpy as np
 from jax import numpy as jnp
@@ -15,7 +16,7 @@ from appletree.randgen import TwoHalfNorm, BandTwoHalfNorm
 class Likelihood:
     """Combine all components (e.g. ER, AC, Wall), and calculate log posterior likelihood."""
 
-    def __init__(self, name: str = None, **config):
+    def __init__(self, name: Optional[str] = None, **config):
         """Create an appletree likelihood.
 
         :param config: Dictionary with configuration options that will be applied, should include:
@@ -30,7 +31,7 @@ class Likelihood:
             self.name = self.__class__.__name__
         else:
             self.name = name
-        self.components = dict()
+        self.components = cast(Dict[str, Component], dict())
         self._config = config
         self._data_file_name = config["data_file_name"]
         self._bins_type = config["bins_type"]
@@ -39,7 +40,7 @@ class Likelihood:
         self._dim = len(self._bins_on)
         if self._dim != 2:
             raise ValueError("Currently only support 2D fitting")
-        self.needed_parameters = set()
+        self.needed_parameters: Set[str] = set()
         self._sanity_check()
 
         self.data = load_data(self._data_file_name)[self._bins_on].to_numpy()
@@ -124,7 +125,7 @@ class Likelihood:
             raise ValueError("'bins_type' should either be meshgrid, equiprob or irreg")
 
     def register_component(
-        self, component_cls: Component, component_name: str, file_name: str = None
+        self, component_cls: Type[Component], component_name: str, file_name: Optional[str] = None
     ):
         """Create an appletree likelihood.
 
@@ -264,7 +265,7 @@ class Likelihood:
                 print(f"{indent*2}rate_par: {component.rate_name}")
                 print(f"{indent*2}pars: {need}")
                 if not short:
-                    print(f"{indent*2}from_file: {component.file_name}")
+                    print(f"{indent*2}from_file: {component._file_name}")
             else:
                 pass
             print()
@@ -281,7 +282,7 @@ class LikelihoodLit(Likelihood):
 
     """
 
-    def __init__(self, name: str = None, **config):
+    def __init__(self, name: Optional[str] = None, **config):
         """Create an appletree likelihood.
 
         :param config: Dictionary with configuration options that will be applied, should include:
@@ -298,7 +299,7 @@ class LikelihoodLit(Likelihood):
         self._bins_on = config["bins_on"]
         self._dim = len(self._bins_on)
 
-        self.needed_parameters = set()
+        self.needed_parameters: Set[str] = set()
         self.component_bins_type = None
         logpdf_args = self._config["logpdf_args"]
         self.logpdf_args = {k: np.array(v) for k, v in zip(*logpdf_args)}
@@ -405,7 +406,7 @@ class LikelihoodLit(Likelihood):
                 print(f"{indent*2}rate_par: {component.rate_name}")
                 print(f"{indent*2}pars: {need}")
                 if not short:
-                    print(f"{indent*2}from_file: {component.file_name}")
+                    print(f"{indent*2}from_file: {component._file_name}")
             else:
                 pass
             print()

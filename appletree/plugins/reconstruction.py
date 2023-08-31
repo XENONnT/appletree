@@ -5,7 +5,7 @@ from jax import numpy as jnp
 
 import appletree
 from appletree import randgen
-from appletree.config import Map
+from appletree.config import takes_config, Map
 from appletree.plugin import Plugin
 from appletree.utils import exporter
 
@@ -13,7 +13,7 @@ export, __all__ = exporter(export_self=False)
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Map(name="posrec_reso", default="_posrec_reso.json", help="Position reconstruction resolution"),
 )
 class PositionRecon(Plugin):
@@ -35,7 +35,7 @@ class PositionRecon(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Map(name="s1_bias_3f", default="_s1_bias.json", help="3fold S1 reconstruction bias"),
     Map(name="s1_smear_3f", default="_s1_smearing.json", help="3fold S1 reconstruction smearing"),
 )
@@ -53,7 +53,7 @@ class S1(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Map(name="s2_bias", default="_s2_bias.json", help="S2 reconstruction bias"),
     Map(name="s2_smear", default="_s2_smearing.json", help="S2 reconstruction smearing"),
 )

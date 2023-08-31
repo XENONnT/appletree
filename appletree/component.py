@@ -1,5 +1,6 @@
 from warnings import warn
 from functools import partial
+from typing import Tuple, List, Dict, Optional, Union, Set
 
 import numpy as np
 import pandas as pd
@@ -7,6 +8,7 @@ from jax import numpy as jnp
 
 import appletree
 from appletree import utils
+from appletree.config import OMITTED
 from appletree.plugin import Plugin
 from appletree.share import _cached_configs, _cached_functions, set_global_config
 from appletree.utils import exporter, load_data
@@ -26,7 +28,7 @@ class Component:
     norm_type: str = ""
     add_eps_to_hist: bool = True
 
-    def __init__(self, name: str = None, llh_name: str = None, **kwargs):
+    def __init__(self, name: Optional[str] = None, llh_name: Optional[str] = None, **kwargs):
         """Initialization.
 
         :param bins: bins to generate the histogram.
@@ -44,7 +46,7 @@ class Component:
             self.llh_name = self.__class__.__name__ + "_llh"
         else:
             self.llh_name = llh_name
-        self.needed_parameters = set()
+        self.needed_parameters: Set[str] = set()
 
         if "bins" in kwargs.keys() and "bins_type" in kwargs.keys():
             self.set_binning(**kwargs)
@@ -159,9 +161,6 @@ class ComponentSim(Component):
     # Do not initialize this class because it is base
     __is_base = True
 
-    code: str = None
-    old_code: str = None
-
     def __init__(self, *args, **kwargs):
         """Initialization."""
         super().__init__(*args, **kwargs)
@@ -227,8 +226,8 @@ class ComponentSim(Component):
 
     def dependencies_deduce(
         self,
-        data_names: list = ("cs1", "cs2", "eff"),
-        dependencies: list = None,
+        data_names: Union[List[str], Tuple[str]] = ["cs1", "cs2", "eff"],
+        dependencies: Optional[List[Dict]] = None,
         nodep_data_name: str = "batch_size",
     ) -> list:
         """Deduce dependencies.
@@ -282,7 +281,7 @@ class ComponentSim(Component):
 
     def flush_source_code(
         self,
-        data_names: list = ["cs1", "cs2", "eff"],
+        data_names: Union[List[str], Tuple[str]] = ["cs1", "cs2", "eff"],
         func_name: str = "simulate",
         nodep_data_name: str = "batch_size",
     ):
@@ -348,7 +347,7 @@ class ComponentSim(Component):
 
     def deduce(
         self,
-        data_names: list = ("cs1", "cs2"),
+        data_names: Union[List[str], Tuple[str]] = ["cs1", "cs2"],
         func_name: str = "simulate",
         nodep_data_name: str = "batch_size",
         force_no_eff: bool = False,
@@ -437,7 +436,7 @@ class ComponentSim(Component):
         """
         set_global_config(configs)
 
-    def show_config(self, data_names: list = ("cs1", "cs2", "eff")):
+    def show_config(self, data_names: Union[List[str], Tuple[str]] = ["cs1", "cs2", "eff"]):
         """Return configuration options that affect data_names.
 
         :param data_names: Data type name
@@ -462,7 +461,7 @@ class ComponentSim(Component):
                 try:
                     default = config.get_default()
                 except ValueError:
-                    default = appletree.OMITTED
+                    default = OMITTED
                 current = _cached_configs.get(config.name, None)
                 if isinstance(current, dict):
                     current = current[self.llh_name]
@@ -484,7 +483,7 @@ class ComponentSim(Component):
         # straxen.dataframe_to_wiki(df, title=f'{data_names}', float_digits=1)
         return df
 
-    def new_component(self, llh_name: str = None, pass_binning: bool = True):
+    def new_component(self, llh_name: Optional[str] = None, pass_binning: bool = True):
         """Generate new component with same binning, usually used on predicting yields."""
         if pass_binning:
             if hasattr(self, "bins") and hasattr(self, "bins_type"):
@@ -519,7 +518,7 @@ class ComponentFixed(Component):
             self._file_name = kwargs.get("file_name", None)
         super().__init__(*args, **kwargs)
 
-    def deduce(self, data_names: list = ("cs1", "cs2")):
+    def deduce(self, data_names: Union[List[str], Tuple[str]] = ["cs1", "cs2"]):
         """Deduce the needed parameters and make the fixed histogram."""
         self.data = load_data(self._file_name)[list(data_names)].to_numpy()
         self.eff = jnp.ones(len(self.data))

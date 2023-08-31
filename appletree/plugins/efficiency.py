@@ -4,7 +4,7 @@ from functools import partial
 
 import appletree
 from appletree.plugin import Plugin
-from appletree.config import SigmaMap
+from appletree.config import takes_config, SigmaMap
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
@@ -22,7 +22,7 @@ class S2Threshold(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     SigmaMap(
         name="s1_eff_3f",
         default=["_3fold_recon_eff.json", "_3fold_recon_eff.json", "_3fold_recon_eff.json"],
@@ -42,7 +42,7 @@ class S1ReconEff(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     SigmaMap(
         name="s1_cut_acc",
         default=["_s1_cut_acc.json", "_s1_cut_acc.json", "_s1_cut_acc.json"],
@@ -62,7 +62,7 @@ class S1CutAccept(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     SigmaMap(
         name="s2_cut_acc",
         default=["_s2_cut_acc.json", "_s2_cut_acc.json", "_s2_cut_acc.json"],

@@ -5,16 +5,19 @@
 Register maps and constants to plugins
 ======================================
 
-Sometimes, a plugin could depend on some constants and maps, for example the energy range in an energy sampler, or a curve that gives
-the energy spectrum. In appletree, we recommend to use `appletree.takes_config` to systematically manage them.
+Sometimes, a plugin could depend on some constants and maps,
+for example the energy range in an energy sampler, or a curve that gives
+the energy spectrum. In appletree, we recommend to use `appletree.takes_config`
+to systematically manage them.
 
 .. autofunction:: appletree.takes_config
 
-`appletree.takes_config` takes `Config` as arguments, which will be discussed short later, and returns a decorator for the plugin. For example,
+`appletree.takes_config` takes `Config` as arguments, which will be discussed short later,
+and returns a decorator for the plugin. For example,
 
 .. code-block:: python
 
-    @appletree.takes_config(
+    @takes_config(
         config0,
         config1,
         ...
@@ -22,7 +25,8 @@ the energy spectrum. In appletree, we recommend to use `appletree.takes_config` 
     class TestPlugin(appletree.plugin):
         ...
 
-Currently, appletree supports two kinds of configs, `appletree.Constant` and `appletree.Map`. Both inherit from `appletree.Config`
+Currently, appletree supports two kinds of configs, `appletree.Constant` and `appletree.Map`.
+Both inherit from `appletree.Config`
 
 .. autoclass:: appletree.Map
     :members:
@@ -38,7 +42,7 @@ Here is an example of using `Constant`
 
 .. code-block:: python
 
-    @appletree.takes_config(
+    @takes_config(
         Constant(
             name='a',
             type=float,
@@ -59,7 +63,7 @@ and an example of using `Map`
 
 .. code-block:: python
 
-    @appletree.takes_config(
+    @takes_config(
         Map(
             name='b',
             default='test_file.json',
@@ -80,7 +84,8 @@ and an example of using `Map`
             z = y + shift
             return key, z
 
-As mentioned in :ref:`instruct <head>`, the instruct file for `Context` can overwrite the default value of plugins' config. For example,
+As mentioned in :ref:`instruct <head>`,
+the instruct file for `Context` can overwrite the default value of plugins' config. For example,
 
 .. code-block:: python
 
@@ -92,4 +97,5 @@ As mentioned in :ref:`instruct <head>`, the instruct file for `Context` can over
         ...
     }
 
-which changes the value of `a` in `Scale` plugin to 137.036 and json file of `b` in `Shift` Plugin to "alt_test_file.json".
+which changes the value of `a` in `Scale` plugin to 137.036 and json file of `b` in `Shift`
+Plugin to "alt_test_file.json".

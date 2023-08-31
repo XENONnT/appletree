@@ -1,5 +1,6 @@
 import inspect
 from copy import deepcopy
+from typing import List, Tuple, Optional
 
 from immutabledict import immutabledict
 
@@ -17,18 +18,18 @@ class Plugin:
     __is_base = True
 
     # the plugin's dependency(the arguments of `simulate`)
-    depends_on = []
+    depends_on: List[str] = []
 
     # the plugin can provide(`simulate` will return)
-    provides = []
+    provides: List[str] = []
 
     # relevant parameters, will be fitted in MCMC
-    parameters = ()
+    parameters: Tuple = ()
 
     # Set using the takes_config decorator
     takes_config = immutabledict()
 
-    def __init__(self, llh_name: str = None):
+    def __init__(self, llh_name: Optional[str] = None):
         """Initialization."""
         # llh_name will tell us which map to use
         self.llh_name = llh_name

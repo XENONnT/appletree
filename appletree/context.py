@@ -4,6 +4,8 @@ import copy
 import json
 import importlib
 from datetime import datetime
+from typing import Set, Optional
+
 import numpy as np
 import emcee
 import h5py
@@ -293,7 +295,7 @@ class Context:
         likelihood_name: str,
         component_name: str,
         batch_size: int = 1_000_000,
-        seed: int = None,
+        seed: Optional[int] = None,
     ):
         """Get parameters correspondes to max posterior.
 
@@ -336,7 +338,7 @@ class Context:
         return par_config
 
     def update_parameter_config(self, likelihoods):
-        needed_parameters = set()
+        needed_parameters: Set[str] = set()
         needed_rate_parameters = []
         from_parameters = []
         for likelihood in likelihoods.values():

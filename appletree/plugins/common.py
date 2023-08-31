@@ -6,14 +6,14 @@ from jax import numpy as jnp
 import appletree
 from appletree import randgen
 from appletree.plugin import Plugin
-from appletree.config import Constant, Map
+from appletree.config import takes_config, Constant, Map
 from appletree.utils import exporter
 
 export, __all__ = exporter()
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Constant(
         name="lower_energy",
         type=float,
@@ -43,7 +43,7 @@ class UniformEnergySpectra(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Map(name="energy_spectrum", default="_nr_spectrum.json", help="Recoil energy spectrum"),
 )
 class FixedEnergySpectra(Plugin):
@@ -58,7 +58,7 @@ class FixedEnergySpectra(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Constant(name="mono_energy", type=float, default=2.82, help="Mono energy delta function"),
 )
 class MonoEnergySpectra(Plugin):
@@ -74,7 +74,7 @@ class MonoEnergySpectra(Plugin):
 
 
 @export
-@appletree.takes_config(
+@takes_config(
     Constant(
         name="z_min",
         type=float,
