@@ -1,3 +1,24 @@
+v0.3.0 / 2023-08-31
+-------------------
+* Fix function name to `simulate_weighted_data`, nothing else changed by @dachengx in https://github.com/XENONnT/appletree/pull/99
+* Stop jax from preallocating memory by @dachengx in https://github.com/XENONnT/appletree/pull/100
+* fix meshgrid binning by @hoetzsch in https://github.com/XENONnT/appletree/pull/101
+* Binning is not required by Component by @dachengx in https://github.com/XENONnT/appletree/pull/103
+* Upper clipping on binomial randgen in normal approx by @xzh19980906 in https://github.com/XENONnT/appletree/pull/107
+* Rename fake maps by @xzh19980906 in https://github.com/XENONnT/appletree/pull/106
+* Update fake maps filenames by @dachengx in https://github.com/XENONnT/appletree/pull/108
+* Skip mongo DB when finding files by @xzh19980906 in https://github.com/XENONnT/appletree/pull/111
+* Raise error if file does not exist by @xzh19980906 in https://github.com/XENONnT/appletree/pull/110
+* Rename lce to correction by @dachengx in https://github.com/XENONnT/appletree/pull/109
+* Add function to check the usage of configs, check_unused_configs by @dachengx in https://github.com/XENONnT/appletree/pull/112
+* Proposal to use pre-commit for continuous integration by @dachengx in https://github.com/XENONnT/appletree/pull/113
+
+## New Contributors
+* @hoetzsch made their first contribution in https://github.com/XENONnT/appletree/pull/101
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.2.3...v0.3.0
+
+
 v0.2.3 / 2023-05-29
 -------------------
 * Add pip install user by @dachengx in https://github.com/XENONnT/appletree/pull/96
