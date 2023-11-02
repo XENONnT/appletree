@@ -271,7 +271,9 @@ class ComponentSim(Component):
         """Simplify the dependencies."""
         already_seen = []
         self.worksheet = []
-        self.needed_parameters.add(self.rate_name)
+        # Add rate_name to needed_parameters only when it's not empty
+        if self.rate_name != "":
+            self.needed_parameters.add(self.rate_name)
         for plugin in dependencies[::-1]:
             plugin = plugin["plugin"]
             if plugin.__name__ in already_seen:
