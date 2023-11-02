@@ -62,7 +62,6 @@ def takes_config(*configs):
 @export
 class Config:
     """Configuration option taken by a appletree plugin."""
-    required_parameter = None
 
     def __init__(
         self,
@@ -105,6 +104,7 @@ class Constant(Config):
     """Constant is a special config which takes only certain value."""
 
     value = None
+    required_parameter = None
 
     def build(self, llh_name: Optional[str] = None):
         """Set value of Constant."""
@@ -139,6 +139,7 @@ class Map(Config):
     When using log-binning, we will first convert the positions to log space.
 
     """
+    required_parameter = None
 
     def build(self, llh_name: Optional[str] = None):
         """Cache the map to jnp.array."""
@@ -288,25 +289,7 @@ class SigmaMap(Config):
     def build(self, llh_name: Optional[str] = None):
         """Read maps."""
         self.llh_name = llh_name
-        if self.name in _cached_configs:
-            _configs = _cached_configs[self.name]
-        else:
-            _configs = self.get_default()
-            # Update values to sharing dictionary
-            _cached_configs[self.name] = _configs
-
-        if isinstance(_configs, dict):
-            try:
-                self._configs = _configs[llh_name]
-            except KeyError:
-                mesg = (
-                    f"You specified {self.name} as a dictionary. "
-                    f"The key of it should be the name of one "
-                    f"of the likelihood, but it is {llh_name}."
-                )
-                raise ValueError(mesg)
-        else:
-            self._configs = _configs
+        self._configs = self.get_configs()
 
         self._configs_default = self.get_default()
 
@@ -340,20 +323,49 @@ class SigmaMap(Config):
         if isinstance(self._configs, list) and len(self._configs) > 4:
             raise ValueError(f"You give too much information in {self.name} configs.")
 
+    def get_configs(self):
+        if self.name in _cached_configs:
+            _configs = _cached_configs[self.name]
+        else:
+            _configs = self.get_default()
+            # Update values to sharing dictionary
+            _cached_configs[self.name] = _configs
+
+        if isinstance(_configs, dict):
+            try:
+                return _configs[self.llh_name]
+            except KeyError:
+                mesg = (
+                    f"You specified {self.name} as a dictionary. "
+                    f"The key of it should be the name of one "
+                    f"of the likelihood, but it is {self.llh_name}."
+                )
+                raise ValueError(mesg)
+        else:
+            return _configs
+
+    @property
+    def required_parameter(self):
+        _configs = self.get_configs()
         # Find required parameter
-        if isinstance(self._configs, list):
-            if len(self._configs) == 4:
-                self.required_parameter = self._configs[-1]
+        if isinstance(_configs, list):
+            if len(_configs) == 4:
                 print(
                     f"{self.llh_name} is using the parameter "
                     f"{self.required_parameter} in {self.name} map."
                 )
+                return _configs[-1]
             else:
-                self.required_parameter = self.name + "_sigma"
+                return self.name + "_sigma"
+        else:
+            return None
 
     def apply(self, pos, parameters):
         """Apply SigmaMap with sigma and position."""
-        sigma = parameters[self.required_parameter]
+        if self.required_parameter is None:
+            sigma = 1.0
+        else:
+            sigma = parameters[self.required_parameter]
         median = self.median.apply(pos)
         lower = self.lower.apply(pos)
         upper = self.upper.apply(pos)
@@ -372,6 +384,7 @@ class ConstantSet(Config):
     mismatch will be catched when running.
 
     """
+    required_parameter = None
 
     def build(self, llh_name: Optional[str] = None):
         """Set value of Constant."""

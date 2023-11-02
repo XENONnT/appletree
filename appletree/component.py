@@ -272,6 +272,7 @@ class ComponentSim(Component):
         already_seen = []
         self.worksheet = []
         # Add rate_name to needed_parameters only when it's not empty
+        self.needed_parameters = set()
         if self.rate_name != "":
             self.needed_parameters.add(self.rate_name)
         for plugin in dependencies[::-1]:
