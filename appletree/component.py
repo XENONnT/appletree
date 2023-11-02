@@ -279,6 +279,10 @@ class ComponentSim(Component):
             self.worksheet.append([plugin.__name__, plugin.provides, plugin.depends_on])
             already_seen.append(plugin.__name__)
             self.needed_parameters |= set(plugin.parameters)
+            # Add needed_parameters from config
+            for config in plugin.takes_config.values():
+                if config.required_parameter is not None:
+                    self.needed_parameters |= {config.required_parameter}
 
     def flush_source_code(
         self,

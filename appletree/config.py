@@ -42,8 +42,6 @@ def takes_config(*configs):
                 raise RuntimeError("Specify config options by Config objects")
             config.taken_by = plugin_class.__name__
             result[config.name] = config
-            if config.required_parameter is not None:
-                plugin_class.parameters += (config.required_parameter,)
 
         if hasattr(plugin_class, "takes_config") and len(plugin_class.takes_config):
             # Already have some configs set, e.g. because of subclassing
@@ -339,18 +337,19 @@ class SigmaMap(Config):
         self.lower.build(llh_name=self.llh_name)  # type: ignore
         self.upper.build(llh_name=self.llh_name)  # type: ignore
 
-        if len(self._configs) > 4:
+        if isinstance(self._configs, list) and len(self._configs) > 4:
             raise ValueError(f"You give too much information in {self.name} configs.")
 
         # Find required parameter
-        if len(self._configs) == 4:
-            self.required_parameter = self._configs[-1]
-            print(
-                f"{self.llh_name} is using the parameter "
-                f"{self.required_parameter} in {self.name} map."
-            )
-        else:
-            self.required_parameter = self.name + "_sigma"
+        if isinstance(self._configs, list):
+            if len(self._configs) == 4:
+                self.required_parameter = self._configs[-1]
+                print(
+                    f"{self.llh_name} is using the parameter "
+                    f"{self.required_parameter} in {self.name} map."
+                )
+            else:
+                self.required_parameter = self.name + "_sigma"
 
     def apply(self, pos, parameters):
         """Apply SigmaMap with sigma and position."""
