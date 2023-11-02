@@ -42,6 +42,8 @@ def takes_config(*configs):
                 raise RuntimeError("Specify config options by Config objects")
             config.taken_by = plugin_class.__name__
             result[config.name] = config
+            if config.required_parameter is not None:
+                plugin_class.parameters += (config.required_parameter,)
 
         if hasattr(plugin_class, "takes_config") and len(plugin_class.takes_config):
             # Already have some configs set, e.g. because of subclassing
@@ -62,6 +64,7 @@ def takes_config(*configs):
 @export
 class Config:
     """Configuration option taken by a appletree plugin."""
+    required_parameter = None
 
     def __init__(
         self,
@@ -312,13 +315,24 @@ class SigmaMap(Config):
         maps = dict()
         sigmas = ["median", "lower", "upper"]
         for i, sigma in enumerate(sigmas):
-            maps[sigma] = Map(name=self.name + f"_{sigma}", default=self._configs_default[i])
+            if isinstance(self._configs_default, list):
+                maps[sigma] = Map(name=self.name + f"_{sigma}", default=self._configs_default[i])
+            else:
+                # If only one file is given, then use the same file for all sigmas
+                maps[sigma] = Map(name=self.name + f"_{sigma}", default=self._configs_default)
+
             if maps[sigma].name not in _cached_configs.keys():
                 _cached_configs[maps[sigma].name] = dict()
+
+            # In case some plugins only use the median
+            # and may already update the map name in `_cached_configs`
             if isinstance(_cached_configs[maps[sigma].name], dict):
-                # In case some plugins only use the median
-                # and may already update the map name in `_cached_configs`
-                _cached_configs[maps[sigma].name].update({self.llh_name: self._configs[i]})
+                if isinstance(self._configs, list):
+                    _cached_configs[maps[sigma].name].update({self.llh_name: self._configs[i]})
+                else:
+                    # If only one file is given, then use the same file for all sigmas
+                    _cached_configs[maps[sigma].name].update({self.llh_name: self._configs})
+
             setattr(self, sigma, maps[sigma])
 
         self.median.build(llh_name=self.llh_name)  # type: ignore
