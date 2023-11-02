@@ -442,6 +442,7 @@ class ComponentSim(Component):
 
         """
         set_global_config(configs)
+        warn("New config is set, please run deduce() and compile() again to update the simulation code.")
 
     def show_config(self, data_names: Union[List[str], Tuple[str]] = ["cs1", "cs2", "eff"]):
         """Return configuration options that affect data_names.
