@@ -139,6 +139,7 @@ class Map(Config):
     When using log-binning, we will first convert the positions to log space.
 
     """
+
     required_parameter = None
 
     def build(self, llh_name: Optional[str] = None):
@@ -384,6 +385,7 @@ class ConstantSet(Config):
     mismatch will be catched when running.
 
     """
+
     required_parameter = None
 
     def build(self, llh_name: Optional[str] = None):
