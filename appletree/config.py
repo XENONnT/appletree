@@ -352,8 +352,7 @@ class SigmaMap(Config):
         if isinstance(_configs, list):
             if len(_configs) == 4:
                 print(
-                    f"{self.llh_name} is using the parameter "
-                    f"{_configs[-1]} in {self.name} map."
+                    f"{self.llh_name} is using the parameter " f"{_configs[-1]} in {self.name} map."
                 )
                 return _configs[-1]
             else:
