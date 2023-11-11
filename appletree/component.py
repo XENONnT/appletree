@@ -271,12 +271,14 @@ class ComponentSim(Component):
         """Simplify the dependencies."""
         already_seen = []
         self.worksheet = []
+        # Reinitialize needed_parameters
+        # because sometimes user will deduce(& compile) after changing configs
+        self.needed_parameters: Set[str] = set()
         # Add rate_name to needed_parameters only when it's not empty
-        self.needed_parameters = set()
         if self.rate_name != "":
             self.needed_parameters.add(self.rate_name)
-        for plugin in dependencies[::-1]:
-            plugin = plugin["plugin"]
+        for _plugin in dependencies[::-1]:
+            plugin = _plugin["plugin"]
             if plugin.__name__ in already_seen:
                 continue
             self.worksheet.append([plugin.__name__, plugin.provides, plugin.depends_on])
