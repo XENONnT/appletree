@@ -271,14 +271,23 @@ class ComponentSim(Component):
         """Simplify the dependencies."""
         already_seen = []
         self.worksheet = []
-        self.needed_parameters.add(self.rate_name)
-        for plugin in dependencies[::-1]:
-            plugin = plugin["plugin"]
+        # Reinitialize needed_parameters
+        # because sometimes user will deduce(& compile) after changing configs
+        self.needed_parameters: Set[str] = set()
+        # Add rate_name to needed_parameters only when it's not empty
+        if self.rate_name != "":
+            self.needed_parameters.add(self.rate_name)
+        for _plugin in dependencies[::-1]:
+            plugin = _plugin["plugin"]
             if plugin.__name__ in already_seen:
                 continue
             self.worksheet.append([plugin.__name__, plugin.provides, plugin.depends_on])
             already_seen.append(plugin.__name__)
             self.needed_parameters |= set(plugin.parameters)
+            # Add needed_parameters from config
+            for config in plugin.takes_config.values():
+                if config.required_parameter is not None:
+                    self.needed_parameters |= {config.required_parameter}
 
     def flush_source_code(
         self,
@@ -436,6 +445,10 @@ class ComponentSim(Component):
 
         """
         set_global_config(configs)
+        warn(
+            "New config is set, please run deduce() "
+            "and compile() again to update the simulation code."
+        )
 
     def show_config(self, data_names: Union[List[str], Tuple[str]] = ["cs1", "cs2", "eff"]):
         """Return configuration options that affect data_names.

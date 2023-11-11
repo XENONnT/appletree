@@ -31,7 +31,7 @@ class S2Threshold(Plugin):
 class S1ReconEff(Plugin):
     depends_on = ["num_s1_phd"]
     provides = ["acc_s1_recon_eff"]
-    parameters = ("s1_eff_3f_sigma",)
+    # parameters = ("s1_eff_3f_sigma",)
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, num_s1_phd):
@@ -51,7 +51,7 @@ class S1ReconEff(Plugin):
 class S1CutAccept(Plugin):
     depends_on = ["s1_area"]
     provides = ["cut_acc_s1"]
-    parameters = ("s1_cut_acc_sigma",)
+    # parameters = ("s1_cut_acc_sigma",)
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, s1_area):
@@ -71,7 +71,7 @@ class S1CutAccept(Plugin):
 class S2CutAccept(Plugin):
     depends_on = ["s2_area"]
     provides = ["cut_acc_s2"]
-    parameters = ("s2_cut_acc_sigma",)
+    # parameters = ("s2_cut_acc_sigma",)
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, s2_area):
