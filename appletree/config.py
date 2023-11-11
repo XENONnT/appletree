@@ -104,6 +104,7 @@ class Constant(Config):
     """Constant is a special config which takes only certain value."""
 
     value = None
+    required_parameter = None
 
     def build(self, llh_name: Optional[str] = None):
         """Set value of Constant."""
@@ -138,6 +139,8 @@ class Map(Config):
     When using log-binning, we will first convert the positions to log space.
 
     """
+
+    required_parameter = None
 
     def build(self, llh_name: Optional[str] = None):
         """Cache the map to jnp.array."""
@@ -287,6 +290,41 @@ class SigmaMap(Config):
     def build(self, llh_name: Optional[str] = None):
         """Read maps."""
         self.llh_name = llh_name
+        _configs = self.get_configs()
+
+        _configs_default = self.get_default()
+
+        maps = dict()
+        sigmas = ["median", "lower", "upper"]
+        for i, sigma in enumerate(sigmas):
+            if isinstance(_configs_default, list):
+                maps[sigma] = Map(name=self.name + f"_{sigma}", default=_configs_default[i])
+            else:
+                # If only one file is given, then use the same file for all sigmas
+                maps[sigma] = Map(name=self.name + f"_{sigma}", default=_configs_default)
+
+            if maps[sigma].name not in _cached_configs.keys():
+                _cached_configs[maps[sigma].name] = dict()
+
+            # In case some plugins only use the median
+            # and may already update the map name in `_cached_configs`
+            if isinstance(_cached_configs[maps[sigma].name], dict):
+                if isinstance(_configs, list):
+                    _cached_configs[maps[sigma].name].update({self.llh_name: _configs[i]})
+                else:
+                    # If only one file is given, then use the same file for all sigmas
+                    _cached_configs[maps[sigma].name].update({self.llh_name: _configs})
+
+            setattr(self, sigma, maps[sigma])
+
+        self.median.build(llh_name=self.llh_name)  # type: ignore
+        self.lower.build(llh_name=self.llh_name)  # type: ignore
+        self.upper.build(llh_name=self.llh_name)  # type: ignore
+
+        if isinstance(_configs, list) and len(_configs) > 4:
+            raise ValueError(f"You give too much information in {self.name} configs.")
+
+    def get_configs(self):
         if self.name in _cached_configs:
             _configs = _cached_configs[self.name]
         else:
@@ -296,51 +334,38 @@ class SigmaMap(Config):
 
         if isinstance(_configs, dict):
             try:
-                self._configs = _configs[llh_name]
+                return _configs[self.llh_name]
             except KeyError:
                 mesg = (
                     f"You specified {self.name} as a dictionary. "
                     f"The key of it should be the name of one "
-                    f"of the likelihood, but it is {llh_name}."
+                    f"of the likelihood, but it is {self.llh_name}."
                 )
                 raise ValueError(mesg)
         else:
-            self._configs = _configs
+            return _configs
 
-        self._configs_default = self.get_default()
-
-        maps = dict()
-        sigmas = ["median", "lower", "upper"]
-        for i, sigma in enumerate(sigmas):
-            maps[sigma] = Map(name=self.name + f"_{sigma}", default=self._configs_default[i])
-            if maps[sigma].name not in _cached_configs.keys():
-                _cached_configs[maps[sigma].name] = dict()
-            if isinstance(_cached_configs[maps[sigma].name], dict):
-                # In case some plugins only use the median
-                # and may already update the map name in `_cached_configs`
-                _cached_configs[maps[sigma].name].update({self.llh_name: self._configs[i]})
-            setattr(self, sigma, maps[sigma])
-
-        self.median.build(llh_name=self.llh_name)  # type: ignore
-        self.lower.build(llh_name=self.llh_name)  # type: ignore
-        self.upper.build(llh_name=self.llh_name)  # type: ignore
-
-        if len(self._configs) > 4:
-            raise ValueError(f"You give too much information in {self.name} configs.")
-
+    @property
+    def required_parameter(self):
+        _configs = self.get_configs()
         # Find required parameter
-        if len(self._configs) == 4:
-            self.required_parameter = self._configs[-1]
-            print(
-                f"{self.llh_name} is using the parameter "
-                f"{self.required_parameter} in {self.name} map."
-            )
+        if isinstance(_configs, list):
+            if len(_configs) == 4:
+                print(
+                    f"{self.llh_name} is using the parameter " f"{_configs[-1]} in {self.name} map."
+                )
+                return _configs[-1]
+            else:
+                return self.name + "_sigma"
         else:
-            self.required_parameter = self.name + "_sigma"
+            return None
 
     def apply(self, pos, parameters):
         """Apply SigmaMap with sigma and position."""
-        sigma = parameters[self.required_parameter]
+        if self.required_parameter is None:
+            sigma = 1.0
+        else:
+            sigma = parameters[self.required_parameter]
         median = self.median.apply(pos)
         lower = self.lower.apply(pos)
         upper = self.upper.apply(pos)
@@ -359,6 +384,8 @@ class ConstantSet(Config):
     mismatch will be catched when running.
 
     """
+
+    required_parameter = None
 
     def build(self, llh_name: Optional[str] = None):
         """Set value of Constant."""

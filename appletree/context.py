@@ -35,9 +35,9 @@ class Context:
         if "url_base" in instruct.keys():
             self.update_url_base(instruct["url_base"])
 
-        self.set_instruct(instruct)
-        if "configs" in instruct.keys():
-            self.set_config(instruct["configs"])
+        self.instruct = instruct
+        self.config = instruct.get("configs", {})
+        set_global_config(self.config)
 
         self.backend_h5 = instruct.get("backend_h5", None)
 
@@ -357,33 +357,6 @@ class Context:
                 # Drop unused parameters
                 self.par_config.pop(p)
         return needed_parameters
-
-    def set_instruct(self, instructs):
-        """Set instruction.
-
-        :param instructs: dict, instruction file name or dictionary
-
-        """
-        if not hasattr(self, "instruct"):
-            self.instruct = dict()
-
-        # update instructuration only in this Context
-        self.instruct.update(instructs)
-
-    def set_config(self, configs):
-        """Set new configuration options.
-
-        :param configs: dict, configuration file name or dictionary
-
-        """
-        if not hasattr(self, "config"):
-            self.config = dict()
-
-        # update configuration only in this Context
-        self.config.update(configs)
-
-        # also store required configurations to appletree.share
-        set_global_config(configs)
 
     def lineage(self, data_name: str = "cs2"):
         """Return lineage of plugins."""
