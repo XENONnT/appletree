@@ -290,18 +290,18 @@ class SigmaMap(Config):
     def build(self, llh_name: Optional[str] = None):
         """Read maps."""
         self.llh_name = llh_name
-        self._configs = self.get_configs()
+        _configs = self.get_configs()
 
-        self._configs_default = self.get_default()
+        _configs_default = self.get_default()
 
         maps = dict()
         sigmas = ["median", "lower", "upper"]
         for i, sigma in enumerate(sigmas):
-            if isinstance(self._configs_default, list):
-                maps[sigma] = Map(name=self.name + f"_{sigma}", default=self._configs_default[i])
+            if isinstance(_configs_default, list):
+                maps[sigma] = Map(name=self.name + f"_{sigma}", default=_configs_default[i])
             else:
                 # If only one file is given, then use the same file for all sigmas
-                maps[sigma] = Map(name=self.name + f"_{sigma}", default=self._configs_default)
+                maps[sigma] = Map(name=self.name + f"_{sigma}", default=_configs_default)
 
             if maps[sigma].name not in _cached_configs.keys():
                 _cached_configs[maps[sigma].name] = dict()
@@ -309,11 +309,11 @@ class SigmaMap(Config):
             # In case some plugins only use the median
             # and may already update the map name in `_cached_configs`
             if isinstance(_cached_configs[maps[sigma].name], dict):
-                if isinstance(self._configs, list):
-                    _cached_configs[maps[sigma].name].update({self.llh_name: self._configs[i]})
+                if isinstance(_configs, list):
+                    _cached_configs[maps[sigma].name].update({self.llh_name: _configs[i]})
                 else:
                     # If only one file is given, then use the same file for all sigmas
-                    _cached_configs[maps[sigma].name].update({self.llh_name: self._configs})
+                    _cached_configs[maps[sigma].name].update({self.llh_name: _configs})
 
             setattr(self, sigma, maps[sigma])
 
@@ -321,7 +321,7 @@ class SigmaMap(Config):
         self.lower.build(llh_name=self.llh_name)  # type: ignore
         self.upper.build(llh_name=self.llh_name)  # type: ignore
 
-        if isinstance(self._configs, list) and len(self._configs) > 4:
+        if isinstance(_configs, list) and len(_configs) > 4:
             raise ValueError(f"You give too much information in {self.name} configs.")
 
     def get_configs(self):
