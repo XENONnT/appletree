@@ -92,7 +92,7 @@ class Config:
         if self.default is not OMITTED:
             return self.default
 
-        raise ValueError(f"Missing option {self.name} " f"required by {self.taken_by}")
+        raise ValueError(f"Missing option {self.name} required by {self.taken_by}")
 
     def build(self, llh_name: Optional[str] = None):
         """Build configuration, set attributes to Config instance."""
@@ -294,12 +294,24 @@ class SigmaMap(Config):
 
         _configs_default = self.get_default()
 
+        if isinstance(_configs, list) and len(_configs) > 4:
+            raise ValueError(f"You give too much information in {self.name}'s configs.")
+
+        if isinstance(_configs_default, list) and len(_configs_default) > 4:
+            raise ValueError(f"You give too much information in {self.name}'s default configs.")
+
         maps = dict()
         sigmas = ["median", "lower", "upper"]
         for i, sigma in enumerate(sigmas):
+            # propagate _configs_default to Map instances
             if isinstance(_configs_default, list):
                 maps[sigma] = Map(name=self.name + f"_{sigma}", default=_configs_default[i])
             else:
+                if not isinstance(_configs_default, str):
+                    raise ValueError(
+                        f"If {self.name}'s default configuration is not a list, "
+                        "then it should be a string."
+                    )
                 # If only one file is given, then use the same file for all sigmas
                 maps[sigma] = Map(name=self.name + f"_{sigma}", default=_configs_default)
 
@@ -312,6 +324,11 @@ class SigmaMap(Config):
                 if isinstance(_configs, list):
                     _cached_configs[maps[sigma].name].update({self.llh_name: _configs[i]})
                 else:
+                    if not isinstance(_configs, str):
+                        raise ValueError(
+                            f"If {self.name}'s configuration is not a list, "
+                            "then it should be a string."
+                        )
                     # If only one file is given, then use the same file for all sigmas
                     _cached_configs[maps[sigma].name].update({self.llh_name: _configs})
 
@@ -321,8 +338,13 @@ class SigmaMap(Config):
         self.lower.build(llh_name=self.llh_name)  # type: ignore
         self.upper.build(llh_name=self.llh_name)  # type: ignore
 
-        if isinstance(_configs, list) and len(_configs) > 4:
-            raise ValueError(f"You give too much information in {self.name} configs.")
+        if self.required_parameter is not None:
+            print(
+                f"{self.llh_name}'s map {self.name} is using "
+                f"the parameter {self.required_parameter}."
+            )
+        else:
+            print(f"{self.llh_name}'s map {self.name} is static and not using any parameter.")
 
     def get_configs(self):
         if self.name in _cached_configs:
@@ -351,9 +373,6 @@ class SigmaMap(Config):
         # Find required parameter
         if isinstance(_configs, list):
             if len(_configs) == 4:
-                print(
-                    f"{self.llh_name} is using the parameter " f"{_configs[-1]} in {self.name} map."
-                )
                 return _configs[-1]
             else:
                 return self.name + "_sigma"

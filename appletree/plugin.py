@@ -34,10 +34,10 @@ class Plugin:
         # llh_name will tell us which map to use
         self.llh_name = llh_name
         if not self.depends_on:
-            raise ValueError("depends_on not provided for " f"{self.__class__.__name__}")
+            raise ValueError(f"depends_on not provided for {self.__class__.__name__}")
 
         if not self.provides:
-            raise ValueError("provides not provided for " f"{self.__class__.__name__}")
+            raise ValueError(f"provides not provided for {self.__class__.__name__}")
 
         # configs are loaded when a plugin is initialized
         for config in self.takes_config.values():
