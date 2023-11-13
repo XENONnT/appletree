@@ -280,11 +280,12 @@ class Map(Config):
 class SigmaMap(Config):
     """Maps with uncertainty.
 
-    Default value is a list whose order is:
-    [median, lower, upper, (parameter)]
-    Each map is assigned as attribute of SigmaMap.
-    If the last element in the list is the required parameter.
+    The value of a SigmaMap can be:
+    * a list with four elements, which are the file names of median, lower, upper maps and the name of the scaler.
+    * a list with three elements, which are the file names of median, lower and upper maps. The name of the scaler is the default one f"{self.name}_sigma".
+    * a string, which is the file name of the median map.
 
+    In the first and second case, the name of the scaler will appear in component.needed_parameters.
     """
 
     def build(self, llh_name: Optional[str] = None):
