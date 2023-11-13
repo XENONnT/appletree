@@ -281,11 +281,16 @@ class SigmaMap(Config):
     """Maps with uncertainty.
 
     The value of a SigmaMap can be:
-    * a list with four elements, which are the file names of median, lower, upper maps and the name of the scaler.
-    * a list with three elements, which are the file names of median, lower and upper maps. The name of the scaler is the default one f"{self.name}_sigma".
-    * a string, which is the file name of the median map.
+     * a list with four elements,
+        which are the file names of median, lower, upper maps and the name of the scaler.
+     * a list with three elements,
+        which are the file names of median, lower and upper maps. The name of the scaler
+        is the default one f"{self.name}_sigma".
+     * a string,
+        which is the file name of the map for median, lower, upper.
 
-    In the first and second case, the name of the scaler will appear in component.needed_parameters.
+    In the first and second case, the name of the scaler will appear
+    in Component.needed_parameters.
 
     """
 
