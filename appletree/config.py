@@ -286,6 +286,7 @@ class SigmaMap(Config):
     * a string, which is the file name of the median map.
 
     In the first and second case, the name of the scaler will appear in component.needed_parameters.
+
     """
 
     def build(self, llh_name: Optional[str] = None):
