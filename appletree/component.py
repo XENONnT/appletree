@@ -286,8 +286,9 @@ class ComponentSim(Component):
             self.needed_parameters |= set(plugin.parameters)
             # Add needed_parameters from config
             for config in plugin.takes_config.values():
-                if config.required_parameter is not None:
-                    self.needed_parameters |= {config.required_parameter}
+                required_parameter = config.required_parameter(self.llh_name)
+                if required_parameter is not None:
+                    self.needed_parameters |= {required_parameter}
 
     def flush_source_code(
         self,
