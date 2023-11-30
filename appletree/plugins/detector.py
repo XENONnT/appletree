@@ -149,7 +149,7 @@ class ElectronDrifted(Plugin):
 class S2PE(Plugin):
     depends_on = ["num_electron_drifted", "s2_correction_true", "x", "y"]
     provides = ["num_s2_pe"]
-    parameters = ("g2", "gas_gain")
+    parameters = ("g2",)
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, num_electron_drifted, s2_correction_true, x, y):
