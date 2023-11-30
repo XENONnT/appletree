@@ -71,21 +71,21 @@ class S2(Plugin):
 
 @export
 class cS1(Plugin):
-    depends_on = ["s1_area", "s1_correction"]
+    depends_on = ["s1_area", "s1_correction_rec"]
     provides = ["cs1"]
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, s1_area, s1_correction):
-        cs1 = s1_area / s1_correction
+    def simulate(self, key, parameters, s1_area, s1_correction_rec):
+        cs1 = s1_area / s1_correction_rec
         return key, cs1
 
 
 @export
 class cS2(Plugin):
-    depends_on = ["s2_area", "s2_correction", "drift_survive_prob"]
+    depends_on = ["s2_area", "s2_correction_rec", "drift_survive_prob"]
     provides = ["cs2"]
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, s2_area, s2_correction, drift_survive_prob):
-        cs2 = s2_area / s2_correction / drift_survive_prob
+    def simulate(self, key, parameters, s2_area, s2_correction_rec, drift_survive_prob):
+        cs2 = s2_area / s2_correction_rec / drift_survive_prob
         return key, cs2

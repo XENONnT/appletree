@@ -18,15 +18,33 @@ export, __all__ = exporter(export_self=False)
         help="S1 light collection efficiency correction",
     ),
 )
-class S1Correction(Plugin):
+class S1CorrectionTrue(Plugin):
+    depends_on = ["x", "y", "z"]
+    provides = ["s1_correction_true"]
+
+    @partial(jit, static_argnums=(0,))
+    def simulate(self, key, parameters, x, y, z):
+        pos_true = jnp.stack([x, y, z]).T
+        s1_correction_true = self.s1_correction.apply(pos_true)
+        return key, s1_correction_true
+
+@export
+@takes_config(
+    Map(
+        name="s1_correction",
+        default="_s1_correction.json",
+        help="S1 light collection efficiency correction",
+    ),
+)
+class S1CorrectionRec(Plugin):
     depends_on = ["rec_x", "rec_y", "rec_z"]
-    provides = ["s1_correction"]
+    provides = ["s1_correction_rec"]
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, rec_x, rec_y, rec_z):
-        pos = jnp.stack([rec_x, rec_y, rec_z]).T
-        s1_correction = self.s1_correction.apply(pos)
-        return key, s1_correction
+        pos_rec = jnp.stack([rec_x, rec_y, rec_z]).T
+        s1_correction_rec = self.s1_correction.apply(pos_rec)
+        return key, s1_correction_rec
 
 
 @export
@@ -37,27 +55,44 @@ class S1Correction(Plugin):
         help="S2 light collection efficiency correction",
     ),
 )
-class S2Correction(Plugin):
+class S2CorrectionTrue(Plugin):
+    depends_on = ["x", "y"]
+    provides = ["s2_correction_true"]
+
+    @partial(jit, static_argnums=(0,))
+    def simulate(self, key, parameters, x, y):
+        pos_true = jnp.stack([x, y]).T
+        s2_correction_true = self.s2_correction.apply(pos_true)
+        return key, s2_correction_true
+
+@export
+@takes_config(
+    Map(
+        name="s2_correction",
+        default="_s2_correction.json",
+        help="S2 light collection efficiency correction",
+    ),
+)
+class S2CorrectionRec(Plugin):
     depends_on = ["rec_x", "rec_y"]
-    provides = ["s2_correction"]
+    provides = ["s2_correction_rec"]
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, rec_x, rec_y):
-        pos = jnp.stack([rec_x, rec_y]).T
-        s2_correction = self.s2_correction.apply(pos)
-        return key, s2_correction
-
+        pos_rec = jnp.stack([rec_x, rec_y]).T
+        s2_correction_rec = self.s2_correction.apply(pos_rec)
+        return key, s2_correction_rec
 
 @export
 class PhotonDetection(Plugin):
-    depends_on = ["num_photon", "s1_correction"]
+    depends_on = ["num_photon", "s1_correction_true"]
     provides = ["num_s1_phd"]
     parameters = ("g1", "p_dpe")
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, num_photon, s1_correction):
+    def simulate(self, key, parameters, num_photon, s1_correction_true):
         g1_true_no_dpe = jnp.clip(
-            parameters["g1"] * s1_correction / (1.0 + parameters["p_dpe"]), 0, 1.0
+            parameters["g1"] * s1_correction_true / (1.0 + parameters["p_dpe"]), 0, 1.0
         )
         key, num_s1_phd = randgen.binomial(key, g1_true_no_dpe, num_photon)
         return key, num_s1_phd
@@ -106,14 +141,14 @@ class ElectronDrifted(Plugin):
 
 @export
 class S2PE(Plugin):
-    depends_on = ["num_electron_drifted", "s2_correction"]
+    depends_on = ["num_electron_drifted", "s2_correction_true"]
     provides = ["num_s2_pe"]
     parameters = ("g2", "gas_gain")
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, num_electron_drifted, s2_correction):
+    def simulate(self, key, parameters, num_electron_drifted, s2_correction_true):
         extraction_eff = parameters["g2"] / parameters["gas_gain"]
-        g2_true = parameters["g2"] * s2_correction
+        g2_true = parameters["g2"] * s2_correction_true
         gas_gain_true = g2_true / extraction_eff
 
         key, num_electron_extracted = randgen.binomial(key, extraction_eff, num_electron_drifted)
