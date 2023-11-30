@@ -28,6 +28,7 @@ class S1CorrectionTrue(Plugin):
         s1_correction_true = self.s1_correction.apply(pos_true)
         return key, s1_correction_true
 
+
 @export
 @takes_config(
     Map(
@@ -65,6 +66,7 @@ class S2CorrectionTrue(Plugin):
         s2_correction_true = self.s2_correction.apply(pos_true)
         return key, s2_correction_true
 
+
 @export
 @takes_config(
     Map(
@@ -82,6 +84,7 @@ class S2CorrectionRec(Plugin):
         pos_rec = jnp.stack([rec_x, rec_y]).T
         s2_correction_rec = self.s2_correction.apply(pos_rec)
         return key, s2_correction_rec
+
 
 @export
 class PhotonDetection(Plugin):
