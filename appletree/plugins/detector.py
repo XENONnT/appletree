@@ -143,7 +143,11 @@ class ElectronDrifted(Plugin):
 
 
 @takes_config(
-    Map(name="gas_gain_relative", default="_gas_gain_relative.json", help="Gas gain as a function of (x, y) / mean gas gain"),
+    Map(
+        name="gas_gain_relative",
+        default="_gas_gain_relative.json",
+        help="Gas gain as a function of (x, y) / mean gas gain",
+    ),
 )
 @export
 class S2PE(Plugin):
