@@ -143,18 +143,18 @@ class ElectronDrifted(Plugin):
 
 
 @takes_config(
-    Map(name="gas_gain", default="_gas_gain.json", help="Gas gain (x,y) dependence"),
+    Map(name="gas_gain_relative", default="_gas_gain_relative.json", help="Gas gain as a function of (x, y) / mean gas gain"),
 )
 @export
 class S2PE(Plugin):
     depends_on = ["num_electron_drifted", "s2_correction_true", "x", "y"]
     provides = ["num_s2_pe"]
-    parameters = ("g2",)
+    parameters = ("g2", "gas_gain")
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, num_electron_drifted, s2_correction_true, x, y):
         pos_true = jnp.stack([x, y]).T
-        gas_gain = self.gas_gain.apply((pos_true))
+        gas_gain = parameters["gas_gain"] * self.gas_gain_relative.apply((pos_true))
         extraction_eff = parameters["g2"] * s2_correction_true / gas_gain
 
         key, num_electron_extracted = randgen.binomial(key, extraction_eff, num_electron_drifted)
