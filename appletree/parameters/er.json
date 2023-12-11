@@ -25,6 +25,17 @@
         "unit": "1",
         "doc": "Fano factor which describes the fluctuation of num of quanta"
     },
+    "gas_gain": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 31.3
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "PE/electron",
+        "doc": "Gas gain"
+    },
     "drift_velocity": {
         "prior_type": "fixed",
         "prior_args": {
