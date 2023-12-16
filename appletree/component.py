@@ -84,10 +84,9 @@ class Component:
         results_pile = []
         for _ in range(times):
             key, results = self.simulate(key, batch_size, parameters)
+            results_pile.append(np.array(results))
             if apply_eff:
-                results_pile.append(np.array(results[results[-1] > 0]))
-            else:
-                results_pile.append(np.array(results))
+                results_pile[-1] = results_pile[-1][results_pile[-1] > 0]
         return key, np.hstack(results_pile)
 
     def multiple_simulations_compile(self, key, batch_size, parameters, times):

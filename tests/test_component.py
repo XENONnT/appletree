@@ -56,7 +56,7 @@ def test_sim_component():
     batch_size = int(1e3)
     key = apt.randgen.get_key(seed=137)
 
-    key, r = er.multiple_simulations(key, batch_size, parameters, 5)
+    key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)
 
     key, h = er.simulate_hist(key, batch_size, parameters)
     apt.utils.plot_irreg_histogram_2d(*er.bins, h, density=False)
