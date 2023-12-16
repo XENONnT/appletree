@@ -79,12 +79,15 @@ class Component:
         """Hook for simulation with histogram output."""
         raise NotImplementedError
 
-    def multiple_simulations(self, key, batch_size, parameters, times):
+    def multiple_simulations(self, key, batch_size, parameters, times, apply_eff=False):
         """Simulate many times and move results to CPU because the memory limit of GPU."""
         results_pile = []
         for _ in range(times):
             key, results = self.simulate(key, batch_size, parameters)
-            results_pile.append(np.array(results))
+            if apply_eff:
+                results_pile.append(np.array(results[results[-1] > 0]))
+            else:
+                results_pile.append(np.array(results))
         return key, np.hstack(results_pile)
 
     def multiple_simulations_compile(self, key, batch_size, parameters, times):
