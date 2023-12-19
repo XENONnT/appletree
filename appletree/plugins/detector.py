@@ -56,9 +56,7 @@ class PhotonDetection(Plugin):
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, num_photon, s1_lce):
-        g1_true_no_dpe = jnp.clip(
-            parameters["g1"] * s1_lce / (1.0 + parameters["p_dpe"]), 0, 1.0
-        )
+        g1_true_no_dpe = jnp.clip(parameters["g1"] * s1_lce / (1.0 + parameters["p_dpe"]), 0, 1.0)
         key, num_s1_phd = randgen.binomial(key, g1_true_no_dpe, num_photon)
         return key, num_s1_phd
 
