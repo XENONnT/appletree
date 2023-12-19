@@ -1,3 +1,5 @@
+import pytest
+
 import pandas as pd
 from jax import numpy as jnp
 
@@ -35,7 +37,7 @@ def test_fixed_component():
         file_name="AC_Rn220.pkl",
     )
     ac.rate_name = "ac_rate"
-    ac.deduce(data_names=("cs1", "cs2"))
+    ac.deduce(data_names=["cs1", "cs2"])
     ac.simulate_hist(parameters)
     ac.simulate_weighted_data(parameters)
 
@@ -47,7 +49,7 @@ def test_sim_component():
         bins_type="irreg",
     )
     er.deduce(
-        data_names=("cs1", "cs2"),
+        data_names=["cs1", "cs2"],
         func_name="er_sim",
     )
     er.compile()
@@ -73,3 +75,13 @@ def test_sim_component():
             key, _ = test(key, batch_size, parameters)
 
     benchmark(key)
+
+    er.deduce(
+        data_names=["cs1", "cs2"],
+        func_name="er_sim",
+        force_no_eff=True,
+    )
+    er.compile()
+    with pytest.raises(RuntimeError):
+        print("here")
+        # key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)

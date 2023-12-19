@@ -26,6 +26,7 @@ class Component:
     rate_name: str = ""
     norm_type: str = ""
     add_eps_to_hist: bool = True
+    force_no_eff: bool = False
 
     def __init__(self, name: Optional[str] = None, llh_name: Optional[str] = None, **kwargs):
         """Initialization.
@@ -86,6 +87,12 @@ class Component:
             key, results = self.simulate(key, batch_size, parameters)
             results_pile.append(np.array(results))
             if apply_eff:
+                if self.force_no_eff:
+                    raise RuntimeError(
+                        "You are forcing to apply efficiency! "
+                        "But component was set to not returning efficiency when "
+                        f"running {self.name}.deduce!"
+                    )
                 results_pile[-1] = results_pile[-1][:, results_pile[-1][-1] > 0]
         return key, np.hstack(results_pile)
 
@@ -381,6 +388,9 @@ class ComponentSim(Component):
             data_names.remove("eff")
         if not force_no_eff:
             data_names = list(data_names) + ["eff"]
+        else:
+            # track status of component
+            self.force_no_eff = True
 
         dependencies = self.dependencies_deduce(data_names, nodep_data_name=nodep_data_name)
         self.dependencies_simplify(dependencies)
