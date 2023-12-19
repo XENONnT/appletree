@@ -26,6 +26,7 @@ class Component:
     rate_name: str = ""
     norm_type: str = ""
     add_eps_to_hist: bool = True
+    force_no_eff: bool = False
 
     def __init__(self, name: Optional[str] = None, llh_name: Optional[str] = None, **kwargs):
         """Initialization.
@@ -79,12 +80,20 @@ class Component:
         """Hook for simulation with histogram output."""
         raise NotImplementedError
 
-    def multiple_simulations(self, key, batch_size, parameters, times):
+    def multiple_simulations(self, key, batch_size, parameters, times, apply_eff=False):
         """Simulate many times and move results to CPU because the memory limit of GPU."""
         results_pile = []
         for _ in range(times):
             key, results = self.simulate(key, batch_size, parameters)
             results_pile.append(np.array(results))
+            if apply_eff:
+                if self.force_no_eff:
+                    raise RuntimeError(
+                        "You are forcing to apply efficiency! "
+                        "But component was set to not returning efficiency when "
+                        f"running {self.name}.deduce!"
+                    )
+                results_pile[-1] = results_pile[-1][:, results_pile[-1][-1] > 0]
         return key, np.hstack(results_pile)
 
     def multiple_simulations_compile(self, key, batch_size, parameters, times):
@@ -379,6 +388,9 @@ class ComponentSim(Component):
             data_names.remove("eff")
         if not force_no_eff:
             data_names = list(data_names) + ["eff"]
+        else:
+            # track status of component
+            self.force_no_eff = True
 
         dependencies = self.dependencies_deduce(data_names, nodep_data_name=nodep_data_name)
         self.dependencies_simplify(dependencies)
@@ -398,10 +410,15 @@ class ComponentSim(Component):
 
         """
         key, result = self.simulate(key, batch_size, parameters)
-        mc = result[:-1]
-        assert len(mc) == len(self.bins), "Length of bins must be the same as length of bins_on!"
-        mc = jnp.asarray(mc).T
-        eff = result[-1]  # we guarantee that the last output is efficiency in self.deduce
+        if self.force_no_eff:
+            mc = jnp.asarray(result).T
+            eff = jnp.ones(mc.shape[0])
+        else:
+            mc = jnp.asarray(result[:-1]).T
+            eff = result[-1]  # we guarantee that the last output is efficiency in self.deduce
+        assert mc.shape[1] == len(
+            self.bins
+        ), "Length of bins must be the same as length of bins_on!"
 
         hist = self.implement_binning(mc, eff)
         normalization_factor = self.get_normalization(hist, parameters, batch_size)
