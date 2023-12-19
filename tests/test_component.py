@@ -82,5 +82,6 @@ def test_sim_component():
         force_no_eff=True,
     )
     er.compile()
+    er.simulate_hist(key, batch_size, parameters)
     with pytest.raises(RuntimeError):
         key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)

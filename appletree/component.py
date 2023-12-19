@@ -410,10 +410,15 @@ class ComponentSim(Component):
 
         """
         key, result = self.simulate(key, batch_size, parameters)
-        mc = result[:-1]
-        assert len(mc) == len(self.bins), "Length of bins must be the same as length of bins_on!"
-        mc = jnp.asarray(mc).T
-        eff = result[-1]  # we guarantee that the last output is efficiency in self.deduce
+        if self.force_no_eff:
+            mc = jnp.asarray(result).T
+            eff = jnp.ones(mc.shape[0])
+        else:
+            mc = jnp.asarray(result[:-1]).T
+            eff = result[-1]  # we guarantee that the last output is efficiency in self.deduce
+        assert mc.shape[1] == len(
+            self.bins
+        ), "Length of bins must be the same as length of bins_on!"
 
         hist = self.implement_binning(mc, eff)
         normalization_factor = self.get_normalization(hist, parameters, batch_size)
