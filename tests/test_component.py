@@ -83,5 +83,4 @@ def test_sim_component():
     )
     er.compile()
     with pytest.raises(RuntimeError):
-        print("here")
-        # key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)
+        key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)
