@@ -1,10 +1,11 @@
 import appletree as apt
-from appletree.share import _cached_configs
+from appletree.share import _cached_configs, _cached_functions
 from appletree.utils import get_file_path, check_unused_configs
 
 
 def test_rn220_context():
     """Test Context of Rn220 combine fitting."""
+    _cached_functions.clear()
     _cached_configs.clear()
     context = apt.ContextRn220()
 
@@ -18,6 +19,7 @@ def test_rn220_context():
 
 def test_rn220_ar37_context():
     """Test Context of Rn220 & Ar37 combine fitting."""
+    _cached_functions.clear()
     _cached_configs.clear()
     context = apt.ContextRn220Ar37()
 
@@ -33,6 +35,7 @@ def test_rn220_ar37_context():
 
 def test_neutron_context():
     """Test Context of neutron combine fitting."""
+    _cached_functions.clear()
     _cached_configs.clear()
     instruct = get_file_path("neutron_low.json")
     context = apt.Context(instruct)
@@ -44,6 +47,7 @@ def test_neutron_context():
 
 def test_literature_context():
     """Test Context of neutron combine fitting."""
+    _cached_functions.clear()
     _cached_configs.clear()
     instruct = get_file_path("literature_lyqy.json")
     context = apt.Context(instruct)

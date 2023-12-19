@@ -1,9 +1,11 @@
 import appletree as apt
 from appletree.utils import get_file_path
+from appletree.share import _cached_functions
 
 
 def test_er_likelihood():
     """Test Likelihood."""
+    _cached_functions.clear()
     instruct = dict(
         data_file_name=get_file_path("data_Rn220.csv"),
         bins_type="equiprob",
@@ -32,6 +34,7 @@ def test_er_likelihood():
 
 def test_nr_likelihood():
     """Test Likelihood."""
+    _cached_functions.clear()
     instruct = dict(
         data_file_name=get_file_path("data_Neutron.csv"),
         bins_type="equiprob",
@@ -58,6 +61,7 @@ def test_nr_likelihood():
 
 def test_equiprob_likelihood():
     """Test Likelihood."""
+    _cached_functions.clear()
     try:
         error_raised = True
         instruct = dict(

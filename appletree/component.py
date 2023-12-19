@@ -361,8 +361,7 @@ class ComponentSim(Component):
     @code.setter
     def code(self, code):
         self._code = code
-        if self.llh_name not in _cached_functions.keys():
-            _cached_functions[self.llh_name] = dict()
+        _cached_functions[self.llh_name] = dict()
         self._compile = partial(exec, self.code, _cached_functions[self.llh_name])
 
     def deduce(

@@ -1,5 +1,4 @@
 import json
-from typing import Dict, Any, cast
 
 
 class RecordingDict(dict):
@@ -26,8 +25,18 @@ class RecordingDict(dict):
         self.accessed_keys.clear()
 
 
+class StaticValueDict(dict):
+    def __setitem__(self, key, value):
+        if key in self:
+            raise ValueError(
+                f"Likelihood name {key} is already cached. "
+                "If you want to overwrite it, please set another llh_name."
+            )
+        super().__setitem__(key, value)
+
+
 _cached_configs = RecordingDict()
-_cached_functions = cast(Dict[str, Any], dict())
+_cached_functions = StaticValueDict()
 
 
 def set_global_config(configs):
