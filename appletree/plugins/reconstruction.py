@@ -70,22 +70,60 @@ class S2(Plugin):
 
 
 @export
+@takes_config(
+    Map(
+        name="s1_correction",
+        default="_s1_correction.json",
+        help="S1 xyz correction on reconstructed positions",
+    ),
+)
+class S1Correction(Plugin):
+    depends_on = ["rec_x", "rec_y", "rec_z"]
+    provides = ["s1_correction"]
+
+    @partial(jit, static_argnums=(0,))
+    def simulate(self, key, parameters, rec_x, rec_y, rec_z):
+        pos_rec = jnp.stack([rec_x, rec_y, rec_z]).T
+        s1_correction = self.s1_correction.apply(pos_rec)
+        return key, s1_correction
+
+
+@export
+@takes_config(
+    Map(
+        name="s2_correction",
+        default="_s2_correction.json",
+        help="S2 xy correction on constructed positions",
+    ),
+)
+class S2Correction(Plugin):
+    depends_on = ["rec_x", "rec_y"]
+    provides = ["s2_correction"]
+
+    @partial(jit, static_argnums=(0,))
+    def simulate(self, key, parameters, rec_x, rec_y):
+        pos_rec = jnp.stack([rec_x, rec_y]).T
+        s2_correction = self.s2_correction.apply(pos_rec)
+        return key, s2_correction
+
+
+@export
 class cS1(Plugin):
-    depends_on = ["s1_area", "s1_correction_rec"]
+    depends_on = ["s1_area", "s1_correction"]
     provides = ["cs1"]
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, s1_area, s1_correction_rec):
-        cs1 = s1_area / s1_correction_rec
+    def simulate(self, key, parameters, s1_area, s1_correction):
+        cs1 = s1_area / s1_correction
         return key, cs1
 
 
 @export
 class cS2(Plugin):
-    depends_on = ["s2_area", "s2_correction_rec", "drift_survive_prob"]
+    depends_on = ["s2_area", "s2_correction", "drift_survive_prob"]
     provides = ["cs2"]
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, s2_area, s2_correction_rec, drift_survive_prob):
-        cs2 = s2_area / s2_correction_rec / drift_survive_prob
+    def simulate(self, key, parameters, s2_area, s2_correction, drift_survive_prob):
+        cs2 = s2_area / s2_correction / drift_survive_prob
         return key, cs2
