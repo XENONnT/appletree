@@ -25,7 +25,7 @@ class S1LCE(Plugin):
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, x, y, z):
         pos_true = jnp.stack([x, y, z]).T
-        s1_lce = self.s1_correction.apply(pos_true)
+        s1_lce = self.s1_lce.apply(pos_true)
         return key, s1_lce
 
 
@@ -44,7 +44,7 @@ class S2LCE(Plugin):
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, x, y):
         pos_true = jnp.stack([x, y]).T
-        s2_lce = self.s2_correction.apply(pos_true)
+        s2_lce = self.s2_lce.apply(pos_true)
         return key, s2_lce
 
 
