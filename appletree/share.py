@@ -42,7 +42,8 @@ _cached_functions = StaticValueDict()
 def set_global_config(configs):
     """Set new global configuration options.
 
-    :param configs: dict, configuration file name or dictionary
+    Args:
+        configs: dict, configuration file name or dictionary
 
     """
     from appletree.utils import get_file_path

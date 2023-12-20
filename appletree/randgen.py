@@ -37,10 +37,15 @@ def get_key(seed=None):
 def uniform(key, vmin, vmax, shape=()):
     """Uniform random sampler.
 
-    :param key: seed for random generator. :param vmin: <jnp.array>-like min in uniform
-    distribution. :param vmax: <jnp.array>-like max in uniform distribution. :param shape: output
-    shape. If not given, output has shape     jnp.broadcast_shapes(jnp.shape(vmin),
-    jnp.shape(vmax)). :return: an updated seed, random variables.
+    Args:
+        key: seed for random generator.
+        vmin: <jnp.array>-like min in uniform distribution.
+        vmax: <jnp.array>-like max in uniform distribution.
+        shape: output shape.
+            If not given, output has shape jnp.broadcast_shapes(jnp.shape(vmin), jnp.shape(vmax)).
+
+    Returns:
+        an updated seed, random variables.
 
     """
     key, seed = random.split(key)
@@ -58,9 +63,13 @@ def uniform(key, vmin, vmax, shape=()):
 def poisson(key, lam, shape=()):
     """Poisson random sampler.
 
-    :param key: seed for random generator. :param lam: <jnp.array>-like expectation in poisson
-    distribution. :param shape: output shape. If not given, output has shape jnp.shape(lam).
-    :return: an updated seed, random variables.
+    Args:
+        key: seed for random generator.
+        lam: <jnp.array>-like expectation in poisson distribution.
+        shape: output shape. If not given, output has shape jnp.shape(lam).
+
+    Returns:
+        an updated seed, random variables.
 
     """
     key, seed = random.split(key)
@@ -77,10 +86,15 @@ def poisson(key, lam, shape=()):
 def normal(key, mean, std, shape=()):
     """Normal distribution random sampler.
 
-    :param key: seed for random generator. :param mean: <jnp.array>-like mean in normal
-    distribution. :param std: <jnp.array>-like std in normal distribution. :param shape: output
-    shape. If not given, output has shape jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std)).
-    :return: an updated seed, random variables.
+    Args:
+        key: seed for random generator.
+        mean: <jnp.array>-like mean in normal distribution.
+        std: <jnp.array>-like std in normal distribution.
+        shape: output shape.
+            If not given, output has shape jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std)).
+
+    Returns:
+        an updated seed, random variables.
 
     """
     key, seed = random.split(key)
@@ -98,15 +112,18 @@ def normal(key, mean, std, shape=()):
 def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
     """Truncated normal distribution random sampler.
 
-    :param key: seed for random generator.
-    :param mean: <jnp.array>-like mean in normal distribution.
-    :param std: <jnp.array>-like std in normal distribution.
-    :param vmin: <jnp.array>-like min value to clip.
-        By default it's None. vmin and vmax cannot be both None.
-    :param vmax: <jnp.array>-like max value to clip.
-        By default it's None. vmin and vmax cannot be both None.
-    :param shape: parameter passed to normal(..., shape=shape)
-    :return: an updated seed, random variables.
+    Args:
+        key: seed for random generator.
+        mean: <jnp.array>-like mean in normal distribution.
+        std: <jnp.array>-like std in normal distribution.
+        vmin: <jnp.array>-like min value to clip. By default it's None.
+            vmin and vmax cannot be both None.
+        vmax: <jnp.array>-like max value to clip. By default it's None.
+            vmin and vmax cannot be both None.
+        shape: parameter passed to normal(..., shape=shape)
+
+    Returns:
+        an updated seed, random variables.
 
     """
     key, rvs = normal(key, mean, std, shape=shape)
@@ -119,13 +136,16 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
 def skewnormal(key, a, loc, scale, shape=()):
     """Skew-normal distribution random sampler.
 
-    :param key: seed for random generator.
-    :param a: <jnp.array>-like skewness in skewnormal distribution.
-    :param loc: <jnp.array>-like loc in skewnormal distribution.
-    :param scale: <jnp.array>-like scale in skewnormal distribution.
-    :param shape: output shape. If not given, output has shape
-    jnp.broadcast_shapes(jnp.shape(loc), jnp.shape(scale)).
-    :return: an updated seed, random variables.
+    Args:
+        key: seed for random generator.
+        a: <jnp.array>-like skewness in skewnormal distribution.
+        loc: <jnp.array>-like loc in skewnormal distribution.
+        scale: <jnp.array>-like scale in skewnormal distribution.
+        shape: output shape.
+            If not given, output has shape jnp.broadcast_shapes(jnp.shape(loc), jnp.shape(scale)).
+
+    Returns:
+        an updated seed, random variables.
 
     References
     ----------
@@ -152,9 +172,13 @@ def skewnormal(key, a, loc, scale, shape=()):
 def bernoulli(key, p, shape=()):
     """Bernoulli random sampler.
 
-    :param key: seed for random generator. :param p: <jnp.array>-like probability in bernoulli
-    distribution. :param shape: output shape. If not given, output has shape jnp.shape(lam).
-    :return: an updated seed, random variables.
+    Args:
+        key: seed for random generator.
+        p: <jnp.array>-like probability in bernoulli distribution.
+        shape: output shape. If not given, output has shape jnp.shape(lam).
+
+    Returns:
+        an updated seed, random variables.
 
     """
     key, seed = random.split(key)
@@ -171,11 +195,17 @@ def bernoulli(key, p, shape=()):
 def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_BINOM):
     """Binomial random sampler.
 
-    :param key: seed for random generator. :param p: <jnp.array>-like probability in binomial
-    distribution. :param n: <jnp.array>-like count in binomial distribution. :param shape: output
-    shape. If not given, output has shape     jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
-    :param always_use_normal: If true, then Norm(np, sqrt(npq)) is always used.     Otherwise if np
-    < 5, use the inversion method instead. :return: an updated seed, random variables.
+    Args:
+        key: seed for random generator.
+        p: <jnp.array>-like probability in binomial distribution.
+        n: <jnp.array>-like count in binomial distribution.
+        shape: output shape.
+            If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
+        always_use_normal: If true, then Norm(np, sqrt(npq)) is always used.
+            Otherwise if n * p < 5, use the inversion method instead.
+
+    Returns:
+        an updated seed, random variables.
 
     """
 
@@ -221,8 +251,11 @@ def uniform_key_vectorized(key):
     """Uniform(0,1) distribution sampler, vectorized by key.
     Note: key won't be updated!
 
-    :param key: seed for random generator, with shape (N, 2)
-    :return: random varibles with shape (N, )
+    Args:
+        key: seed for random generator, with shape (N, 2)
+
+    Returns:
+        random varibles with shape (N,)
     """
     sampler = vmap(jax.random.uniform, (0,), 0)
     return sampler(key)
@@ -233,12 +266,18 @@ class TwoHalfNorm:
 
     @staticmethod
     def rvs(mu=0, sigma_pos=1, sigma_neg=1, size=None):
-        """Get random variables :param mu: float, 'center' value of the distribution :param
-        sigma_pos: float, Standard deviation of the distribution when variable larger than mu.
+        """Get random variables.
 
-        Must be non-negative. :param sigma_neg: float, Standard deviation of the distribution when
-        variable smaller than mu. Must be non-negative. :param size: int or tuple of ints, Output
-        shape. :return: random samples
+        Args:
+            mu: float, 'center' value of the distribution.
+            sigma_pos: float, Standard deviation of the distribution when variable larger than mu.
+                Must be non-negative.
+            sigma_neg: float, Standard deviation of the distribution when variable smaller than mu.
+                Must be non-negative.
+            size: int or tuple of ints, Output shape.
+
+        Returns:
+            random samples.
 
         """
         assert (sigma_pos > 0) and (sigma_neg > 0), "sigma should be positive"
@@ -256,11 +295,17 @@ class TwoHalfNorm:
     def logpdf(x, mu=0, sigma_pos=1, sigma_neg=1):
         """Log of the probability density function.
 
-        :param x: array, input variables :param mu: float, 'center' value of the distribution :param
-        sigma_pos: float, Standard deviation of the distribution when variable larger than mu. Must
-        be non-negative. :param sigma_neg: float, Standard deviation of the distribution when
-        variable smaller than mu. Must be non-negative. :param size: int or tuple of ints, Output
-        shape. :return: log probability density function
+        Args:
+            x: array, input variables.
+            mu: float, 'center' value of the distribution.
+            sigma_pos: float, Standard deviation of the distribution when variable larger than mu.
+                Must be non-negative.
+            sigma_neg: float, Standard deviation of the distribution when variable smaller than mu.
+                Must be non-negative.
+            size: int or tuple of ints, Output shape.
+
+        Returns:
+            log probability density function.
 
         """
         assert np.all(sigma_pos > 0) and np.all(sigma_neg > 0), "sigma should be positive"
@@ -305,9 +350,13 @@ class BandTwoHalfNorm:
 def twohalfnorm(key, mu, sigma_pos, sigma_neg, shape=()):
     """JAX version of TwoHalfNorm.rvs.
 
-    :param key: seed for random generator. :param shape: output shape. If not given, output has
-    shape jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std)). :return: an updated seed, random
-    variables.
+    Args:
+        key: seed for random generator.
+        shape: output shape.
+            If not given, output has shape jnp.broadcast_shapes(jnp.shape(mean), jnp.shape(std)).
+
+    Returns:
+        an updated seed, random variables.
 
     """
     key, seed = random.split(key)

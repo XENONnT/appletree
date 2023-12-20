@@ -25,7 +25,8 @@ class Context:
     def __init__(self, instruct, par_config=None):
         """Create an appletree context.
 
-        :param instruct: dict or str, instruct file name or dictionary
+        Args:
+            instruct: dict or str, instruct file name or dictionary.
 
         """
         if isinstance(instruct, str):
@@ -61,7 +62,8 @@ class Context:
     def register_all_likelihood(self, config):
         """Create all appletree likelihoods.
 
-        :param config: dict, configuration file name or dictionary
+        Args:
+            config: dict, configuration file name or dictionary.
 
         """
         components = importlib.import_module("appletree.components")
@@ -86,8 +88,9 @@ class Context:
     def register_likelihood(self, likelihood_name, likelihood_config):
         """Create an appletree likelihood.
 
-        :param likelihood_name: name of Likelihood :param likelihood_config: dict of likelihood
-        configuration
+        Args:
+            likelihood_name: name of Likelihood.
+            likelihood_config: dict of likelihood configuration.
 
         """
         if likelihood_name in self.likelihoods:
@@ -101,8 +104,10 @@ class Context:
     def register_component(self, likelihood_name, component_cls, component_name, file_name=None):
         """Register component to likelihood.
 
-        :param likelihood_name: name of Likelihood :param component_cls: class of Component :param
-        component_name: name of Component
+        Args:
+            likelihood_name: name of Likelihood.
+            component_cls: class of Component.
+            component_name: name of Component.
 
         """
         self[likelihood_name].register_component(
@@ -126,8 +131,9 @@ class Context:
     def get_num_events_accepted(self, parameters, batch_size=1_000_000):
         """Get number of events in the histogram under given parameters.
 
-        :param batch_size: int of number of simulated events :param parameters: dict of parameters
-        used in simulation
+        Args:
+            batch_size: int of number of simulated events.
+            parameters: dict of parameters used in simulation.
 
         """
         n_events = 0
@@ -142,8 +148,9 @@ class Context:
     def log_posterior(self, parameters, batch_size=1_000_000):
         """Get log likelihood of given parameters.
 
-        :param batch_size: int of number of simulated events :param parameters: dict of parameters
-        used in simulation
+        Args:
+            batch_size: int of number of simulated events.
+            parameters: dict of parameters used in simulation.
 
         """
         self.par_manager.set_parameter(parameters)
@@ -193,8 +200,9 @@ class Context:
     def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000):
         """Fitting posterior distribution of needed parameters.
 
-        :param nwalkers: int, number of walkers in the ensemble :param iteration: int, number of
-        steps to generate
+        Args:
+            nwalkers: int, number of walkers in the ensemble.
+            iteration: int, number of steps to generate.
 
         """
         self._sanity_check()
@@ -219,7 +227,9 @@ class Context:
     def continue_fitting(self, context, iteration=500, batch_size=1_000_000):
         """Continue a fitting of another context.
 
-        :param context: appletree context :param iteration: int, number of steps to generate
+        Args:
+            context: appletree context.
+            iteration: int, number of steps to generate.
 
         """
         # Final iteration
@@ -299,8 +309,11 @@ class Context:
     ):
         """Get parameters correspondes to max posterior.
 
-        :param likelihood_name: name of Likelihood :param component_name: name of Component :param
-        batch_size: int of number of simulated events :param seed: random seed
+        Args:
+            likelihood_name: name of Likelihood.
+            component_name: name of Component.
+            batch_size: int of number of simulated events.
+            seed: random seed.
 
         """
         parameters = self.get_post_parameters()
@@ -333,7 +346,8 @@ class Context:
     def get_parameter_config(self, par_config):
         """Get configuration for parameter manager.
 
-        :param par_config: str, parameters configuration file
+        Args:
+            par_config: str, parameters configuration file.
 
         """
         par_config = load_json(par_config)

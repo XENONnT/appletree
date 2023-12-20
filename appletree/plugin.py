@@ -56,14 +56,17 @@ class Plugin:
     def simulate(self, *args, **kwargs):
         """The main simulation function.
 
-        :param key: a jnp.array with length 2, used to generate random variables.
-            See https://jax.readthedocs.io/en/latest/jax-101/05-random-numbers.html
-        :param parameters: a dictionary with key being parameters' names. Plugin will
-            get values of self.parameters from this dictionary.
-        :param args: other args following `key` and `parameters` must be in the order of
-            self.depends_on.
-        :return: `key` and output simulated variables, ordered by self.provides. `key` will
-            be updated if it's used inside self.simulate to generate random variables.
+        Args:
+            key: a jnp.array with length 2, used to generate random variables.
+                See https://jax.readthedocs.io/en/latest/jax-101/05-random-numbers.html
+            parameters: a dictionary with key being parameters' names. Plugin will
+                get values of self.parameters from this dictionary.
+            args: other args following `key` and `parameters` must be in the order of
+                self.depends_on.
+
+        Returns:
+            `key` and output simulated variables, ordered by self.provides. `key` will
+                be updated if it's used inside self.simulate to generate random variables.
 
         """
         raise NotImplementedError

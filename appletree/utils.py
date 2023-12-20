@@ -257,11 +257,14 @@ def get_equiprob_bins_2d(
 ):
     """Get 2D equiprobable binning edges.
 
-    :param data: array with shape (N, 2). :param n_partitions: [M1, M2] where M1 M2 are the number
-    of bins on each dimension. :param x_clip: lower and upper binning edges on the 0th dimension.
-    Data outside the x_clip will be dropped. :param y_clip: lower and upper binning edges on the 1st
-    dimension.     Data outside the y_clip will be dropped. :param which_np: can be numpy or
-    jax.numpy, determining the returned array type.
+    Args:
+        data: array with shape (N, 2).
+        n_partitions: [M1, M2] where M1 M2 are the number of bins on each dimension.
+        x_clip: lower and upper binning edges on the 0th dimension.
+            Data outside the x_clip will be dropped.
+        y_clip: lower and upper binning edges on the 1st dimension.
+        Data outside the y_clip will be dropped.
+        which_np: can be numpy or jax.numpy, determining the returned array type.
 
     """
     mask = data[:, 0] > x_clip[0]
@@ -285,8 +288,11 @@ def get_equiprob_bins_2d(
 def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
     """Plot histogram defined by irregular binning.
 
-    :param bins_x: array with shape (M1, ) :param bins_y: array with shape (M1-1, M2) :param hist:
-    array with shape (M1-1, M2-1) :param density: boolean.
+    Args:
+        bins_x: array with shape (M1,).
+        bins_y: array with shape (M1-1, M2).
+        hist: array with shape (M1-1, M2-1).
+        density: boolean.
 
     """
     hist = np.asarray(hist)
@@ -375,8 +381,10 @@ def add_spaces(x):
 def tree_to_svg(graph_tree, save_as="data_types", view=True):
     """Where to save this node.
 
-    :param graph_tree: Digraph instance :param save_as: str, file name :param view: bool, Open the
-    rendered result with the default application.
+    Args:
+        graph_tree: Digraph instance.
+        save_as: str, file name.
+        view: bool, Open the rendered result with the default application.
 
     """
     graph_tree.render(save_as, view=view)
@@ -392,8 +400,11 @@ def add_deps_to_graph_tree(
 ):
     """Recursively add nodes to graph base on plugin.deps.
 
-    :param context: Context instance :param graph_tree: Digraph instance :param data_names: Data
-    type name :param _seen: list or None, the seen data_name should not be plot
+    Args:
+        context: Context instance.
+        graph_tree: Digraph instance.
+        data_names: Data type name.
+        _seen: list or None, the seen data_name should not be plot.
 
     """
     if _seen is None:
@@ -431,9 +442,12 @@ def add_plugins_to_graph_tree(
 ):
     """Recursively add nodes to graph base on plugin.deps.
 
-    :param context: Context instance :param graph_tree: Digraph instance :param data_names: Data
-    type name :param _seen: list or None, the seen data_name should not be plot :param
-    with_data_names: bool, whether plot even with messy data_names
+    Args:
+        context: Context instance.
+        graph_tree: Digraph instance.
+        data_names: Data type name.
+        _seen: list or None, the seen data_name should not be plot.
+        with_data_names: bool, whether plot even with messy data_names
 
     """
     if _seen is None:
@@ -531,7 +545,9 @@ def _add_extension(module, subclass, base, force=False):
 def integrate_midpoint(x, y):
     """Calculate the integral using midpoint method.
 
-    :param x: 1D array-like :param y: 1D array-like, with the same length as x.
+    Args:
+        x: 1D array-like.
+        y: 1D array-like, with the same length as x.
 
     """
     _, res = cum_integrate_midpoint(x, y)
@@ -541,7 +557,9 @@ def integrate_midpoint(x, y):
 def cum_integrate_midpoint(x, y):
     """Calculate the cumulative integral using midpoint method.
 
-    :param x: 1D array-like :param y: 1D array-like, with the same length as x.
+    Args:
+        x: 1D array-like.
+        y: 1D array-like, with the same length as x.
 
     """
     x = np.array(x)

@@ -15,8 +15,12 @@ FLOAT_POS_MAX = jnp.finfo(jnp.float32).max
 def _L2_dist2(pos1, pos2):
     """Calculate L2 distance between pos1 and pos2.
 
-    :param pos1: array with shape (N, D) :param pos2: array with shape (M, D) :return: L2 distance
-    squared with shape (N, M)
+    Args:
+        pos1: array with shape (N, D).
+        pos2: array with shape (M, D).
+
+    Returns:
+        L2 distance squared with shape (N, M).
 
     """
     dr = jnp.expand_dims(pos1, axis=1) - jnp.expand_dims(pos2, axis=0)
@@ -28,10 +32,14 @@ def _L2_dist2(pos1, pos2):
 def map_interpolator_knn(pos, ref_pos, ref_val, k=3):
     """Inverse distance weighting average as interpolation using KNN.
 
-    :param pos: array with shape (N, D), as the points to be interpolated. :param ref_pos: array
-    with shape (M, D), as the reference points. :param ref_val: array with shape (M, ), as the
-    reference values. :return: interpolated values with shape (N, ), weighted by the inverse of the
-    distance to k nearest neighbors.
+    Args:
+        pos: array with shape (N, D), as the points to be interpolated.
+        ref_pos: array with shape (M, D), as the reference points.
+        ref_val: array with shape (M,), as the reference values.
+
+    Returns:
+        interpolated values with shape (N,),
+            weighted by the inverse of the distance to k nearest neighbors.
 
     """
     pos = jnp.asarray(pos)
@@ -52,10 +60,14 @@ def map_interpolator_knn(pos, ref_pos, ref_val, k=3):
 def curve_interpolator(pos, ref_pos, ref_val):
     """Inverse distance weighting average as interpolation using KNN (K=2) for 1D map.
 
-    :param pos: array with shape (N, ), as the points to be interpolated. :param ref_pos: array with
-    shape (M, ), as the reference points. :param ref_val: array with shape (M, ), as the reference
-    values. :return: interpolated values with shape (N, ), weighted by the inverse of     the
-    distance to k nearest neighbors.
+    Args:
+        pos: array with shape (N,), as the points to be interpolated.
+        ref_pos: array with shape (M,), as the reference points.
+        ref_val: array with shape (M,), as the reference values.
+
+    Returns:
+        interpolated values with shape (N,),
+            weighted by the inverse of the distance to k nearest neighbors.
 
     """
     right = jnp.searchsorted(ref_pos, pos)
@@ -84,10 +96,11 @@ def map_interpolator_regular_binning_1d(pos, ref_pos_lowers, ref_pos_uppers, ref
     """Inverse distance weighting average as 1D interpolation using KNN(K=2). A uniform mesh grid
     binning is assumed.
 
-    :param pos: array with shape (N, ), positions at which the interp is calculated. :param
-    ref_pos_lowers: array with shape (1, ), the lower edges of the binning on each dimension. :param
-    ref_pos_uppers: array with shape (1, ), the upper edges of the binning on each dimension. :param
-    ref_val: array with shape (M1, ), map values.
+    Args:
+        pos: array with shape (N,), positions at which the interp is calculated.
+        ref_pos_lowers: array with shape (1,), the lower edges of the binning on each dimension.
+        ref_pos_uppers: array with shape (1,), the upper edges of the binning on each dimension.
+        ref_val: array with shape (M1,), map values.
 
     """
     ref_pos = jnp.linspace(ref_pos_lowers, ref_pos_uppers, len(ref_val))
@@ -102,10 +115,11 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
     """Inverse distance weighting average as 2D interpolation using KNN(K=4). A uniform mesh grid
     binning is assumed.
 
-    :param pos: array with shape (N, 2), positions at which the interp is calculated. :param
-    ref_pos_lowers: array with shape (2, ), the lower edges of the binning on each dimension. :param
-    ref_pos_uppers: array with shape (2, ), the upper edges of the binning on each dimension. :param
-    ref_val: array with shape (M1, M2), map values.
+    Args:
+        pos: array with shape (N, 2), positions at which the interp is calculated.
+        ref_pos_lowers: array with shape (2,), the lower edges of the binning on each dimension.
+        ref_pos_uppers: array with shape (2,), the upper edges of the binning on each dimension.
+        ref_val: array with shape (M1, M2), map values.
 
     """
     num_bins = jnp.asarray(jnp.shape(ref_val))
@@ -155,10 +169,11 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
     """Inverse distance weighting average as 3D interpolation using KNN(K=8). A uniform mesh grid
     binning is assumed.
 
-    :param pos: array with shape (N, 3), positions at which the interp is calculated. :param
-    ref_pos_lowers: array with shape (3, ), the lower edges of the binning on each dimension. :param
-    ref_pos_uppers: array with shape (3, ), the upper edges of the binning on each dimension. :param
-    ref_val: array with shape (M1, M2, M3), map values.
+    Args:
+        pos: array with shape (N, 3), positions at which the interp is calculated.
+        ref_pos_lowers: array with shape (3,), the lower edges of the binning on each dimension.
+        ref_pos_uppers: array with shape (3,), the upper edges of the binning on each dimension.
+        ref_val: array with shape (M1, M2, M3), map values.
 
     """
     num_bins = jnp.asarray(jnp.shape(ref_val))
