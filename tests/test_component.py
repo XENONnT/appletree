@@ -5,6 +5,7 @@ from jax import numpy as jnp
 
 import appletree as apt
 from appletree.utils import get_file_path
+from appletree.share import _cached_functions
 
 
 # Get parameters
@@ -44,6 +45,7 @@ def test_fixed_component():
 
 def test_sim_component():
     """Test ComponentSim."""
+    _cached_functions.clear()
     er = apt.components.ERBand(
         bins=[bins_cs1, bins_cs2],
         bins_type="irreg",
@@ -76,6 +78,16 @@ def test_sim_component():
 
     benchmark(key)
 
+    # if _cached_functions not cleared, this will raise an error
+    with pytest.raises(RuntimeError):
+        er.deduce(
+            data_names=["cs1", "cs2"],
+            func_name="er_sim",
+            force_no_eff=True,
+        )
+
+    _cached_functions.clear()
+    # re-deduce after clearing _cached_functions
     er.deduce(
         data_names=["cs1", "cs2"],
         func_name="er_sim",
