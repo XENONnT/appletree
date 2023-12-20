@@ -19,12 +19,12 @@ class Likelihood:
     def __init__(self, name: Optional[str] = None, **config):
         """Create an appletree likelihood.
 
-        :param config: Dictionary with configuration options that will be applied, should include:
-
-          * data_file_name: the data used in fitting, usually calibration data
-          * bins_type: either meshgrid or equiprob
-          * bins_on: observables where we will perform inference on, usually [cs1, cs2]
-          * x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
+        Args:
+            config: Dictionary with configuration options that will be applied, should include:
+                * data_file_name: the data used in fitting, usually calibration data
+                * bins_type: either meshgrid or equiprob
+                * bins_on: observables where we will perform inference on, usually [cs1, cs2]
+                * x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
 
         """
         if name is None:
@@ -129,8 +129,10 @@ class Likelihood:
     ):
         """Create an appletree likelihood.
 
-        :param component_cls: class of Component :param component_name: name of Component :param
-        file_name: file used in ComponentFixed
+        Args:
+            component_cls: class of Component.
+            component_name: name of Component.
+            file_name: file used in ComponentFixed.
 
         """
         if component_name in self.components:
@@ -166,8 +168,10 @@ class Likelihood:
     def _simulate_model_hist(self, key, batch_size, parameters):
         """Histogram of simulated observables.
 
-        :param key: a pseudo-random number generator (PRNG) key :param batch_size: int of number of
-        simulated events :param parameters: dict of parameters used in simulation
+        Args:
+            key: a pseudo-random number generator (PRNG) key.
+            batch_size: int of number of simulated events.
+            parameters: dict of parameters used in simulation.
 
         """
         hist = jnp.zeros_like(self.data_hist)
@@ -184,8 +188,10 @@ class Likelihood:
     def simulate_weighted_data(self, key, batch_size, parameters):
         """Simulate weighted histogram.
 
-        :param key: a pseudo-random number generator (PRNG) key :param batch_size: int of number of
-        simulated events :param parameters: dict of parameters used in simulation
+        Args:
+            key: a pseudo-random number generator (PRNG) key.
+            batch_size: int of number of simulated events.
+            parameters: dict of parameters used in simulation.
 
         """
         result = []
@@ -203,8 +209,10 @@ class Likelihood:
     def get_log_likelihood(self, key, batch_size, parameters):
         """Get log likelihood of given parameters.
 
-        :param key: a pseudo-random number generator (PRNG) key :param batch_size: int of number of
-        simulated events :param parameters: dict of parameters used in simulation
+        Args:
+            key: a pseudo-random number generator (PRNG) key.
+            batch_size: int of number of simulated events.
+            parameters: dict of parameters used in simulation.
 
         """
         key, model_hist = self._simulate_model_hist(key, batch_size, parameters)
@@ -218,8 +226,9 @@ class Likelihood:
     def get_num_events_accepted(self, batch_size, parameters):
         """Get number of events in the histogram under given parameters.
 
-        :param batch_size: int of number of simulated events :param parameters: dict of parameters
-        used in simulation
+        Args:
+            batch_size: int of number of simulated events.
+            parameters: dict of parameters used in simulation.
 
         """
         key = randgen.get_key()
@@ -229,8 +238,9 @@ class Likelihood:
     def print_likelihood_summary(self, indent: str = " " * 4, short: bool = True):
         """Print likelihood summary: components, bins, file names.
 
-        :param indent: str of indent
-        :param short: bool, whether only print short summary
+        Args:
+            indent: str of indent.
+            short: bool, whether only print short summary.
         """
         print("\n" + "-" * 40)
 
@@ -285,7 +295,8 @@ class LikelihoodLit(Likelihood):
     def __init__(self, name: Optional[str] = None, **config):
         """Create an appletree likelihood.
 
-        :param config: Dictionary with configuration options that will be applied, should include:
+        Args:
+            config: Dictionary with configuration options that will be applied.
 
         """
         if name is None:
@@ -328,8 +339,10 @@ class LikelihoodLit(Likelihood):
     def _simulate_yields(self, key, batch_size, parameters):
         """Histogram of simulated observables.
 
-        :param key: a pseudo-random number generator (PRNG) key :param batch_size: int of number of
-        simulated events :param parameters: dict of parameters used in simulation
+        Args:
+            key: a pseudo-random number generator (PRNG) key.
+            batch_size: int of number of simulated events.
+            parameters: dict of parameters used in simulation.
 
         """
         if len(self.components) != 1:
@@ -349,8 +362,10 @@ class LikelihoodLit(Likelihood):
     def get_log_likelihood(self, key, batch_size, parameters):
         """Get log likelihood of given parameters.
 
-        :param key: a pseudo-random number generator (PRNG) key :param batch_size: int of number of
-        simulated events :param parameters: dict of parameters used in simulation
+        Args:
+            key: a pseudo-random number generator (PRNG) key.
+            batch_size: int of number of simulated events.
+            parameters: dict of parameters used in simulation.
 
         """
         if batch_size != 1:
@@ -371,8 +386,9 @@ class LikelihoodLit(Likelihood):
     def print_likelihood_summary(self, indent: str = " " * 4, short: bool = True):
         """Print likelihood summary: components, bins, file names.
 
-        :param indent: str of indent
-        :param short: bool, whether only print short summary
+        Args:
+            indent: str of indent.
+            short: bool, whether only print short summary.
         """
         print("\n" + "-" * 40)
 

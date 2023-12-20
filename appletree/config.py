@@ -28,13 +28,15 @@ __all__.extend(["OMITTED"])
 def takes_config(*configs):
     """Decorator for plugin classes, to specify which configs it takes.
 
-    :param configs: Config instances of configs this plugin takes.
+    Args:
+        configs: Config instances of configs this plugin takes.
 
     """
 
     def wrapped(plugin_class):
         """
-        :param plugin_class: plugin needs configuration
+        Args:
+            plugin_class: plugin needs configuration
         """
         result = dict()
         for config in configs:
@@ -74,8 +76,11 @@ class Config:
     ):
         """Initialization.
 
-        :param name: name of the map :param type: Excepted type of the option's value. :param
-        default: Default value the option takes. :param help: description of the map
+        Args:
+            name: name of the map.
+            type: Excepted type of the option's value.
+            default: Default value the option takes.
+            help: description of the map.
 
         """
         self.name = name

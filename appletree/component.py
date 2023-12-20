@@ -31,11 +31,11 @@ class Component:
     def __init__(self, name: Optional[str] = None, llh_name: Optional[str] = None, **kwargs):
         """Initialization.
 
-        :param bins: bins to generate the histogram.
-
-          * For irreg bins_type, bins must be bin edges of the two dimensions.
-          * For meshgrid bins_type, bins are sent to jnp.histogramdd.
-        :param bins_type: binning scheme, can be either irreg or meshgrid.
+        Args:
+            bins: bins to generate the histogram.
+                * For irreg bins_type, bins must be bin edges of the two dimensions.
+                * For meshgrid bins_type, bins are sent to jnp.histogramdd.
+            bins_type: binning scheme, can be either irreg or meshgrid.
 
         """
         if name is None:
@@ -120,8 +120,9 @@ class Component:
     def implement_binning(self, mc, eff):
         """Apply binning to MC data.
 
-        :param mc: data from simulation. :param eff: efficiency of each event, as the weight when
-        making a histogram.
+        Args:
+            mc: data from simulation.
+            eff: efficiency of each event, as the weight when making a histogram.
 
         """
         if self.bins_type == "irreg":
@@ -242,8 +243,10 @@ class ComponentSim(Component):
     ) -> list:
         """Deduce dependencies.
 
-        :param data_names: data names that simulation will output. :param dependencies: dependency
-        tree. :param nodep_data_name: data_name without dependency will not be deduced
+        Args:
+            data_names: data names that simulation will output.
+            dependencies: dependency tree.
+            nodep_data_name: data_name without dependency will not be deduced.
 
         """
         if dependencies is None:
@@ -373,10 +376,11 @@ class ComponentSim(Component):
     ):
         """Deduce workflow and code.
 
-        :param data_names: data names that simulation will output. :param func_name: name of the
-        simulation function, used to cache it. :param nodep_data_name: data_name without dependency
-        will not be deduced :param force_no_eff: force to ignore the efficiency, used in yield
-        prediction
+        Args:
+            data_names: data names that simulation will output.
+            func_name: name of the simulation function, used to cache it.
+            nodep_data_name: data_name without dependency will not be deduced.
+            force_no_eff: force to ignore the efficiency, used in yield prediction.
 
         """
         if not isinstance(data_names, (list, tuple)):
@@ -403,9 +407,10 @@ class ComponentSim(Component):
     def simulate_hist(self, key, batch_size, parameters):
         """Simulate and return histogram.
 
-        :param key: key used for pseudorandom generator. :param batch_size: number of events to be
-        simulated. :param parameters: a dictionary that contains all parameters needed in
-        simulation.
+        Args:
+            key: key used for pseudorandom generator.
+            batch_size: number of events to be simulated.
+            parameters: a dictionary that contains all parameters needed in simulation.
 
         """
         key, result = self.simulate(key, batch_size, parameters)
@@ -458,7 +463,8 @@ class ComponentSim(Component):
     def set_config(self, configs):
         """Set new global configuration options.
 
-        :param configs: dict, configuration file name or dictionary
+        Args:
+            configs: dict, configuration file name or dictionary
 
         """
         set_global_config(configs)
@@ -470,7 +476,8 @@ class ComponentSim(Component):
     def show_config(self, data_names: Union[List[str], Tuple[str]] = ["cs1", "cs2", "eff"]):
         """Return configuration options that affect data_names.
 
-        :param data_names: Data type name
+        Args:
+            data_names: Data type name
 
         """
         dependencies = self.dependencies_deduce(
