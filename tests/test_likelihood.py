@@ -1,3 +1,5 @@
+import pytest
+
 import appletree as apt
 from appletree.utils import get_file_path
 from appletree.share import _cached_functions
@@ -62,8 +64,7 @@ def test_nr_likelihood():
 def test_equiprob_likelihood():
     """Test Likelihood."""
     _cached_functions.clear()
-    try:
-        error_raised = True
+    with pytest.raises(RuntimeError):
         instruct = dict(
             data_file_name=get_file_path("data_Neutron.csv"),
             bins_type="equiprob",
@@ -73,9 +74,3 @@ def test_equiprob_likelihood():
             y_clip=[1e2, 1e3],
         )
         apt.Likelihood(**instruct)
-        error_raised = False
-    except Exception:
-        print("Error correctly raised when bins are not int in equiprob")
-    else:
-        if not error_raised:
-            raise RuntimeError("Should throw error when bins are not int in equiprob")
