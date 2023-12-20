@@ -70,6 +70,44 @@ class S2(Plugin):
 
 
 @export
+@takes_config(
+    Map(
+        name="s1_correction",
+        default="_s1_correction.json",
+        help="S1 xyz correction on reconstructed positions",
+    ),
+)
+class S1Correction(Plugin):
+    depends_on = ["rec_x", "rec_y", "rec_z"]
+    provides = ["s1_correction"]
+
+    @partial(jit, static_argnums=(0,))
+    def simulate(self, key, parameters, rec_x, rec_y, rec_z):
+        pos_rec = jnp.stack([rec_x, rec_y, rec_z]).T
+        s1_correction = self.s1_correction.apply(pos_rec)
+        return key, s1_correction
+
+
+@export
+@takes_config(
+    Map(
+        name="s2_correction",
+        default="_s2_correction.json",
+        help="S2 xy correction on constructed positions",
+    ),
+)
+class S2Correction(Plugin):
+    depends_on = ["rec_x", "rec_y"]
+    provides = ["s2_correction"]
+
+    @partial(jit, static_argnums=(0,))
+    def simulate(self, key, parameters, rec_x, rec_y):
+        pos_rec = jnp.stack([rec_x, rec_y]).T
+        s2_correction = self.s2_correction.apply(pos_rec)
+        return key, s2_correction
+
+
+@export
 class cS1(Plugin):
     depends_on = ["s1_area", "s1_correction"]
     provides = ["cs1"]
