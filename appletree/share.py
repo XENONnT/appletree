@@ -28,7 +28,7 @@ class RecordingDict(dict):
 class StaticValueDict(dict):
     def __setitem__(self, key, value):
         if key in self:
-            raise ValueError(
+            raise RuntimeError(
                 f"Likelihood name {key} is already cached. "
                 "If you want to overwrite it, please set another llh_name."
             )
