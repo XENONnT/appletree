@@ -13,7 +13,7 @@ v0.3.0 / 2023-08-31
 * Add function to check the usage of configs, check_unused_configs by @dachengx in https://github.com/XENONnT/appletree/pull/112
 * Proposal to use pre-commit for continuous integration by @dachengx in https://github.com/XENONnT/appletree/pull/113
 
-## New Contributors
+New Contributors
 * @hoetzsch made their first contribution in https://github.com/XENONnT/appletree/pull/101
 
 **Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.2.3...v0.3.0

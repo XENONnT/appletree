@@ -137,12 +137,13 @@ def _package_path(sub_directory):
 
 @export
 def get_file_path(fname):
-    """Find the full path to the resource file Try 5 methods in the following order.
+    """Find the full path to the resource file. Try 5 methods in the following order.
 
-    #. fname begin with '/', return absolute path #. url_base begin with '/', return url_base + name
-    #. can get file from _get_abspath, return appletree internal file path #. can be found in local
-    installed ntauxfiles, return ntauxfiles absolute path #. can be downloaded from MongoDB,
-    download and return cached path
+    * fname begin with '/', return absolute path
+    * url_base begin with '/', return url_base + name
+    * can get file from _get_abspath, return appletree internal file path
+    * can be found in local installed ntauxfiles, return ntauxfiles absolute path
+    * can be downloaded from MongoDB, download and return cached path
 
     """
     # 1. From absolute path
