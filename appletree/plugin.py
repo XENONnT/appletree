@@ -61,19 +61,19 @@ class Plugin:
                 See https://jax.readthedocs.io/en/latest/jax-101/05-random-numbers.html
             parameters: a dictionary with key being parameters' names. Plugin will
                 get values of self.parameters from this dictionary.
-            args: other args following `key` and `parameters` must be in the order of
+            args: other args following ``key`` and ``parameters`` must be in the order of
                 self.depends_on.
 
         Returns:
-            `key` and output simulated variables, ordered by self.provides. `key` will
-                be updated if it's used inside self.simulate to generate random variables.
+            ``key`` and output simulated variables, ordered by self.provides. ``key`` will
+            be updated if it's used inside self.simulate to generate random variables.
 
         """
         raise NotImplementedError
 
     def sanity_check(self):
-        """Check the consistency between `depends_on`, `provides` and in(out)put of
-        `self.simulate`"""
+        """Check the consistency between ``depends_on``, ``provides`` and in(out)put of
+        ``self.simulate``"""
         arguments = inspect.getfullargspec(self.simulate)[0]
         if arguments[1] != "key":
             mesg = f"First argument of {self.__class__.__name__}"

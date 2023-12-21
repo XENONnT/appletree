@@ -44,6 +44,12 @@ using `emcee <https://emcee.readthedocs.io/en/stable/>`_.
     notebooks/datastructure.ipynb
     notebooks/maps.ipynb
 
+.. toctree::
+    :maxdepth: 2
+    :caption: Release notes
+
+    reference/release_notes
+
 Indices and tables
 ==================
 

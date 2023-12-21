@@ -147,10 +147,10 @@ def skewnormal(key, a, loc, scale, shape=()):
     Returns:
         an updated seed, random variables.
 
-    References
-    ----------
-    .. [1] `"A Method to Simulate the Skew Normal Distribution"
-            <https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.588.8>`_
+    References:
+        1. Dariush Ghorbanzadeh, Luan Jaupi, Philippe Durand.
+        A Method to Simulate the Skew Normal Distribution.
+        Applied Mathematics, 2014, 5 (13), pp.2073-2076. ff10.4236/am.2014.513201ff. ffhal02467997
 
     """
     shape = shape or jnp.broadcast_shapes(jnp.shape(a), jnp.shape(loc), jnp.shape(scale))

@@ -36,10 +36,8 @@ For each `config_of_param`, it should be a dictionary containing the following i
   * "fixed": it won't be considered as a fit parameter, `prior_args` is `val`.
 
 * **"prior_args"**: a dictionary like `{arg_name : arg_value}` which goes into prior.
-* **"allowed_range"**: a list like `[lower_boundary, upper_boundary]`, above which parameters
-    will be clipped and have `-np.inf` log prior.
-* **"init_mean"**: the gaussian mean as the initial guess of the MCMC walkers.
-    The random initialzation of MCMC will be clipped by "allowed_range".
+* **"allowed_range"**: a list like `[lower_boundary, upper_boundary]`, above which parameters will be clipped and have `-np.inf` log prior.
+* **"init_mean"**: the gaussian mean as the initial guess of the MCMC walkers. The random initialzation of MCMC will be clipped by "allowed_range".
 * **"init_std"**: the gaussian std as the initial guess of the MCMC walkers.
 * **"unit"**: the unit of the parameter, only for documentation purpose.
 * **"doc"**: the addtional docstring for the parameter.

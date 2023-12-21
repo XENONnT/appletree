@@ -31,8 +31,7 @@ important concepts:
     - **Plugin**: the smallest simulation unit.
     - **Component**: the ensemble of plugins as a whole simulation.
     - **Likelihood**: a class that sums up all components and calculates likelihood.
-    - **Context**: the whole fitting manager that sums all log likelihoods and log prior
-        and runs fitting.
+    - **Context**: the whole fitting manager that sums all log likelihoods and log prior and runs fitting.
 
 Think about a Rn220-Ar37 combined fitting. There will be two **likelihoods**,
 one for Rn220 and one for Ar37. In Rn220 likelihood, the model is consist of **components** of ER,
