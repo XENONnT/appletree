@@ -330,6 +330,8 @@ class SigmaMap(Config):
                 default = _configs_default
             maps[sigma] = Map(name=self.name + f"_{sigma}", default=default)
 
+            setattr(self, sigma, maps[sigma])
+
             if self.llh_name is None:
                 # if llh_name is not specified, no need to update _cached_configs
                 continue
@@ -356,8 +358,6 @@ class SigmaMap(Config):
                         f"configs, find {_value} and {value}."
                     )
                 _cached_configs[maps[sigma].name].update({self.llh_name: value})
-
-            setattr(self, sigma, maps[sigma])
 
         self.median.build(llh_name=self.llh_name)  # type: ignore
         self.lower.build(llh_name=self.llh_name)  # type: ignore
