@@ -1,3 +1,21 @@
+v0.3.1 / 2024-01-12
+-------------------
+* Smarter SigmaMap handling and needed_parameters by @xzh19980906 in https://github.com/XENONnT/appletree/pull/116
+* Move messages of used parameter in `SigmaMap.build` by @dachengx in https://github.com/XENONnT/appletree/pull/117
+* Set required_parameter as method of Config by @dachengx in https://github.com/XENONnT/appletree/pull/119
+* Optional applying efficiency in `multiple_simulations` by @dachengx in https://github.com/XENONnT/appletree/pull/123
+* Fix S1/S2 correction and gas gain when simulating S1/S2PE by @mhliu0001 in https://github.com/XENONnT/appletree/pull/122
+* Prevent already cached functions from being changed by @dachengx in https://github.com/XENONnT/appletree/pull/125
+* Update docstring to google style by @dachengx in https://github.com/XENONnT/appletree/pull/126
+* Update conf, add napoleon by @dachengx in https://github.com/XENONnT/appletree/pull/127
+* Small bug fix when no llh_name is used by @dachengx in https://github.com/XENONnT/appletree/pull/129
+
+New Contributors
+* @mhliu0001 made their first contribution in https://github.com/XENONnT/appletree/pull/122
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.3.0...v0.3.1
+
+
 v0.3.0 / 2023-08-31
 -------------------
 * Fix function name to `simulate_weighted_data`, nothing else changed by @dachengx in https://github.com/XENONnT/appletree/pull/99
