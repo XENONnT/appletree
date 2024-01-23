@@ -119,11 +119,22 @@ class cS1(Plugin):
 
 
 @export
+class cS2_wo_elifecorr(Plugin):
+    depends_on = ["s2_area", "s2_correction"]
+    provides = ["cs2_wo_elifecorr"]
+
+    @partial(jit, static_argnums=(0,))
+    def simulate(self, key, parameters, s2_area, s2_correction):
+        cs2we = s2_area / s2_correction
+        return key, cs2we
+
+
+@export
 class cS2(Plugin):
-    depends_on = ["s2_area", "s2_correction", "drift_survive_prob"]
+    depends_on = ["cs2_wo_elifecorr", "drift_survive_prob"]
     provides = ["cs2"]
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, s2_area, s2_correction, drift_survive_prob):
-        cs2 = s2_area / s2_correction / drift_survive_prob
+    def simulate(self, key, parameters, cs2_wo_elifecorr, drift_survive_prob):
+        cs2 = cs2_wo_elifecorr / drift_survive_prob
         return key, cs2
