@@ -119,7 +119,7 @@ class cS1(Plugin):
 
 
 @export
-class cS2_wo_elifecorr(Plugin):
+class cS2WoElifecorr(Plugin):
     depends_on = ["s2_area", "s2_correction"]
     provides = ["cs2_wo_elifecorr"]
 
