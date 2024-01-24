@@ -125,8 +125,8 @@ class cS2_wo_elifecorr(Plugin):
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, s2_area, s2_correction):
-        cs2we = s2_area / s2_correction
-        return key, cs2we
+        cs2_wo_elifecorr = s2_area / s2_correction
+        return key, cs2_wo_elifecorr
 
 
 @export
