@@ -172,10 +172,12 @@ class Map(Config):
         else:
             self.file_path = file_path
 
+        # try to find the path first
+        _file_path = get_file_path(self.file_path)
         try:
             data = load_json(self.file_path)
         except Exception:
-            raise ValueError(f"Cannot load {self.name} from {self.file_path}!")
+            raise ValueError(f"Cannot load {self.name} from {_file_path}!")
 
         coordinate_type = data["coordinate_type"]
         if coordinate_type == "point" or coordinate_type == "log_point":
