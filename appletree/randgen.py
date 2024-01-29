@@ -13,8 +13,12 @@ from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
-INT = np.int32
-FLOAT = np.float32
+if jax.config.x64_enabled:
+    INT = np.int64
+    FLOAT = np.float64
+else:
+    INT = np.int32
+    FLOAT = np.float32
 
 if os.environ.get("DO_NOT_USE_APPROX_IN_BINOM") is None:
     ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
