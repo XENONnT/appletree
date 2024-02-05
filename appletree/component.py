@@ -83,9 +83,9 @@ class Component:
     def multiple_simulations(self, key, batch_size, parameters, times, apply_eff=False):
         """Simulate many times and move results to CPU because the memory limit of GPU."""
         results_pile = []
+        assert times > 0, "times of multiple simulations must be greater than 0!"
         for _ in range(times):
             key, results = self.simulate(key, batch_size, parameters)
-            results_pile.append(np.array(results))
             if apply_eff:
                 if self.force_no_eff:
                     raise RuntimeError(
@@ -93,10 +93,15 @@ class Component:
                         "But component was set to not returning efficiency when "
                         f"running {self.name}.deduce!"
                     )
-                results_pile[-1] = results_pile[-1][:, results_pile[-1][-1] > 0]
-        return key, np.hstack(results_pile)
+                for i in range(len(results)):
+                    results[i] = results[i][results[-1] > 0]
+            results_pile.append(results)
+        results_pile = [
+            np.hstack([results_pile[j][i] for j in range(times)]) for i in range(len(results))
+        ]
+        return key, results_pile
 
-    def multiple_simulations_compile(self, key, batch_size, parameters, times):
+    def multiple_simulations_compile(self, key, batch_size, parameters, times, apply_eff=False):
         """Simulate many times after new compilation and move results to CPU because the memory
         limit of GPU."""
         results_pile = []
@@ -113,9 +118,12 @@ class Component:
                     g4_file_name = _cached_configs["g4"][0]
                     _cached_configs["g4"] = [g4_file_name, batch_size, key.sum().item()]
             self.compile()
-            key, results = self.multiple_simulations(key, batch_size, parameters, 1)
+            key, results = self.multiple_simulations(key, batch_size, parameters, 1, apply_eff)
             results_pile.append(results)
-        return key, np.hstack(results_pile)
+        results_pile = [
+            np.hstack([results_pile[j][i] for j in range(times)]) for i in range(len(results))
+        ]
+        return key, results_pile
 
     def implement_binning(self, mc, eff):
         """Apply binning to MC data.
