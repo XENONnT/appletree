@@ -93,8 +93,9 @@ class Component:
                         "But component was set to not returning efficiency when "
                         f"running {self.name}.deduce!"
                     )
+                mask = np.array(results[-1]) > 0
                 for i in range(len(results)):
-                    results[i] = results[i][results[-1] > 0]
+                    results[i] = np.array(results[i])[mask]
             results_pile.append(results)
         results_pile = [
             np.hstack([results_pile[j][i] for j in range(times)]) for i in range(len(results))
