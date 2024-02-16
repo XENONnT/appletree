@@ -395,11 +395,11 @@ class ComponentSim(Component):
         if not isinstance(data_names, (list, tuple)):
             raise ValueError(f"Unsupported data_names type {type(data_names)}!")
         # make sure that 'eff' is the last data_name
+        data_names = list(data_names)
         if "eff" in data_names:
-            data_names = list(data_names)
             data_names.remove("eff")
         if not force_no_eff:
-            data_names = list(data_names) + ["eff"]
+            data_names += ["eff"]
         else:
             # track status of component
             self.force_no_eff = True
