@@ -81,7 +81,7 @@ def test_sim_component():
     # if _cached_functions not cleared, this will raise an error
     with pytest.raises(RuntimeError):
         er.deduce(
-            data_names=["cs1", "cs2"],
+            data_names=("cs1", "cs2"),
             func_name="er_sim",
             force_no_eff=True,
         )
@@ -89,7 +89,7 @@ def test_sim_component():
     _cached_functions.clear()
     # re-deduce after clearing _cached_functions
     er.deduce(
-        data_names=["cs1", "cs2"],
+        data_names=("cs1", "cs2"),
         func_name="er_sim",
         force_no_eff=True,
     )
