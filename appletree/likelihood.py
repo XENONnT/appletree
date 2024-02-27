@@ -7,8 +7,8 @@ from jax import numpy as jnp
 from scipy.stats import norm
 
 from appletree import randgen
-from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
-from appletree.utils import load_data, get_equiprob_bins_2d
+from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_1d, make_hist_irreg_bin_2d
+from appletree.utils import load_data, get_equiprob_bins_1d, get_equiprob_bins_2d
 from appletree.component import Component, ComponentSim, ComponentFixed
 from appletree.randgen import TwoHalfNorm, BandTwoHalfNorm
 
@@ -37,17 +37,28 @@ class Likelihood:
         self._bins_type = config["bins_type"]
         self._bins_on = config["bins_on"]
         self._bins = config["bins"]
-        self._dim = len(self._bins_on)
-        if self._dim != 2:
-            raise ValueError("Currently only support 2D fitting")
+        if isinstance(self._bins_on, str):
+            self._dim = 1
+            self._bins_on = [self._bins_on]
+            if isinstance(self._bins, int):
+                self._bins = [self._bins]
+        elif isinstance(self._bins_on, list):
+            self._dim = len(self._bins_on)
+            assert isinstance(self._bins, list), "bins should be list if not 1D fitting, but got {self._bins}!"
+        else:
+            raise ValueError(f"bins_on should be either str or list of str, but got {self._bins_on}.")
         self.needed_parameters: Set[str] = set()
         self._sanity_check()
 
         self.data = load_data(self._data_file_name)[self._bins_on].to_numpy()
-        mask = self.data[:, 0] > config["x_clip"][0]
-        mask &= self.data[:, 0] < config["x_clip"][1]
-        mask &= self.data[:, 1] > config["y_clip"][0]
-        mask &= self.data[:, 1] < config["y_clip"][1]
+        if self._dim == 1:
+            mask = self.data[:, 0] > config["clip"][0]
+            mask &= self.data[:, 0] < config["clip"][1]
+        else:
+            mask = self.data[:, 0] > config["x_clip"][0]
+            mask &= self.data[:, 0] < config["x_clip"][1]
+            mask &= self.data[:, 1] > config["y_clip"][0]
+            mask &= self.data[:, 1] < config["y_clip"][1]
         self.data = self.data[mask]
 
         self.set_binning(config)
@@ -83,26 +94,42 @@ class Likelihood:
                 weights=jnp.ones(len(self.data)),
             )
         elif self._bins_type == "equiprob":
-            if self._dim != 2:
-                raise RuntimeError("only 2D equiprob binned likelihood is supported!")
-            if isinstance(self._bins[0], int) and isinstance(self._bins[1], int):
-                pass
+            if self._dim == 1:
+                flag = isinstance(self._bins[0], int)
+            elif self._dim == 2:
+                flag = isinstance(self._bins[0], int) and isinstance(self._bins[1], int)
             else:
+                raise ValueError(f"Currently only support 1D and 2D, but got {self._dim}D!")
+            if not flag:
                 raise RuntimeError("bins can only be int if bins_type is equiprob")
-            self._bins = get_equiprob_bins_2d(
-                self.data,
-                self._bins,
-                x_clip=config["x_clip"],
-                y_clip=config["y_clip"],
-                which_np=jnp,
-            )
+            if self._dim == 1:
+                self._bins = get_equiprob_bins_1d(
+                    self.data[:, 0],
+                    self._bins[0],
+                    clip=config["clip"],
+                    which_np=jnp,
+                )
+                self._bins = [self._bins]
+                self.data_hist = make_hist_irreg_bin_1d(
+                    self.data[:, 0],
+                    bins=self._bins[0],
+                    weights=jnp.ones(len(self.data)),
+                )
+            elif self._dim == 2:
+                self._bins = get_equiprob_bins_2d(
+                    self.data,
+                    self._bins,
+                    x_clip=config["x_clip"],
+                    y_clip=config["y_clip"],
+                    which_np=jnp,
+                )
+                self.data_hist = make_hist_irreg_bin_2d(
+                    self.data,
+                    bins_x=self._bins[0],
+                    bins_y=self._bins[1],
+                    weights=jnp.ones(len(self.data)),
+                )
             self.component_bins_type = "irreg"
-            self.data_hist = make_hist_irreg_bin_2d(
-                self.data,
-                bins_x=self._bins[0],
-                bins_y=self._bins[1],
-                weights=jnp.ones(len(self.data)),
-            )
         elif self._bins_type == "irreg":
             if self._dim != 2:
                 raise RuntimeError("only 2D irregular binned likelihood is supported!")
