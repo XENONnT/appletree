@@ -582,11 +582,15 @@ def check_unused_configs():
 
 
 def errors_to_two_half_norm_sigmas(errors):
-    """This function solves the sigmas for a two-half-norm distribution,
-    such that the 16 and 84 percentile corresponds to the given errors."""
+    """This function solves the sigmas for a two-half-norm distribution, such that the 16 and 84
+    percentile corresponds to the given errors."""
+
     def _to_solve(x, errors, p):
-        return [x[0] / (x[0] + x[1]) * (1 - erf(errors[0] / x[0] / np.sqrt(2))) - p / 2,
-                x[1] / (x[0] + x[1]) * (1 - erf(errors[1] / x[1] / np.sqrt(2))) - p / 2]
+        return [
+            x[0] / (x[0] + x[1]) * (1 - erf(errors[0] / x[0] / np.sqrt(2))) - p / 2,
+            x[1] / (x[0] + x[1]) * (1 - erf(errors[1] / x[1] / np.sqrt(2))) - p / 2,
+        ]
+
     res = root(_to_solve, errors, args=(errors, 1 - chi2.cdf(1, 1)))
     assert res.success, f"Cannot solve sigmas of TwoHalfNorm for errors {errors}!"
     return res.x
