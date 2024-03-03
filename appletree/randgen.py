@@ -297,14 +297,55 @@ def negative_binomial(key, p, n, shape=()):
 
     """
 
-    shape = shape or lax.broadcast_shapes(jnp.shape(p), jnp.shape(n))
-    p = jnp.reshape(jnp.broadcast_to(p, shape), -1)
-    n = jnp.reshape(jnp.broadcast_to(n, shape), -1)
-
     key, lam = gamma(key, n, p / (1 - p), shape)
 
-    key, rvs = poisson(key, lam, shape)
+    key, rvs = poisson(key, lam)
     return key, rvs
+
+
+@export
+@partial(jit, static_argnums=(3,))
+def generalized_poisson(key, lam, eta, shape=()):
+    """Generalized Poisson Distribution(GPD) random sampler.
+
+    Args:
+        key: seed for random generator.
+        lam: <jnp.array>-like expectation(location parameter) in GPD.
+        eta: <jnp.array>-like scale parameter in GPD, within [0, 1).
+        shape: output shape. If not given, output has shape jnp.shape(lam).
+
+    Returns:
+        an updated seed, random variables.
+
+    References:
+        1. https://gist.github.com/danmackinlay/00e957b11c488539bd3e2a3804922b9d
+        2. https://search.r-project.org/CRAN/refmans/LaplacesDemon/html/dist.Generalized.Poisson.html  # noqa
+
+    """
+
+    shape = shape or jnp.broadcast_shapes(jnp.shape(lam), jnp.shape(eta))
+    lam = jnp.broadcast_to(lam, shape).astype(FLOAT)
+    eta = jnp.broadcast_to(eta, shape).astype(FLOAT)
+
+    key, population = poisson(key, lam * (1 - eta), shape)
+
+    offspring = jnp.copy(population)
+
+    def cond_fun(args):
+        return jnp.any(args[1] > 0)
+
+    def body_fun(args):
+        key, offspring = poisson(args[0], eta * args[1])
+        population = args[2] + offspring
+        return key, offspring, population
+
+    key, offspring, population = jax.lax.while_loop(
+        cond_fun,
+        body_fun,
+        (key, offspring, population),
+    )
+
+    return key, population.astype(INT)
 
 
 @export
