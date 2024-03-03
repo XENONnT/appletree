@@ -174,12 +174,14 @@ class Likelihood:
                 mask = len(self._bins[0]) != len(self._bins[1]) + 1
                 if mask:
                     raise ValueError(
-                        f"The x-binning should 1 longer than y-binning, Please check the binning in {self.name}!"
+                        f"The x-binning should 1 longer than y-binning, "
+                        f"please check the binning in {self.name}!"
                     )
                 mask = not all(len(b) == len(self._bins[1][0]) for b in self._bins[1])
                 if mask:
                     raise ValueError(
-                        f"All y-binning should have the same length, Please check the binning in {self.name}!"
+                        f"All y-binning should have the same length, "
+                        f"please check the binning in {self.name}!"
                     )
             if self._dim == 1:
                 self.data_hist = make_hist_irreg_bin_1d(
