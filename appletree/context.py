@@ -334,7 +334,7 @@ class Context:
         if not provided.issubset(needed):
             mes = (
                 f"Parameter manager should provide needed parameters only, "
-                f"{provided - needed} not needed."
+                f"{sorted(provided - needed)} not needed."
             )
             raise RuntimeError(mes)
 
