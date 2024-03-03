@@ -44,9 +44,13 @@ class Likelihood:
                 self._bins = [self._bins]
         elif isinstance(self._bins_on, list):
             self._dim = len(self._bins_on)
-            assert isinstance(self._bins, list), "bins should be list if not 1D fitting, but got {self._bins}!"
+            assert isinstance(
+                self._bins, list
+            ), "bins should be list if not 1D fitting, but got {self._bins}!"
         else:
-            raise ValueError(f"bins_on should be either str or list of str, but got {self._bins_on}.")
+            raise ValueError(
+                f"bins_on should be either str or list of str, but got {self._bins_on}."
+            )
         self.needed_parameters: Set[str] = set()
         self._sanity_check()
 
@@ -169,10 +173,14 @@ class Likelihood:
             if self._dim == 2:
                 mask = len(self._bins[0]) != len(self._bins[1]) + 1
                 if mask:
-                    raise ValueError(f"The x-binning should 1 longer than y-binning, Please check the binning in {self.name}!")
+                    raise ValueError(
+                        f"The x-binning should 1 longer than y-binning, Please check the binning in {self.name}!"
+                    )
                 mask = not all(len(b) == len(self._bins[1][0]) for b in self._bins[1])
                 if mask:
-                    raise ValueError(f"All y-binning should have the same length, Please check the binning in {self.name}!")
+                    raise ValueError(
+                        f"All y-binning should have the same length, Please check the binning in {self.name}!"
+                    )
             if self._dim == 1:
                 self.data_hist = make_hist_irreg_bin_1d(
                     self.data[:, 0],
