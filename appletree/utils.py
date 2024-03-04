@@ -592,6 +592,7 @@ def errors_to_two_half_norm_sigmas(errors):
     - The 16 percentile of the two-half-norm distribution should be the negative error.
     - The 84 percentile of the two-half-norm distribution should be the positive error.
     - The mode of the two-half-norm distribution should be 0.
+
     """
 
     def _to_solve(x, errors, p):
