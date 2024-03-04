@@ -35,6 +35,8 @@ from .contexts import *
 
 from .context import *
 
+from .plot import *
+
 # check CUDA support setup
 from warnings import warn
 
@@ -59,4 +61,4 @@ try:
     print("Using aptext package from https://github.com/XENONnT/applefiles")
 except ImportError:
     HAVE_APTEXT = False
-    print("Can not find aptext")
+    print("Cannot find aptext")
