@@ -4,6 +4,7 @@ import json
 import numpy as np
 
 from appletree.randgen import TwoHalfNorm
+from appletree.utils import errors_to_two_half_norm_sigmas
 
 
 class Parameter:
@@ -81,10 +82,13 @@ class Parameter:
                 val = np.random.normal(**kwargs)
                 self._parameter_dict[par_name] = np.clip(val, *setting["allowed_range"])
             elif prior_type == "twohalfnorm":
+                # We need to convert errors to sigmas
+                # See the docstring of errors_to_two_half_norm_sigmas for details
+                sigmas = errors_to_two_half_norm_sigmas([args["sigma_pos"], args["sigma_neg"]])
                 kwargs = {
                     "mu": args["mu"],
-                    "sigma_pos": args["sigma_pos"],
-                    "sigma_neg": args["sigma_neg"],
+                    "sigma_pos": sigmas[0],
+                    "sigma_neg": sigmas[1],
                 }
                 val = TwoHalfNorm.rvs(**kwargs)
                 self._parameter_dict[par_name] = np.clip(val, *setting["allowed_range"])
@@ -150,14 +154,15 @@ class Parameter:
                 std = args["std"]
                 log_prior += -((val - mean) ** 2) / 2 / std**2
             elif prior_type == "twohalfnorm":
+                # We need to convert errors to sigmas
+                # See the docstring of errors_to_two_half_norm_sigmas for details
+                sigmas = errors_to_two_half_norm_sigmas([args["sigma_pos"], args["sigma_neg"]])
                 mu = args["mu"]
-                sigma_pos = args["sigma_pos"]
-                sigma_neg = args["sigma_neg"]
                 log_prior += TwoHalfNorm.logpdf(
                     x=val,
                     mu=mu,
-                    sigma_pos=sigma_pos,
-                    sigma_neg=sigma_neg,
+                    sigma_pos=sigmas[0],
+                    sigma_neg=sigmas[1],
                 )
             elif prior_type == "free":
                 pass
