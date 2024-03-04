@@ -82,6 +82,8 @@ class Parameter:
                 val = np.random.normal(**kwargs)
                 self._parameter_dict[par_name] = np.clip(val, *setting["allowed_range"])
             elif prior_type == "twohalfnorm":
+                # We need to convert errors to sigmas
+                # See the docstring of errors_to_two_half_norm_sigmas for details
                 sigmas = errors_to_two_half_norm_sigmas([args["sigma_pos"], args["sigma_neg"]])
                 kwargs = {
                     "mu": args["mu"],
@@ -152,6 +154,8 @@ class Parameter:
                 std = args["std"]
                 log_prior += -((val - mean) ** 2) / 2 / std**2
             elif prior_type == "twohalfnorm":
+                # We need to convert errors to sigmas
+                # See the docstring of errors_to_two_half_norm_sigmas for details
                 sigmas = errors_to_two_half_norm_sigmas([args["sigma_pos"], args["sigma_neg"]])
                 mu = args["mu"]
                 log_prior += TwoHalfNorm.logpdf(
