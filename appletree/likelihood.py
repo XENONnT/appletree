@@ -7,8 +7,8 @@ from jax import numpy as jnp
 from scipy.stats import norm
 
 from appletree import randgen
-from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
-from appletree.utils import load_data, get_equiprob_bins_2d
+from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_1d, make_hist_irreg_bin_2d
+from appletree.utils import load_data, get_equiprob_bins_1d, get_equiprob_bins_2d
 from appletree.component import Component, ComponentSim, ComponentFixed
 from appletree.randgen import TwoHalfNorm, BandTwoHalfNorm
 
@@ -37,17 +37,32 @@ class Likelihood:
         self._bins_type = config["bins_type"]
         self._bins_on = config["bins_on"]
         self._bins = config["bins"]
-        self._dim = len(self._bins_on)
-        if self._dim != 2:
-            raise ValueError("Currently only support 2D fitting")
+        if isinstance(self._bins_on, str):
+            self._dim = 1
+            self._bins_on = [self._bins_on]
+            if isinstance(self._bins, int):
+                self._bins = [self._bins]
+        elif isinstance(self._bins_on, list):
+            self._dim = len(self._bins_on)
+            assert isinstance(
+                self._bins, list
+            ), "bins should be list if not 1D fitting, but got {self._bins}!"
+        else:
+            raise ValueError(
+                f"bins_on should be either str or list of str, but got {self._bins_on}."
+            )
         self.needed_parameters: Set[str] = set()
         self._sanity_check()
 
         self.data = load_data(self._data_file_name)[self._bins_on].to_numpy()
-        mask = self.data[:, 0] > config["x_clip"][0]
-        mask &= self.data[:, 0] < config["x_clip"][1]
-        mask &= self.data[:, 1] > config["y_clip"][0]
-        mask &= self.data[:, 1] < config["y_clip"][1]
+        if self._dim == 1:
+            mask = self.data[:, 0] > config["clip"][0]
+            mask &= self.data[:, 0] < config["clip"][1]
+        else:
+            mask = self.data[:, 0] > config["x_clip"][0]
+            mask &= self.data[:, 0] < config["x_clip"][1]
+            mask &= self.data[:, 1] > config["y_clip"][0]
+            mask &= self.data[:, 1] < config["y_clip"][1]
         self.data = self.data[mask]
 
         self.set_binning(config)
@@ -58,69 +73,129 @@ class Likelihood:
 
     def set_binning(self, config):
         """Set binning of likelihood."""
+        if self._dim == 1 or self._dim == 2:
+            pass
+        else:
+            raise ValueError(f"Currently only support 1D and 2D, but got {self._dim}D!")
         if self._bins_type == "meshgrid":
             warning = "The usage of meshgrid binning is highly discouraged."
             warn(warning)
             self.component_bins_type = "meshgrid"
-            if isinstance(self._bins[0], int):
-                x_bins = jnp.linspace(*config["x_clip"], self._bins[0] + 1)
-            else:
-                x_bins = jnp.array(self._bins[0])
-                if "x_clip" in config:
-                    warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
-                    warn(warning)
-            if isinstance(self._bins[1], int):
-                y_bins = jnp.linspace(*config["y_clip"], self._bins[1] + 1)
-            else:
-                y_bins = jnp.array(self._bins[1])
-                if "y_clip" in config:
-                    warning = "y_clip is ignored when bins_type is meshgrid and bins is not int"
-                    warn(warning)
-            self._bins = (x_bins, y_bins)
+            if self._dim == 1:
+                if isinstance(self._bins[0], int):
+                    bins = jnp.linspace(*config["clip"], self._bins[0] + 1)
+                else:
+                    bins = jnp.array(self._bins[0])
+                    if "x_clip" in config:
+                        warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
+                        warn(warning)
+                self._bins = (bins,)
+            elif self._dim == 2:
+                if isinstance(self._bins[0], int):
+                    x_bins = jnp.linspace(*config["x_clip"], self._bins[0] + 1)
+                else:
+                    x_bins = jnp.array(self._bins[0])
+                    if "x_clip" in config:
+                        warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
+                        warn(warning)
+                if isinstance(self._bins[1], int):
+                    y_bins = jnp.linspace(*config["y_clip"], self._bins[1] + 1)
+                else:
+                    y_bins = jnp.array(self._bins[1])
+                    if "y_clip" in config:
+                        warning = "y_clip is ignored when bins_type is meshgrid and bins is not int"
+                        warn(warning)
+                self._bins = (x_bins, y_bins)
             self.data_hist = make_hist_mesh_grid(
                 self.data,
                 bins=self._bins,
                 weights=jnp.ones(len(self.data)),
             )
         elif self._bins_type == "equiprob":
-            if self._dim != 2:
-                raise RuntimeError("only 2D equiprob binned likelihood is supported!")
-            if isinstance(self._bins[0], int) and isinstance(self._bins[1], int):
-                pass
-            else:
+            if not all([isinstance(b, int) for b in self._bins]):
                 raise RuntimeError("bins can only be int if bins_type is equiprob")
-            self._bins = get_equiprob_bins_2d(
-                self.data,
-                self._bins,
-                x_clip=config["x_clip"],
-                y_clip=config["y_clip"],
-                which_np=jnp,
-            )
+            if self._dim == 1:
+                self._bins = get_equiprob_bins_1d(
+                    self.data[:, 0],
+                    self._bins[0],
+                    clip=config["clip"],
+                    which_np=jnp,
+                )
+                self._bins = [self._bins]
+                self.data_hist = make_hist_irreg_bin_1d(
+                    self.data[:, 0],
+                    bins=self._bins[0],
+                    weights=jnp.ones(len(self.data)),
+                )
+            elif self._dim == 2:
+                self._bins = get_equiprob_bins_2d(
+                    self.data,
+                    self._bins,
+                    x_clip=config["x_clip"],
+                    y_clip=config["y_clip"],
+                    which_np=jnp,
+                )
+                self.data_hist = make_hist_irreg_bin_2d(
+                    self.data,
+                    bins_x=self._bins[0],
+                    bins_y=self._bins[1],
+                    weights=jnp.ones(len(self.data)),
+                )
             self.component_bins_type = "irreg"
-            self.data_hist = make_hist_irreg_bin_2d(
-                self.data,
-                bins_x=self._bins[0],
-                bins_y=self._bins[1],
-                weights=jnp.ones(len(self.data)),
-            )
         elif self._bins_type == "irreg":
-            if self._dim != 2:
-                raise RuntimeError("only 2D irregular binned likelihood is supported!")
-            self._bins[0] = jnp.array(self._bins[0])
-            self._bins[1] = jnp.array(self._bins[1])
+            self._bins = [jnp.array(b) for b in self._bins]
+            if self._dim == 1:
+                if isinstance(self._bins[0], int):
+                    bins = jnp.linspace(*config["clip"], self._bins[0] + 1)
+                else:
+                    bins = jnp.array(self._bins[0])
+                    if "x_clip" in config:
+                        warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
+                        warn(warning)
+                self._bins = (bins,)
+            elif self._dim == 2:
+                if isinstance(self._bins[0], int):
+                    x_bins = jnp.linspace(*config["x_clip"], self._bins[0] + 1)
+                else:
+                    x_bins = jnp.array(self._bins[0])
+                    if "x_clip" in config:
+                        warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
+                        warn(warning)
+                if isinstance(self._bins[1], int):
+                    y_bins = jnp.linspace(*config["y_clip"], self._bins[1] + 1)
+                else:
+                    y_bins = jnp.array(self._bins[1])
+                    if "y_clip" in config:
+                        warning = "y_clip is ignored when bins_type is meshgrid and bins is not int"
+                        warn(warning)
+                self._bins = (x_bins, y_bins)
             self.component_bins_type = "irreg"
-            # x-binning should 1 longer than y-binning
-            mask0 = len(self._bins[0]) != len(self._bins[1]) + 1
-            # all y-binning should have the same length
-            mask1 = not all(len(b) == len(self._bins[1][0]) for b in self._bins[1])
-            if mask0 or mask1:
-                raise ValueError(f"Please check the binning in {self.name}!")
-            self.data_hist = make_hist_irreg_bin_2d(
-                self.data,
-                bins_x=self._bins[0],
-                bins_y=self._bins[1],
-                weights=jnp.ones(len(self.data)),
-            )
+            if self._dim == 2:
+                mask = len(self._bins[0]) != len(self._bins[1]) + 1
+                if mask:
+                    raise ValueError(
+                        f"The x-binning should 1 longer than y-binning, "
+                        f"please check the binning in {self.name}!"
+                    )
+                mask = not all(len(b) == len(self._bins[1][0]) for b in self._bins[1])
+                if mask:
+                    raise ValueError(
+                        f"All y-binning should have the same length, "
+                        f"please check the binning in {self.name}!"
+                    )
+            if self._dim == 1:
+                self.data_hist = make_hist_irreg_bin_1d(
+                    self.data[:, 0],
+                    bins=self._bins[0],
+                    weights=jnp.ones(len(self.data)),
+                )
+            elif self._dim == 2:
+                self.data_hist = make_hist_irreg_bin_2d(
+                    self.data,
+                    bins_x=self._bins[0],
+                    bins_y=self._bins[1],
+                    weights=jnp.ones(len(self.data)),
+                )
         else:
             raise ValueError("'bins_type' should either be meshgrid, equiprob or irreg")
 

@@ -251,6 +251,37 @@ def set_gpu_memory_usage(fraction=0.3):
 
 
 @export
+def get_equiprob_bins_1d(
+    data,
+    n_partitions,
+    clip=(-np.inf, +np.inf),
+    which_np=np,
+):
+    """Get 2D equiprobable binning edges.
+
+    Args:
+        data: array with shape N.
+        n_partitions: M1 which is the number of bins.
+        clip: lower and upper binning edges on the 0th dimension.
+            Data outside the clip will be dropped.
+        Data outside the y_clip will be dropped.
+        which_np: can be numpy or jax.numpy, determining the returned array type.
+
+    """
+    mask = data > clip[0]
+    mask &= data < clip[1]
+
+    bins = GOFevaluation.utils.get_equiprobable_binning(
+        data[mask],
+        n_partitions,
+    )
+    # To be strict, clip the inf(s)
+    bins = np.clip(bins, *clip)
+
+    return which_np.array(bins)
+
+
+@export
 def get_equiprob_bins_2d(
     data,
     n_partitions,

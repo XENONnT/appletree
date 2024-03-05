@@ -11,7 +11,7 @@ from appletree.config import OMITTED
 from appletree.plugin import Plugin
 from appletree.share import _cached_configs, _cached_functions, set_global_config
 from appletree.utils import exporter, load_data
-from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
+from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_1d, make_hist_irreg_bin_2d
 
 export, __all__ = exporter()
 
@@ -135,7 +135,12 @@ class Component:
 
         """
         if self.bins_type == "irreg":
-            hist = make_hist_irreg_bin_2d(mc, *self.bins, weights=eff)
+            if len(self.bins) == 1:
+                hist = make_hist_irreg_bin_1d(mc[:, 0], self.bins[0], weights=eff)
+            elif len(self.bins) == 2:
+                hist = make_hist_irreg_bin_2d(mc, *self.bins, weights=eff)
+            else:
+                raise ValueError(f"Currently only support 1D and 2D, but got {len(self.bins)}D!")
         elif self.bins_type == "meshgrid":
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
         else:
