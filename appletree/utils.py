@@ -13,9 +13,6 @@ from matplotlib import pyplot as plt
 from scipy.special import erf
 from scipy.optimize import root
 from scipy.stats import chi2
-from scipy.special import erf
-from scipy.optimize import root
-from scipy.stats import chi2
 
 import GOFevaluation
 from appletree.share import _cached_configs
