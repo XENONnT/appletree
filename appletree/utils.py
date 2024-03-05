@@ -10,6 +10,9 @@ import pandas as pd
 import matplotlib as mpl
 from matplotlib.patches import Rectangle
 from matplotlib import pyplot as plt
+from scipy.special import erf
+from scipy.optimize import root
+from scipy.stats import chi2
 
 import GOFevaluation
 from appletree.share import _cached_configs
@@ -602,8 +605,35 @@ def cum_integrate_midpoint(x, y):
     return x_mid, np.cumsum(dx * y_mid)
 
 
+@export
 def check_unused_configs():
     """Check if there are unused configs."""
     unused_configs = set(_cached_configs.keys()) - _cached_configs.accessed_keys
     if unused_configs:
         warn(f"Detected unused configs: {unused_configs}, you might set the configs incorrectly.")
+
+
+@export
+def errors_to_two_half_norm_sigmas(errors):
+    """This function solves the sigmas for a two-half-norm distribution, such that the 16 and 84
+    percentile corresponds to the given errors.
+
+    In the two-half-norm distribution, the positive and negative errors are assumed to be
+    the std of the glued normal distributions. While we interpret the 16 and 84 percentile as
+    the input errors, thus we need to solve the sigmas for the two-half-norm distribution.
+    The solution is determined by the following conditions:
+    - The 16 percentile of the two-half-norm distribution should be the negative error.
+    - The 84 percentile of the two-half-norm distribution should be the positive error.
+    - The mode of the two-half-norm distribution should be 0.
+
+    """
+
+    def _to_solve(x, errors, p):
+        return [
+            x[0] / (x[0] + x[1]) * (1 - erf(errors[0] / x[0] / np.sqrt(2))) - p / 2,
+            x[1] / (x[0] + x[1]) * (1 - erf(errors[1] / x[1] / np.sqrt(2))) - p / 2,
+        ]
+
+    res = root(_to_solve, errors, args=(errors, 1 - chi2.cdf(1, 1)))
+    assert res.success, f"Cannot solve sigmas of TwoHalfNorm for errors {errors}!"
+    return res.x
