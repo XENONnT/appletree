@@ -48,7 +48,7 @@ class Plotter:
         """
 
         def save_fig(fig, name, fmt):
-            if type(fmt) == str:
+            if isinstance(fmt, str):
                 fmt = [fmt]
             for f in fmt:
                 fig.savefig(f"{save_path}/{name}.{f}")
