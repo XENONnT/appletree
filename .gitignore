@@ -10,3 +10,4 @@ docs/source/build
 .coverage
 _temp.json
 docs/source/reference/release_notes.rst
+.hypothesis

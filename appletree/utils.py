@@ -13,6 +13,9 @@ from matplotlib import pyplot as plt
 from scipy.special import erf
 from scipy.optimize import root
 from scipy.stats import chi2
+from scipy.special import erf
+from scipy.optimize import root
+from scipy.stats import chi2
 
 import GOFevaluation
 from appletree.share import _cached_configs
@@ -248,6 +251,37 @@ def set_gpu_memory_usage(fraction=0.3):
     if fraction <= 0:
         raise ValueError("fraction must be positive!")
     os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = f"{fraction:.2f}"
+
+
+@export
+def get_equiprob_bins_1d(
+    data,
+    n_partitions,
+    clip=(-np.inf, +np.inf),
+    which_np=np,
+):
+    """Get 2D equiprobable binning edges.
+
+    Args:
+        data: array with shape N.
+        n_partitions: M1 which is the number of bins.
+        clip: lower and upper binning edges on the 0th dimension.
+            Data outside the clip will be dropped.
+        Data outside the y_clip will be dropped.
+        which_np: can be numpy or jax.numpy, determining the returned array type.
+
+    """
+    mask = data > clip[0]
+    mask &= data < clip[1]
+
+    bins = GOFevaluation.utils.get_equiprobable_binning(
+        data[mask],
+        n_partitions,
+    )
+    # To be strict, clip the inf(s)
+    bins = np.clip(bins, *clip)
+
+    return which_np.array(bins)
 
 
 @export
@@ -574,6 +608,7 @@ def cum_integrate_midpoint(x, y):
     return x_mid, np.cumsum(dx * y_mid)
 
 
+@export
 def check_unused_configs():
     """Check if there are unused configs."""
     unused_configs = set(_cached_configs.keys()) - _cached_configs.accessed_keys
@@ -581,14 +616,15 @@ def check_unused_configs():
         warn(f"Detected unused configs: {unused_configs}, you might set the configs incorrectly.")
 
 
+@export
 def errors_to_two_half_norm_sigmas(errors):
     """This function solves the sigmas for a two-half-norm distribution, such that the 16 and 84
     percentile corresponds to the given errors.
 
     In the two-half-norm distribution, the positive and negative errors are assumed to be
     the std of the glued normal distributions. While we interpret the 16 and 84 percentile as
-    the input errors, thus we need to solve the sigmas for the two-half-norm distribution. The solution
-    is determined by the following conditions:
+    the input errors, thus we need to solve the sigmas for the two-half-norm distribution.
+    The solution is determined by the following conditions:
     - The 16 percentile of the two-half-norm distribution should be the negative error.
     - The 84 percentile of the two-half-norm distribution should be the positive error.
     - The mode of the two-half-norm distribution should be 0.
