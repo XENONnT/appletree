@@ -605,6 +605,7 @@ def cum_integrate_midpoint(x, y):
     return x_mid, np.cumsum(dx * y_mid)
 
 
+@export
 def check_unused_configs():
     """Check if there are unused configs."""
     unused_configs = set(_cached_configs.keys()) - _cached_configs.accessed_keys
@@ -612,6 +613,7 @@ def check_unused_configs():
         warn(f"Detected unused configs: {unused_configs}, you might set the configs incorrectly.")
 
 
+@export
 def errors_to_two_half_norm_sigmas(errors):
     """This function solves the sigmas for a two-half-norm distribution, such that the 16 and 84
     percentile corresponds to the given errors.
