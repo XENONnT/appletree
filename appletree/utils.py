@@ -587,8 +587,8 @@ def errors_to_two_half_norm_sigmas(errors):
 
     In the two-half-norm distribution, the positive and negative errors are assumed to be
     the std of the glued normal distributions. While we interpret the 16 and 84 percentile as
-    the input errors, thus we need to solve the sigmas for the two-half-norm distribution. The solution
-    is determined by the following conditions:
+    the input errors, thus we need to solve the sigmas for the two-half-norm distribution.
+    The solution is determined by the following conditions:
     - The 16 percentile of the two-half-norm distribution should be the negative error.
     - The 84 percentile of the two-half-norm distribution should be the positive error.
     - The mode of the two-half-norm distribution should be 0.
