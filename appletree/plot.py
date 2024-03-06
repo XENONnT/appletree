@@ -1,12 +1,13 @@
-import numpy as np
-import emcee
-import h5py
+from warnings import warn
 import json
+import numpy as np
+from scipy.stats import norm
+import h5py
+import emcee
 import corner
 import matplotlib
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
-from scipy.stats import norm
 
 from appletree.utils import errors_to_two_half_norm_sigmas
 from appletree.randgen import TwoHalfNorm
@@ -76,7 +77,7 @@ class Plotter:
 
     @staticmethod
     def _uniform_pdf(x, lower, upper):
-        return np.full_like(1 / (upper - lower), x)
+        return np.full_like(x, 1 / (upper - lower))
 
     @staticmethod
     def _thn_pdf(x, mu, sigma_pos, sigma_neg):
@@ -290,7 +291,9 @@ class Plotter:
             window = auto_window(taus, c)
             return taus[window]
 
-        assert self.n_iter > 1000, "The chain is too short to compute the autocorrelation time"
+        if self.n_iter < 1000:
+            warn("The chain is too short to compute the autocorrelation time!")
+
         N = np.geomspace(100, self.n_iter, 10).astype(int)
         axes = []
         for i in range(self.n_param):

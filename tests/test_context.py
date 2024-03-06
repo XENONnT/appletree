@@ -4,7 +4,7 @@ from appletree.utils import get_file_path, load_json, check_unused_configs
 
 
 def test_rn220_context():
-    """Test Context of Rn220 combine fitting."""
+    """Test Context of Rn220 fitting."""
     _cached_functions.clear()
     _cached_configs.clear()
     context = apt.ContextRn220()
@@ -18,7 +18,7 @@ def test_rn220_context():
 
 
 def test_rn220_context_1d():
-    """Test 1D Context of Rn220 combine fitting."""
+    """Test 1D Context of Rn220 fitting."""
     instruction = load_json("rn220.json")
 
     bins = instruction["likelihoods"]["rn220_llh"]["bins"][1]
