@@ -310,7 +310,7 @@ else:
 
 
 @export
-@partial(jit, static_argnums=(3, 4))
+@partial(jit, static_argnums=(3,))
 def negative_binomial(key, p, n, shape=()):
     """Negative binomial distribution random sampler. Using Gamma–Poisson mixture.
 
