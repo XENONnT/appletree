@@ -311,7 +311,7 @@ class Plotter:
         axes[-2].set_xlabel("Number of iterations")
 
         # Set legend
-        handles, labels = ax[-1].get_legend_handles_labels()
+        handles, labels = axes[-1].get_legend_handles_labels()
         fig.legend(
             loc="lower center",
             handles=handles,
