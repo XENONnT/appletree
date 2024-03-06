@@ -253,6 +253,7 @@ else:
     else:
         ALWAYS_USE_NORMAL_APPROX_IN_BINOM = False
         print("Using accurate Binomial, not Normal approximation")
+
     @export
     @partial(jit, static_argnums=(3, 4))
     def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_BINOM):
