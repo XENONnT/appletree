@@ -222,7 +222,8 @@ def bernoulli(key, p, shape=()):
     return key, rvs.astype(INT)
 
 
-if hasattr(random, 'binomial'):
+if hasattr(random, "binomial"):
+
     @export
     @partial(jit, static_argnums=(3, 4))
     def binomial(key, p, n, shape=()):
@@ -250,8 +251,10 @@ if hasattr(random, 'binomial'):
 
         rvs = random.binomial(seed, n, p, shape=shape)
         return key, rvs.astype(INT)
+
 else:
     warn("random.binomial is not available, using numpyro's _binomial_dispatch instead.")
+
     @export
     @partial(jit, static_argnums=(3, 4))
     def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_BINOM):
