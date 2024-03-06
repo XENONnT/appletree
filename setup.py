@@ -36,7 +36,7 @@ setuptools.setup(
         ],
         "cuda112": [
             # pip install appletree[cuda112] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html  # noqa: E501
-            "jax[cuda]==0.3.25",
+            "jax[cuda]==0.3.15",
         ],
         "cuda121": [
             # pip install appletree[cuda121] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html  # noqa: E501
