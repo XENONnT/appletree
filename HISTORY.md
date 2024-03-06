@@ -1,3 +1,21 @@
+v0.3.2 / 2024-03-06
+-------------------
+* Remove `scikit-learn` version requirement by @dachengx in https://github.com/XENONnT/appletree/pull/131
+* Use trusted publisher because username/password authentication is no longer supported by @dachengx in https://github.com/XENONnT/appletree/pull/132
+* Be compatible with `JAX_ENABLE_X64=1` by @dachengx in https://github.com/XENONnT/appletree/pull/134
+* Raise more information when file can not be found by @dachengx in https://github.com/XENONnT/appletree/pull/135
+* Preserve dtype of results in `multiple_simulations` by @dachengx in https://github.com/XENONnT/appletree/pull/137
+* Copy memory from GPU to CPU by @dachengx in https://github.com/XENONnT/appletree/pull/139
+* Bug fix when using `force_no_eff` with tuple `data_names` by @dachengx in https://github.com/XENONnT/appletree/pull/141
+* Add Gamma, Negative Binomial, and Generalized Poisson Distribution by @dachengx in https://github.com/XENONnT/appletree/pull/145
+* Add support for 1D fitting by @dachengx in https://github.com/XENONnT/appletree/pull/144
+* Correct the sigmas in TwoHalfNorm by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/143
+* Plotter for MCMC diagnostics by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/146
+
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.3.1...v0.3.2
+
+
 v0.3.1 / 2024-01-12
 -------------------
 * Smarter SigmaMap handling and needed_parameters by @xzh19980906 in https://github.com/XENONnT/appletree/pull/116
