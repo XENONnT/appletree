@@ -13,23 +13,24 @@ from appletree.randgen import TwoHalfNorm
 
 
 class Plotter:
-    def __init__(self, backend_file_name, discard=0):
+    def __init__(self, backend_file_name, discard=0, thin=1):
         """Plotter for the MCMC chain.
 
         Args:
             backend_file_name: the file name of the backend file.
             discard: the number of iterations to discard.
+            thin: use samples every thin steps.
 
         """
         self.backend_file_name = backend_file_name
         backend = emcee.backends.HDFBackend(self.backend_file_name, read_only=True)
 
-        self.chain = backend.get_chain(discard=discard)
-        self.flat_chain = backend.get_chain(discard=discard, flat=True)
-        self.posterior = backend.get_log_prob(discard=discard)
-        self.flat_posterior = backend.get_log_prob(discard=discard, flat=True)
-        self.prior = backend.get_blobs(discard=discard)
-        self.flat_prior = backend.get_blobs(discard=discard, flat=True)
+        self.chain = backend.get_chain(discard=discard, thin=thin)
+        self.flat_chain = backend.get_chain(discard=discard, thin=thin, flat=True)
+        self.posterior = backend.get_log_prob(discard=discard, thin=thin)
+        self.flat_posterior = backend.get_log_prob(discard=discard, thin=thin, flat=True)
+        self.prior = backend.get_blobs(discard=discard, thin=thin)
+        self.flat_prior = backend.get_blobs(discard=discard, thin=thin, flat=True)
 
         with h5py.File(self.backend_file_name, "r") as f:
             self.param_names = f["mcmc"].attrs["parameter_fit"]
@@ -54,22 +55,18 @@ class Plotter:
                 fig.savefig(f"{save_path}/{name}.{f}")
 
         fig, axes = self.plot_burn_in()
-        plt.show()
         if save:
             save_fig(fig, "burn_in", fmt)
 
         fig, axes = self.plot_marginal_posterior()
-        plt.show()
         if save:
             save_fig(fig, "marginal_posterior", fmt)
 
         fig, axes = self.plot_corner()
-        plt.show()
         if save:
             save_fig(fig, "corner", fmt)
 
         fig, axes = self.plot_autocorr()
-        plt.show()
         if save:
             save_fig(fig, "autocorr", fmt)
 
@@ -127,6 +124,10 @@ class Plotter:
         ax.set_ylim(self.prior.max() - 100, self.prior.max())
         axes.append(ax)
 
+        # Set xlabels of the last two axes
+        axes[-1].set_xlabel("Number of iterations")
+        axes[-2].set_xlabel("Number of iterations")
+
         plt.tight_layout()
         return fig, axes
 
@@ -148,7 +149,6 @@ class Plotter:
             fig = plt.figure(figsize=(10, 2 * n_rows))
         hist_kwargs.setdefault("histtype", "step")
         hist_kwargs.setdefault("bins", 50)
-        hist_kwargs.setdefault("density", True)
         hist_kwargs.setdefault("color", "k")
 
         pdf = {
@@ -160,7 +160,7 @@ class Plotter:
         axes = []
         for i in range(self.n_param):
             ax = fig.add_subplot(n_rows, n_cols, i + 1)
-            ax.hist(self.flat_chain[:, i], **hist_kwargs)
+            ax.hist(self.flat_chain[:, i], density=True, **hist_kwargs)
             prior = self.param_prior[self.param_names[i]]
             prior_type = prior["prior_type"]
             args = prior["prior_args"]
@@ -168,6 +168,7 @@ class Plotter:
                 x = np.linspace(*ax.get_xlim(), 100)
                 ax.plot(x, pdf[prior_type](x, **args), color="grey", ls="--")
             ax.set_xlabel(self.param_names[i])
+            ax.set_ylabel("PDF")
             ax.set_ylim(0, None)
             axes.append(ax)
 
@@ -293,10 +294,13 @@ class Plotter:
             ax.plot(N, N / 50, "k--", label="N / 50")
             ax.set_xscale("log")
             ax.set_yscale("log")
-            ax.set_xlabel("Number of iterations")
             ax.set_ylabel(f"Auto correlation of {self.param_names[i]}")
             ax.legend()
             axes.append(ax)
+
+        # Set xlabels of the last two axes
+        axes[-1].set_xlabel("Number of iterations")
+        axes[-2].set_xlabel("Number of iterations")
 
         plt.tight_layout()
         return fig, axes
