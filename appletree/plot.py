@@ -160,13 +160,13 @@ class Plotter:
         axes = []
         for i in range(self.n_param):
             ax = fig.add_subplot(n_rows, n_cols, i + 1)
-            ax.hist(self.flat_chain[:, i], density=True, label='Posterior', **hist_kwargs)
+            ax.hist(self.flat_chain[:, i], density=True, label="Posterior", **hist_kwargs)
             prior = self.param_prior[self.param_names[i]]
             prior_type = prior["prior_type"]
             args = prior["prior_args"]
             if prior_type != "free":
                 x = np.linspace(*ax.get_xlim(), 100)
-                ax.plot(x, pdf[prior_type](x, **args), color="grey", ls="--", label='Prior')
+                ax.plot(x, pdf[prior_type](x, **args), color="grey", ls="--", label="Prior")
             ax.set_xlabel(self.param_names[i])
             ax.set_ylabel("PDF")
             ax.set_ylim(0, None)
@@ -175,8 +175,9 @@ class Plotter:
         # Set legend
         handles, labels = axes[-1].get_legend_handles_labels()
         fig.legend(
-            loc='lower center',
-            handles=handles, labels=labels,
+            loc="lower center",
+            handles=handles,
+            labels=labels,
             bbox_to_anchor=(0.5, 1.0),
         )
 
@@ -312,8 +313,9 @@ class Plotter:
         # Set legend
         handles, labels = ax[-1].get_legend_handles_labels()
         fig.legend(
-            loc='lower center',
-            handles=handles, labels=labels,
+            loc="lower center",
+            handles=handles,
+            labels=labels,
             bbox_to_anchor=(0.5, 1.0),
         )
 
