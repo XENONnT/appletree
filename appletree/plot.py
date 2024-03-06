@@ -41,10 +41,10 @@ class Plotter:
 
         self.n_iter, self.n_walker, self.n_param = self.chain.shape
 
-    def make_all_plots(self, save=False, save_path=".", fmt=["png", "pdf"]):
+    def make_all_plots(self, save=False, save_path=".", fmt=["png", "pdf"], **save_kwargs):
         """Make all plots and save them if save is True.
 
-        The plot styles are default.
+        The plot styles are default. save_kwargs will be passed to fig.savefig().
 
         """
 
@@ -52,7 +52,7 @@ class Plotter:
             if isinstance(fmt, str):
                 fmt = [fmt]
             for f in fmt:
-                fig.savefig(f"{save_path}/{name}.{f}")
+                fig.savefig(f"{save_path}/{name}.{f}", **save_kwargs)
 
         fig, axes = self.plot_burn_in()
         if save:
