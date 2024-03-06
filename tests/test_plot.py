@@ -17,6 +17,3 @@ def test_plot():
 
     plotter = Plotter(filename)
     plotter.make_all_plots()
-
-
-test_plot()
