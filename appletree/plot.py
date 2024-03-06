@@ -170,6 +170,7 @@ class Plotter:
             ax.set_xlabel(self.param_names[i])
             ax.set_ylabel("PDF")
             ax.set_ylim(0, None)
+            ax.yaxis.get_major_formatter().set_powerlimits((0, 1))
             axes.append(ax)
 
         # Set legend
