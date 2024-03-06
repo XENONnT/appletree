@@ -218,7 +218,7 @@ def bernoulli(key, p, shape=()):
 if hasattr(random, "binomial"):
 
     @export
-    @partial(jit, static_argnums=(3, 4))
+    @partial(jit, static_argnums=(3,))
     def binomial(key, p, n, shape=()):
         """Binomial random sampler.
 
