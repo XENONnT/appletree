@@ -240,7 +240,7 @@ if hasattr(random, "binomial"):
 
         shape = shape or jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n))
         p = jnp.broadcast_to(p, shape).astype(FLOAT)
-        n = jnp.broadcast_to(n, shape).astype(FLOAT)
+        n = jnp.broadcast_to(n, shape).astype(INT)
 
         rvs = random.binomial(seed, n, p, shape=shape)
         return key, rvs.astype(INT)
