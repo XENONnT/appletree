@@ -21,7 +21,7 @@ with open("HISTORY.md") as file:
 
 setuptools.setup(
     name="appletree",
-    version="0.3.1",
+    version="0.3.2",
     description="A high-Performance Program simuLatEs and fiTs REsponse of xEnon.",
     author="Appletree contributors, the XENON collaboration",
     long_description=readme + "\n\n" + history,
@@ -36,7 +36,7 @@ setuptools.setup(
         ],
         "cuda112": [
             # pip install appletree[cuda112] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html  # noqa: E501
-            "jax[cuda]==0.3.15",
+            "jax[cuda]==0.3.25",
         ],
         "cuda121": [
             # pip install appletree[cuda121] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html  # noqa: E501
