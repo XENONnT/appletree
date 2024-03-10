@@ -318,7 +318,7 @@ class ComponentSim(Component):
         self.worksheet = []
         # Reinitialize needed_parameters
         # because sometimes user will deduce(& compile) after changing configs
-        self._needed_parameters: Set[str] = set()
+        self._needed_parameters = set()
         for _plugin in dependencies[::-1]:
             plugin = _plugin["plugin"]
             if plugin.__name__ in already_seen:
