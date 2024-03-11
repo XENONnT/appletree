@@ -2,6 +2,7 @@ import copy
 import json
 
 import numpy as np
+import appletree as apt
 
 from appletree.randgen import TwoHalfNorm
 from appletree.utils import errors_to_two_half_norm_sigmas
@@ -19,6 +20,7 @@ class Parameter:
                 * dict: config dictionary.
 
         """
+        parameter_config = apt.utils.get_file_path(parameter_config)
         if isinstance(parameter_config, str):
             with open(parameter_config, "r") as file:
                 self.par_config = json.load(file)
@@ -58,6 +60,16 @@ class Parameter:
     def parameter_fit(self):
         """Return sorted list of parameters name waiting for fitting."""
         return sorted(self._parameter_fit)
+
+    @property
+    def parameter_fixed(self):
+        """Return sorted list of parameters name fixed."""
+        return sorted(self._parameter_fixed)
+
+    @property
+    def parameter_all(self):
+        """Return sorted list of all parameters name."""
+        return sorted(set(self._parameter_dict.keys()))
 
     def sample_prior(self):
         """Sampling parameters from prior and set self._parameter_dict.
@@ -183,7 +195,7 @@ class Parameter:
         if isinstance(keys, (set, list)):
             not_exist = []
             for key in keys:
-                if key not in self._parameter_dict:
+                if key not in self.parameter_all:
                     not_exist.append(key)
             all_exist = not_exist == []
             if return_not_exist:
@@ -192,12 +204,11 @@ class Parameter:
                 return all_exist
         elif isinstance(keys, str):
             if return_not_exist:
-                return (keys in self._parameter_dict, keys)
+                return (keys in self.parameter_all, keys)
             else:
-                return keys in self._parameter_dict
+                return keys in self.parameter_all
         elif isinstance(keys, dict):
             return self.check_parameter_exist(list(keys.keys()), return_not_exist)
-
         else:
             raise ValueError("keys must be a str or a list of str!")
 
