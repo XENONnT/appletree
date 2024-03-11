@@ -572,7 +572,8 @@ class ComponentSim(Component):
 
     @property
     def all_parameters(self):
-        """All parameters used in the component, including all parameters in the registered plugins."""
+        """All parameters used in the component, including all parameters in the registered
+        plugins."""
         all_parameters = super().all_parameters
         for plugin in self._plugin_class_registry.values():
             all_parameters |= set(plugin.parameters)

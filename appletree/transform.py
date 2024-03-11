@@ -3,20 +3,28 @@ import appletree as apt
 from appletree.share import _cached_functions
 
 
-class Transformer():
-    domain = {'g1', 'g2'}
-    codomain = {'a', 'b'}
+class Transformer:
+    domain = {"g1", "g2"}
+    codomain = {"a", "b"}
 
     def transform(self, param):
         res = {key: value for key, value in param.items() if key not in self.domain}
-        res.update({'a': param['g1'] * 0.5,
-                    'b': param['g2'] * 2,})
+        res.update(
+            {
+                "a": param["g1"] * 0.5,
+                "b": param["g2"] * 2,
+            }
+        )
         return res
-        
+
     def inverse_transform(self, param):
         res = {key: value for key, value in param.items() if key not in self.codomain}
-        res.update({'g1': param['a'] * 2,
-                    'g2': param['b'] * 0.5,})
+        res.update(
+            {
+                "g1": param["a"] * 2,
+                "g2": param["b"] * 0.5,
+            }
+        )
         return res
 
     @staticmethod
@@ -28,9 +36,11 @@ class Transformer():
                     args_list[param_arg] = transform(args_list[param_arg])
                     args = tuple(args_list)
                 else:
-                    kwargs['parameters'] = transform(kwargs['parameters'])
+                    kwargs["parameters"] = transform(kwargs["parameters"])
                 return func(*args, **kwargs)
+
             return wrapper
+
         return decorator
 
     def trans_param_arg(self, param_arg):
@@ -45,61 +55,66 @@ class Transformer():
         elif issubclass(obj, apt.Parameter):
             return get_transformed_parameter_class(obj, self.transform, self.domain, self.codomain)
         elif issubclass(obj, apt.Component):
-            return get_transformed_component_class(obj, self.trans_param_arg, self.inv_trans_param_arg, self.domain, self.codomain)
+            return get_transformed_component_class(
+                obj, self.trans_param_arg, self.inv_trans_param_arg, self.domain, self.codomain
+            )
 
 
-def get_transformed_component_class(component_class, 
-                                    trans_param_arg,
-                                    inv_trans_param_arg,
-                                    domain,
-                                    codomain):
+def get_transformed_component_class(
+    component_class, trans_param_arg, inv_trans_param_arg, domain, codomain
+):
     class TransformedComponent(component_class):
         def compile(self):
-            if hasattr(self, '_compile'):
+            if hasattr(self, "_compile"):
                 self._compile()
-            else: # It's a ComponentFixed
+            else:  # It's a ComponentFixed
                 pass
-    
+
         @inv_trans_param_arg(param_arg=3)
         def simulate(self, key, batch_size, parameters):
             return _cached_functions[self.llh_name][self.func_name](key, batch_size, parameters)
-    
+
         @inv_trans_param_arg(param_arg=2)
         def get_normalization(self, hist, parameters, batch_size=None):
             return super().get_normalization(self, hist, parameters, batch_size=None)
-    
+
         @property
         def all_parameters(self):
             if not super().all_parameters >= domain:
-                raise ValueError("The domain of a transfomer must be the subset of all_parameters of original component!")
+                raise ValueError(
+                    "The domain of a transfomer must be the subset of all_parameters of original component!"
+                )
             return (self._all_parameters - domain) | codomain
-    
+
         @property
         def needed_parameters(self):
             if not super().needed_parameters >= domain:
-                raise ValueError("The domain of a transfomer must be the subset of needed_parameters of original component!")
+                raise ValueError(
+                    "The domain of a transfomer must be the subset of needed_parameters of original component!"
+                )
             return (self._needed_parameters - domain) | codomain
 
     return TransformedComponent
 
 
-def get_transformed_parameter_class(component_class,
-                                    transform,
-                                    domain,
-                                    codomain):
+def get_transformed_parameter_class(component_class, transform, domain, codomain):
     class TransformedParameter(apt.Parameter):
         @property
         def parameter_fit(self):
             if not set(super().parameter_all) >= domain:
-                raise ValueError("The domain of a transfomer must be the subset of parameter_all of original parameter!")
+                raise ValueError(
+                    "The domain of a transfomer must be the subset of parameter_all of original parameter!"
+                )
             return sorted((self._parameter_fit - domain) | codomain)
 
         @property
         def parameter_all(self):
             if not set(super().parameter_all) >= domain:
-                raise ValueError("The domain of a transfomer must be the subset of parameter_all of original parameter!")
+                raise ValueError(
+                    "The domain of a transfomer must be the subset of parameter_all of original parameter!"
+                )
             return sorted((set(super().parameter_all) - domain) | codomain)
-        
+
         @property
         def parameter_fixed(self):
             return sorted(set(self.parameter_all) - set(self.parameter_fit))
