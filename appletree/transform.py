@@ -53,11 +53,13 @@ class Transformer:
         if isinstance(obj, dict):
             return self.transform(obj)
         elif issubclass(obj, apt.Parameter):
-            return get_transformed_parameter_class(obj, self.transform, self.domain, self.codomain)
+            return get_transformed_parameter_class(self.transform, self.domain, self.codomain)
         elif issubclass(obj, apt.Component):
             return get_transformed_component_class(
                 obj, self.trans_param_arg, self.inv_trans_param_arg, self.domain, self.codomain
             )
+        elif issubclass(obj, apt.Likelihood):
+            return get_transformed_likelihood_class(self)
 
 
 def get_transformed_component_class(
@@ -80,40 +82,36 @@ def get_transformed_component_class(
 
         @property
         def all_parameters(self):
-            if not super().all_parameters >= domain:
-                raise ValueError(
-                    "The domain of a transfomer must be the subset of all_parameters of original component!"
-                )
-            return (self._all_parameters - domain) | codomain
+            if not super().all_parameters & domain:
+                return self._all_parameters
+            else:
+                return (self._all_parameters - domain) | codomain
 
         @property
         def needed_parameters(self):
-            if not super().needed_parameters >= domain:
-                raise ValueError(
-                    "The domain of a transfomer must be the subset of needed_parameters of original component!"
-                )
-            return (self._needed_parameters - domain) | codomain
+            if not super().needed_parameters & domain:
+                return self._needed_parameters
+            else:
+                return (self._needed_parameters - domain) | codomain
 
     return TransformedComponent
 
 
-def get_transformed_parameter_class(component_class, transform, domain, codomain):
+def get_transformed_parameter_class(transform, domain, codomain):
     class TransformedParameter(apt.Parameter):
         @property
         def parameter_fit(self):
-            if not set(super().parameter_all) >= domain:
-                raise ValueError(
-                    "The domain of a transfomer must be the subset of parameter_all of original parameter!"
-                )
-            return sorted((self._parameter_fit - domain) | codomain)
+            if not super().parameter_fit & domain:
+                return self._parameter_fit
+            else:
+                return (self._parameter_fit - domain) | codomain
 
         @property
         def parameter_all(self):
-            if not set(super().parameter_all) >= domain:
-                raise ValueError(
-                    "The domain of a transfomer must be the subset of parameter_all of original parameter!"
-                )
-            return sorted((set(super().parameter_all) - domain) | codomain)
+            if not super().parameter_all & domain:
+                return self._parameter_all
+            else:
+                return (self._parameter_all - domain) | codomain
 
         @property
         def parameter_fixed(self):
@@ -146,3 +144,10 @@ def get_transformed_parameter_class(component_class, transform, domain, codomain
             return transform(self._parameter_dict)
 
     return TransformedParameter
+
+
+def get_transformed_likelihood_class(transformer):
+    class TransformedLikelihood(apt.Likelihood):
+        def register_component(self, component_cls, *args, **kwargs):
+            super().register_component(transformer(component_cls), *args, **kwargs)
+    return TransformedLikelihood
