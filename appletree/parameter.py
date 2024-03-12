@@ -20,10 +20,8 @@ class Parameter:
                 * dict: config dictionary.
 
         """
-        parameter_config = apt.utils.get_file_path(parameter_config)
         if isinstance(parameter_config, str):
-            with open(parameter_config, "r") as file:
-                self.par_config = json.load(file)
+            self.par_config = apt.utils.load_json(parameter_config)
         elif isinstance(parameter_config, dict):
             self.par_config = copy.deepcopy(parameter_config)
         else:
