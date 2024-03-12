@@ -150,4 +150,5 @@ def get_transformed_likelihood_class(transformer):
     class TransformedLikelihood(apt.Likelihood):
         def register_component(self, component_cls, *args, **kwargs):
             super().register_component(transformer(component_cls), *args, **kwargs)
+
     return TransformedLikelihood
