@@ -39,6 +39,11 @@ _cached_configs = RecordingDict()
 _cached_functions = StaticValueDict()
 
 
+def clear(cache):
+    _cached_configs.clear()
+    _cached_functions.clear()
+
+
 def set_global_config(configs):
     """Set new global configuration options.
 
