@@ -54,9 +54,13 @@ class Transformer:
         if isinstance(obj, dict):
             return self.transform(obj)
         elif issubclass(obj, apt.Parameter):
-            return get_transformed_parameter_class(self.inverse_transform, self.domain, self.codomain)
+            return get_transformed_parameter_class(
+                self.inverse_transform, self.domain, self.codomain
+            )
         elif issubclass(obj, apt.Component):
-            return get_transformed_component_class(obj, self.inv_trans_param_arg, self.domain, self.codomain)
+            return get_transformed_component_class(
+                obj, self.inv_trans_param_arg, self.domain, self.codomain
+            )
         elif issubclass(obj, apt.Likelihood):
             return get_transformed_likelihood_class(self)
 
