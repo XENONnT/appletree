@@ -134,15 +134,15 @@ def get_transformed_parameter_class(inverse_transform, domain, codomain):
         def __getitem__(self, keys):
             """__getitem__, keys can be str/list/set."""
             if isinstance(keys, (set, list)):
-                return np.array([transform(self._parameter_dict)[key] for key in keys])
+                return np.array([inverse_transform(self._parameter_dict)[key] for key in keys])
             elif isinstance(keys, str):
-                return transform(self._parameter_dict)[keys]
+                return inverse_transform(self._parameter_dict)[keys]
             else:
                 raise ValueError("keys must be a str or a list of str!")
 
         def get_all_parameter(self):
             """Return all parameters as a dict."""
-            return transform(self._parameter_dict)
+            return inverse_transform(self._parameter_dict)
 
     return TransformedParameter
 
