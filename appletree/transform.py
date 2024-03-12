@@ -1,3 +1,4 @@
+import numpy as np
 import appletree as apt
 
 from appletree.share import _cached_functions
@@ -53,18 +54,14 @@ class Transformer:
         if isinstance(obj, dict):
             return self.transform(obj)
         elif issubclass(obj, apt.Parameter):
-            return get_transformed_parameter_class(self.transform, self.domain, self.codomain)
+            return get_transformed_parameter_class(self.inverse_transform, self.domain, self.codomain)
         elif issubclass(obj, apt.Component):
-            return get_transformed_component_class(
-                obj, self.trans_param_arg, self.inv_trans_param_arg, self.domain, self.codomain
-            )
+            return get_transformed_component_class(obj, self.inv_trans_param_arg, self.domain, self.codomain)
         elif issubclass(obj, apt.Likelihood):
             return get_transformed_likelihood_class(self)
 
 
-def get_transformed_component_class(
-    component_class, trans_param_arg, inv_trans_param_arg, domain, codomain
-):
+def get_transformed_component_class(component_class, inv_trans_param_arg, domain, codomain):
     class TransformedComponent(component_class):
         def compile(self):
             if hasattr(self, "_compile"):
@@ -97,7 +94,7 @@ def get_transformed_component_class(
     return TransformedComponent
 
 
-def get_transformed_parameter_class(transform, domain, codomain):
+def get_transformed_parameter_class(inverse_transform, domain, codomain):
     class TransformedParameter(apt.Parameter):
         @property
         def parameter_fit(self):
