@@ -28,6 +28,9 @@ class Transformer:
         )
         return res
 
+    def jacobian(self, param):
+        return 1.0
+
     @staticmethod
     def _trans_param(param_arg=-1, transform=lambda x: x):
         def decorator(func):
@@ -152,6 +155,12 @@ def get_transformed_parameter_class(transformer):
         def get_all_parameter(self):
             """Return all parameters as a dict."""
             return transform(self._parameter_dict)
+
+        @property
+        def log_prior(self):
+            res = super().log_prior
+            res += np.log(transformer.jacobian(self._parameter_dict))
+            return res
 
     return TransformedParameter
 
