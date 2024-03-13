@@ -54,18 +54,20 @@ class Transformer:
         if isinstance(obj, dict):
             return self.transform(obj)
         elif issubclass(obj, apt.Parameter):
-            return get_transformed_parameter_class(
-                self.inverse_transform, self.domain, self.codomain
-            )
+            return get_transformed_parameter_class(self)
         elif issubclass(obj, apt.Component):
-            return get_transformed_component_class(
-                obj, self.inv_trans_param_arg, self.domain, self.codomain
-            )
+            return get_transformed_component_class(self, obj)
         elif issubclass(obj, apt.Likelihood):
             return get_transformed_likelihood_class(self)
+        elif issubclass(obj, apt.Context):
+            return get_transformed_context_class(self, obj)
 
 
-def get_transformed_component_class(component_class, inv_trans_param_arg, domain, codomain):
+def get_transformed_component_class(transformer, component_class):
+    inv_trans_param_arg = transformer.inv_trans_param_arg
+    domain = transformer.domain
+    codomain = transformer.codomain
+
     class TransformedComponent(component_class):
         def compile(self):
             if hasattr(self, "_compile"):
@@ -79,7 +81,7 @@ def get_transformed_component_class(component_class, inv_trans_param_arg, domain
 
         @inv_trans_param_arg(param_arg=2)
         def get_normalization(self, hist, parameters, batch_size=None):
-            return super().get_normalization(self, hist, parameters, batch_size=None)
+            return super().get_normalization(hist, parameters, batch_size)
 
         @property
         def all_parameters(self):
@@ -98,21 +100,28 @@ def get_transformed_component_class(component_class, inv_trans_param_arg, domain
     return TransformedComponent
 
 
-def get_transformed_parameter_class(inverse_transform, domain, codomain):
+def get_transformed_parameter_class(transformer):
+    transform = transformer.transform
+    inverse_transform = transformer.inverse_transform
+    domain = transformer.domain
+    codomain = transformer.codomain
+
     class TransformedParameter(apt.Parameter):
         @property
         def parameter_fit(self):
-            if not super().parameter_fit & domain:
-                return self._parameter_fit
+            parameter_fit = set(super().parameter_fit)
+            if not parameter_fit & domain:
+                return sorted(parameter_fit)
             else:
-                return (self._parameter_fit - domain) | codomain
+                return sorted((parameter_fit - domain) | codomain)
 
         @property
         def parameter_all(self):
-            if not super().parameter_all & domain:
-                return self._parameter_all
+            parameter_all = set(super().parameter_all)
+            if not parameter_all & domain:
+                return sorted(parameter_all)
             else:
-                return (self._parameter_all - domain) | codomain
+                return sorted((parameter_all - domain) | codomain)
 
         @property
         def parameter_fixed(self):
@@ -134,15 +143,15 @@ def get_transformed_parameter_class(inverse_transform, domain, codomain):
         def __getitem__(self, keys):
             """__getitem__, keys can be str/list/set."""
             if isinstance(keys, (set, list)):
-                return np.array([inverse_transform(self._parameter_dict)[key] for key in keys])
+                return np.array([transform(self._parameter_dict)[key] for key in keys])
             elif isinstance(keys, str):
-                return inverse_transform(self._parameter_dict)[keys]
+                return transform(self._parameter_dict)[keys]
             else:
                 raise ValueError("keys must be a str or a list of str!")
 
         def get_all_parameter(self):
             """Return all parameters as a dict."""
-            return inverse_transform(self._parameter_dict)
+            return transform(self._parameter_dict)
 
     return TransformedParameter
 
@@ -153,3 +162,26 @@ def get_transformed_likelihood_class(transformer):
             super().register_component(transformer(component_cls), *args, **kwargs)
 
     return TransformedLikelihood
+
+
+def get_transformed_context_class(transformer, context_class):
+    class TransformedContext(context_class):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+            if self.needed_parameters & transformer.domain:
+                self.needed_parameters = (
+                    self.needed_parameters - transformer.domain
+                ) | transformer.codomain
+            self.par_manager = transformer(apt.Parameter)(self.par_config)
+
+        def register_likelihood(self, likelihood_name, likelihood_config):
+            if likelihood_name in self.likelihoods:
+                raise ValueError(f"Likelihood named {likelihood_name} already existed!")
+            likelihood = getattr(apt, likelihood_config.get("type", "Likelihood"))
+            self.likelihoods[likelihood_name] = transformer(likelihood)(
+                name=likelihood_name,
+                **likelihood_config,
+            )
+
+    return TransformedContext

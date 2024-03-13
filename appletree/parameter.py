@@ -189,10 +189,11 @@ class Parameter:
                 If True, function will additionally return the list of the not existing keys.
 
         """
+        parameter_all = sorted(set(self._parameter_dict.keys()))
         if isinstance(keys, (set, list)):
             not_exist = []
             for key in keys:
-                if key not in self.parameter_all:
+                if key not in parameter_all:
                     not_exist.append(key)
             all_exist = not_exist == []
             if return_not_exist:
@@ -201,9 +202,9 @@ class Parameter:
                 return all_exist
         elif isinstance(keys, str):
             if return_not_exist:
-                return (keys in self.parameter_all, keys)
+                return (keys in parameter_all, keys)
             else:
-                return keys in self.parameter_all
+                return keys in parameter_all
         elif isinstance(keys, dict):
             return self.check_parameter_exist(list(keys.keys()), return_not_exist)
         else:
@@ -228,7 +229,8 @@ class Parameter:
             for key, val in zip(keys, vals):
                 self._parameter_dict[key] = val
         elif isinstance(keys, dict):
-            self.set_parameter(list(keys.keys()), keys.values())
+            for key, val in keys.items():
+                self._parameter_dict[key] = val
         elif isinstance(keys, str):
             assert isinstance(vals, (float, int)), "val must be either float or int!"
             self._parameter_dict[keys] = vals
@@ -242,9 +244,6 @@ class Parameter:
             keys: Parameter names. Can be a single str, or a list of str.
 
         """
-        all_exist, not_exist = self.check_parameter_exist(keys, return_not_exist=True)
-        assert all_exist, f"{not_exist} not found!"
-
         return self.__getitem__(keys)
 
     def __getitem__(self, keys):

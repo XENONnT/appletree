@@ -39,7 +39,7 @@ _cached_configs = RecordingDict()
 _cached_functions = StaticValueDict()
 
 
-def clear(cache):
+def clear_cache():
     _cached_configs.clear()
     _cached_functions.clear()
 

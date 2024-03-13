@@ -37,6 +37,8 @@ from .context import *
 
 from .plot import *
 
+from .transform import *
+
 # check CUDA support setup
 from warnings import warn
 
