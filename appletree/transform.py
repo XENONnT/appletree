@@ -1,35 +1,32 @@
 import numpy as np
 import appletree as apt
 
+from typing import Set
 from appletree.share import _cached_functions
 
 
 class Transformer:
-    domain = {"g1", "g2"}
-    codomain = {"a", "b"}
+    domain: Set[str] = set()
+    codomain: Set[str] = set()
 
     def transform(self, param):
-        res = {key: value for key, value in param.items() if key not in self.domain}
-        res.update(
-            {
-                "a": param["g1"] * 0.5,
-                "b": param["g2"] * 2,
-            }
-        )
-        return res
+        raise NotImplementedError
 
     def inverse_transform(self, param):
-        res = {key: value for key, value in param.items() if key not in self.codomain}
-        res.update(
-            {
-                "g1": param["a"] * 2,
-                "g2": param["b"] * 0.5,
-            }
-        )
-        return res
+        raise NotImplementedError
 
     def jacobian(self, param):
-        return 1.0
+        raise NotImplementedError
+
+    def wrapped_transform(self, param):
+        res = {key: value for key, value in param.items() if key not in self.domain}
+        res.update(self.transform(param))
+        return res
+
+    def wrapped_inverse_transform(self, param):
+        res = {key: value for key, value in param.items() if key not in self.codomain}
+        res.update(self.inverse_transform(param))
+        return res
 
     @staticmethod
     def _trans_param(param_arg=-1, transform=lambda x: x):
@@ -48,14 +45,14 @@ class Transformer:
         return decorator
 
     def trans_param_arg(self, param_arg):
-        return self._trans_param(param_arg, self.transform)
+        return self._trans_param(param_arg, self.wrapped_transform)
 
     def inv_trans_param_arg(self, param_arg):
-        return self._trans_param(param_arg, self.inverse_transform)
+        return self._trans_param(param_arg, self.wrapped_inverse_transform)
 
     def __call__(self, obj):
         if isinstance(obj, dict):
-            return self.transform(obj)
+            return self.wrapped_transform(obj)
         elif issubclass(obj, apt.Parameter):
             return get_transformed_parameter_class(self)
         elif issubclass(obj, apt.Component):
@@ -104,8 +101,8 @@ def get_transformed_component_class(transformer, component_class):
 
 
 def get_transformed_parameter_class(transformer):
-    transform = transformer.transform
-    inverse_transform = transformer.inverse_transform
+    transform = transformer.wrapped_transform
+    inverse_transform = transformer.wrapped_inverse_transform
     domain = transformer.domain
     codomain = transformer.codomain
 
