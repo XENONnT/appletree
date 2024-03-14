@@ -1,4 +1,3 @@
-import inspect
 import appletree as apt
 
 
@@ -20,9 +19,6 @@ class TestTransformer(apt.Transformer):
 
     def jacobian(self, param):
         return 1.0
-
-    def print(self):
-        return inspect.getsource(self)
 
 
 def test_transformer():
