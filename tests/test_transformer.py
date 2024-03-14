@@ -26,6 +26,7 @@ class TestTransformer(apt.Transformer):
 
 
 def test_transformer():
+    apt.clear_cache()
     transformer = TestTransformer()
     tree = transformer(apt.ContextRn220)()
     tree.fitting(iteration=10, batch_size=int(1e4))
