@@ -147,6 +147,10 @@ class Component:
             raise ValueError(f"Unsupported bins_type {self.bins_type}!")
         if self.add_eps_to_hist:
             # as an uncertainty to prevent blowing up
+            if self.bins_type != "meshgrid":
+                warn("It is empirically dangerous to have add_eps_to_hist==True,\
+                      when your bins_type is not meshgrid! It may lead to very bad fit with\
+                      lots of eff==0.")
             hist = jnp.clip(hist, 1.0, jnp.inf)
         return hist
 
