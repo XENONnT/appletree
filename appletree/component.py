@@ -25,7 +25,9 @@ class Component:
 
     rate_name: str = ""
     norm_type: str = ""
-    add_eps_to_hist: bool = False # add_eps_to_hist==True was introduced as only a workaround for likelihood blowup problem when using meshgrid binning
+    add_eps_to_hist: bool = (
+        False  # add_eps_to_hist==True was introduced as only a workaround for likelihood blowup problem when using meshgrid binning
+    )
     force_no_eff: bool = False
 
     def __init__(self, name: Optional[str] = None, llh_name: Optional[str] = None, **kwargs):
@@ -148,9 +150,11 @@ class Component:
         if self.add_eps_to_hist:
             # as an uncertainty to prevent blowing up
             if self.bins_type != "meshgrid":
-                warn("It is empirically dangerous to have add_eps_to_hist==True,\
+                warn(
+                    "It is empirically dangerous to have add_eps_to_hist==True,\
                       when your bins_type is not meshgrid! It may lead to very bad fit with\
-                      lots of eff==0.")
+                      lots of eff==0."
+                )
             hist = jnp.clip(hist, 1.0, jnp.inf)
         return hist
 
