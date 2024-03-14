@@ -1,5 +1,7 @@
 import numpy as np
 import appletree as apt
+import inspect
+import h5py
 
 from typing import Set
 from appletree.share import _cached_functions
@@ -189,5 +191,17 @@ def get_transformed_context_class(transformer, context_class):
                 name=likelihood_name,
                 **likelihood_config,
             )
+
+        def _dump_meta(self, metadata=None):
+            super()._dump_meta(metadata)
+            if self.backend_h5 is not None:
+                name = self.sampler.backend.name
+                try:
+                    transformer_src = inspect.getsource(transformer.__class__)
+                except Exception as e:
+                    print(f"Failed to get source code of transformer: {e}")
+                    transformer_src = transformer.__repr__()
+                with h5py.File(self.backend_h5, "r+") as opt:
+                    opt[name].attrs["transformer"] = transformer_src
 
     return TransformedContext
