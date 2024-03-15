@@ -53,6 +53,13 @@ class Component:
         if "bins" in kwargs.keys() and "bins_type" in kwargs.keys():
             self.set_binning(**kwargs)
 
+        if self.bins_type != "meshgrid" and self.add_eps_to_hist:
+            warn(
+                "It is empirically dangerous to have add_eps_to_hist==True,\
+                    when your bins_type is not meshgrid! It may lead to very bad fit with\
+                    lots of eff==0."
+            )
+
     def set_binning(self, **kwargs):
         """Set binning of component."""
         if "bins" not in kwargs.keys() or "bins_type" not in kwargs.keys():
@@ -149,12 +156,6 @@ class Component:
             raise ValueError(f"Unsupported bins_type {self.bins_type}!")
         if self.add_eps_to_hist:
             # as an uncertainty to prevent blowing up
-            if self.bins_type != "meshgrid":
-                warn(
-                    "It is empirically dangerous to have add_eps_to_hist==True,\
-                      when your bins_type is not meshgrid! It may lead to very bad fit with\
-                      lots of eff==0."
-                )
             hist = jnp.clip(hist, 1.0, jnp.inf)
         return hist
 
