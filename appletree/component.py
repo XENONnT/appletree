@@ -26,7 +26,7 @@ class Component:
     rate_name: str = ""
     norm_type: str = ""
     add_eps_to_hist: bool = (
-        False  # add_eps_to_hist==True was introduced as only a workaround for likelihood blowup problem when using meshgrid binning
+        True  # add_eps_to_hist==True was introduced as only a workaround for likelihood blowup problem when using meshgrid binning
     )
     force_no_eff: bool = False
 
