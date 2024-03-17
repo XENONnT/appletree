@@ -53,12 +53,12 @@ class Component:
         if "bins" in kwargs.keys() and "bins_type" in kwargs.keys():
             self.set_binning(**kwargs)
 
-        if self.bins_type != "meshgrid" and self.add_eps_to_hist:
-            warn(
-                "It is empirically dangerous to have add_eps_to_hist==True,\
-                    when your bins_type is not meshgrid! It may lead to very bad fit with\
-                    lots of eff==0."
-            )
+            if self.bins_type != "meshgrid" and self.add_eps_to_hist:
+                warn(
+                    "It is empirically dangerous to have add_eps_to_hist==True,\
+                        when your bins_type is not meshgrid! It may lead to very bad fit with\
+                        lots of eff==0."
+                )
 
     def set_binning(self, **kwargs):
         """Set binning of component."""
@@ -66,6 +66,8 @@ class Component:
             raise ValueError("bins and bins_type must be set!")
         self.bins = kwargs.get("bins")
         self.bins_type = kwargs.get("bins_type")
+        if self.bins_type not in ["irreg", "meshgrid", None]:
+            raise ValueError(f"Unsupported bins_type {self.bins_type}!")
 
         if self.bins_type == "meshgrid":
             warning = "The usage of meshgrid binning is highly discouraged."
@@ -552,7 +554,7 @@ class ComponentSim(Component):
                     name=self.name + "_copy",
                     llh_name=llh_name,
                     bins=self.bins,
-                    bins_type=self.bins,
+                    bins_type=self.bins_type,
                 )
             else:
                 raise ValueError("Should provide bins and bins_type if you want to pass binning!")
