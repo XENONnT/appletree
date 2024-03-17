@@ -29,6 +29,8 @@ class Component:
     # for likelihood blowup problem when using meshgrid binning
     add_eps_to_hist: bool = True
     force_no_eff: bool = False
+    _needed_parameters: Set[str] = set()
+    _all_parameters: Set[str] = set()
 
     def __init__(self, name: Optional[str] = None, llh_name: Optional[str] = None, **kwargs):
         """Initialization.
@@ -48,7 +50,6 @@ class Component:
             self.llh_name = self.__class__.__name__ + "_llh"
         else:
             self.llh_name = llh_name
-        self.needed_parameters: Set[str] = set()
 
         if "bins" in kwargs.keys() and "bins_type" in kwargs.keys():
             self.set_binning(**kwargs)
@@ -187,6 +188,24 @@ class Component:
         """Hook for compiling simulation code."""
         pass
 
+    @property
+    def all_parameters(self):
+        """All parameters used in the component."""
+        # Add rate_name to needed_parameters only when it's not empty
+        if self.rate_name != "":
+            return {self.rate_name} | self._all_parameters
+        else:
+            return self._all_parameters
+
+    @property
+    def needed_parameters(self):
+        """All parameters needed in the component.simulate."""
+        # Add rate_name to needed_parameters only when it's not empty
+        if self.rate_name != "":
+            return {self.rate_name} | self._needed_parameters
+        else:
+            return self._needed_parameters
+
 
 @export
 class ComponentSim(Component):
@@ -310,22 +329,19 @@ class ComponentSim(Component):
         self.worksheet = []
         # Reinitialize needed_parameters
         # because sometimes user will deduce(& compile) after changing configs
-        self.needed_parameters: Set[str] = set()
-        # Add rate_name to needed_parameters only when it's not empty
-        if self.rate_name != "":
-            self.needed_parameters.add(self.rate_name)
+        self._needed_parameters = set()
         for _plugin in dependencies[::-1]:
             plugin = _plugin["plugin"]
             if plugin.__name__ in already_seen:
                 continue
             self.worksheet.append([plugin.__name__, plugin.provides, plugin.depends_on])
             already_seen.append(plugin.__name__)
-            self.needed_parameters |= set(plugin.parameters)
+            self._needed_parameters |= set(plugin.parameters)
             # Add needed_parameters from config
             for config in plugin.takes_config.values():
                 required_parameter = config.required_parameter(self.llh_name)
                 if required_parameter is not None:
-                    self.needed_parameters |= {required_parameter}
+                    self._needed_parameters |= {required_parameter}
 
     def flush_source_code(
         self,
@@ -565,6 +581,15 @@ class ComponentSim(Component):
             )
         return component
 
+    @property
+    def all_parameters(self):
+        """All parameters used in the component, including all parameters in the registered
+        plugins."""
+        all_parameters = super().all_parameters
+        for plugin in self._plugin_class_registry.values():
+            all_parameters |= set(plugin.parameters)
+        return all_parameters
+
 
 @export
 class ComponentFixed(Component):
@@ -586,7 +611,6 @@ class ComponentFixed(Component):
         self.data = load_data(self._file_name)[list(data_names)].to_numpy()
         self.eff = jnp.ones(len(self.data))
         self.hist = self.implement_binning(self.data, self.eff)
-        self.needed_parameters.add(self.rate_name)
 
     def simulate(self):
         """Fixed component does not need to simulate."""

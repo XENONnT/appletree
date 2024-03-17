@@ -1,7 +1,7 @@
 import copy
-import json
 
 import numpy as np
+import appletree as apt
 
 from appletree.randgen import TwoHalfNorm
 from appletree.utils import errors_to_two_half_norm_sigmas
@@ -20,8 +20,7 @@ class Parameter:
 
         """
         if isinstance(parameter_config, str):
-            with open(parameter_config, "r") as file:
-                self.par_config = json.load(file)
+            self.par_config = apt.utils.load_json(parameter_config)
         elif isinstance(parameter_config, dict):
             self.par_config = copy.deepcopy(parameter_config)
         else:
@@ -58,6 +57,16 @@ class Parameter:
     def parameter_fit(self):
         """Return sorted list of parameters name waiting for fitting."""
         return sorted(self._parameter_fit)
+
+    @property
+    def parameter_fixed(self):
+        """Return sorted list of parameters name fixed."""
+        return sorted(self._parameter_fixed)
+
+    @property
+    def parameter_all(self):
+        """Return sorted list of all parameters name."""
+        return sorted(set(self._parameter_dict.keys()))
 
     def sample_prior(self):
         """Sampling parameters from prior and set self._parameter_dict.
@@ -180,10 +189,11 @@ class Parameter:
                 If True, function will additionally return the list of the not existing keys.
 
         """
+        parameter_all = sorted(set(self._parameter_dict.keys()))
         if isinstance(keys, (set, list)):
             not_exist = []
             for key in keys:
-                if key not in self._parameter_dict:
+                if key not in parameter_all:
                     not_exist.append(key)
             all_exist = not_exist == []
             if return_not_exist:
@@ -192,12 +202,11 @@ class Parameter:
                 return all_exist
         elif isinstance(keys, str):
             if return_not_exist:
-                return (keys in self._parameter_dict, keys)
+                return (keys in parameter_all, keys)
             else:
-                return keys in self._parameter_dict
+                return keys in parameter_all
         elif isinstance(keys, dict):
             return self.check_parameter_exist(list(keys.keys()), return_not_exist)
-
         else:
             raise ValueError("keys must be a str or a list of str!")
 
@@ -220,7 +229,8 @@ class Parameter:
             for key, val in zip(keys, vals):
                 self._parameter_dict[key] = val
         elif isinstance(keys, dict):
-            self.set_parameter(list(keys.keys()), keys.values())
+            for key, val in keys.items():
+                self._parameter_dict[key] = val
         elif isinstance(keys, str):
             assert isinstance(vals, (float, int)), "val must be either float or int!"
             self._parameter_dict[keys] = vals
@@ -234,9 +244,6 @@ class Parameter:
             keys: Parameter names. Can be a single str, or a list of str.
 
         """
-        all_exist, not_exist = self.check_parameter_exist(keys, return_not_exist=True)
-        assert all_exist, f"{not_exist} not found!"
-
         return self.__getitem__(keys)
 
     def __getitem__(self, keys):
