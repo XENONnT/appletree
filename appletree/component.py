@@ -66,7 +66,7 @@ class Component:
             raise ValueError("bins and bins_type must be set!")
         self.bins = kwargs.get("bins")
         self.bins_type = kwargs.get("bins_type")
-        if self.bins_type not in ["irreg", "meshgrid"]:
+        if self.bins_type not in ["irreg", "meshgrid", None]:
             raise ValueError(f"Unsupported bins_type {self.bins_type}!")
 
         if self.bins_type == "meshgrid":
@@ -554,7 +554,7 @@ class ComponentSim(Component):
                     name=self.name + "_copy",
                     llh_name=llh_name,
                     bins=self.bins,
-                    bins_type=self.bins,
+                    bins_type=self.bins_type,
                 )
             else:
                 raise ValueError("Should provide bins and bins_type if you want to pass binning!")
