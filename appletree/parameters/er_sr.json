@@ -186,7 +186,7 @@
         "unit": "au",
         "doc": "Parameter for Gaussian emission model mean"
     },
-    "p_sig_0": {
+    "p_sigma_0": {
         "prior_type": "free",
         "prior_args": {},
         "allowed_range": [
