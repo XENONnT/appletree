@@ -31,6 +31,7 @@ class ERBandSR(ComponentSim):
         self.register_all(apt.plugins.reconstruction)
         self.register_all(apt.plugins.efficiency)
 
+
 class ERPeak(ComponentSim):
     norm_type = "on_pdf"
     add_eps_to_hist = False
