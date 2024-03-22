@@ -2,7 +2,6 @@ from jax import numpy as jnp
 from jax import scipy as jsp
 from jax import jit
 from functools import partial
-import scipy
 
 from appletree import randgen
 from appletree.plugin import Plugin
