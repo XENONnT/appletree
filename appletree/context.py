@@ -57,13 +57,11 @@ class Context:
 
     @classmethod
     def from_backend(cls, backend_h5_file_name):
-        """
-        Initialize context from a backend_h5 file.
-        """
+        """Initialize context from a backend_h5 file."""
         with h5py.File(get_file_path(backend_h5_file_name)) as file:
-            instruct = eval(file['mcmc'].attrs['instruct'])
-            nwalkers = file['mcmc'].attrs['nwalkers']
-            batch_size = file['mcmc'].attrs['batch_size']
+            instruct = eval(file["mcmc"].attrs["instruct"])
+            nwalkers = file["mcmc"].attrs["nwalkers"]
+            batch_size = file["mcmc"].attrs["batch_size"]
         tree = cls(instruct)
         tree.pre_fitting(nwalkers, batch_size=batch_size)
         return tree
