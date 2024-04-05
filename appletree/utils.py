@@ -637,3 +637,7 @@ def errors_to_two_half_norm_sigmas(errors):
     res = root(_to_solve, errors, args=(errors, 1 - chi2.cdf(1, 1)))
     assert res.success, f"Cannot solve sigmas of TwoHalfNorm for errors {errors}!"
     return res.x
+
+
+def to_array(*arrs):
+    return tuple([np.asarray(arr) for arr in arrs])
