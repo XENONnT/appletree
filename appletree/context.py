@@ -13,7 +13,7 @@ import h5py
 import appletree as apt
 from appletree import randgen
 from appletree import Parameter
-from appletree.utils import load_json
+from appletree.utils import load_json, get_file_path
 from appletree.share import _cached_configs, set_global_config
 
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -54,6 +54,19 @@ class Context:
         self.par_manager = Parameter(self.par_config)
 
         self.register_all_likelihood(instruct)
+
+    @classmethod
+    def from_backend(cls, backend_h5_file_name):
+        """
+        Initialize context from a backend_h5 file.
+        """
+        with h5py.File(get_file_path(backend_h5_file_name)) as file:
+            instruct = eval(file['mcmc'].attrs['instruct'])
+            nwalkers = file['mcmc'].attrs['nwalkers']
+            batch_size = file['mcmc'].attrs['batch_size']
+        tree = cls(instruct)
+        tree.pre_fitting(nwalkers, batch_size=batch_size)
+        return tree
 
     def __getitem__(self, keys):
         """Get likelihood in context."""
@@ -174,19 +187,19 @@ class Context:
     def _ndim(self):
         return len(self.par_manager.parameter_fit_array)
 
-    def _set_backend(self, nwalkers=100, read_only=True):
+    def _set_backend(self, nwalkers=100, read_only=True, reset=False):
         if self.backend_h5 is None:
             self._backend = None
             print("With no backend")
         else:
             self._backend = emcee.backends.HDFBackend(self.backend_h5, read_only=read_only)
-            if not read_only:
+            if reset:
                 self._backend.reset(nwalkers, self._ndim)
             print(f"With h5 backend {self.backend_h5}")
 
-    def pre_fitting(self, nwalkers=100, read_only=True, batch_size=1_000_000):
+    def pre_fitting(self, nwalkers=100, read_only=True, reset=False, batch_size=1_000_000):
         """Prepare for fitting, initialize backend and sampler."""
-        self._set_backend(nwalkers, read_only=read_only)
+        self._set_backend(nwalkers, read_only=read_only, reset=reset)
         self.sampler = emcee.EnsembleSampler(
             nwalkers,
             self._ndim,
@@ -212,7 +225,7 @@ class Context:
             self.par_manager.sample_init()
             p0.append(self.par_manager.parameter_fit_array)
 
-        self.pre_fitting(nwalkers=nwalkers, read_only=False, batch_size=batch_size)
+        self.pre_fitting(nwalkers=nwalkers, read_only=False, reset=True, batch_size=batch_size)
 
         result = self.sampler.run_mcmc(
             p0,
@@ -221,10 +234,10 @@ class Context:
             progress=True,
         )
 
-        self._dump_meta()
+        self._dump_meta(batch_size=batch_size)
         return result
 
-    def continue_fitting(self, context, iteration=500, batch_size=1_000_000):
+    def continue_fitting(self, context=None, iteration=500, batch_size=1_000_000):
         """Continue a fitting of another context.
 
         Args:
@@ -232,14 +245,19 @@ class Context:
             iteration: int, number of steps to generate.
 
         """
-        # Final iteration
-        final_iteration = context.sampler.get_chain()[-1, :, :]
-        p0 = final_iteration.tolist()
+        # If context is None, use self, i.e. continue the fitting defined in self
+        if context is None:
+            context = self
+            p0 = None
+        else:
+            # Final iteration
+            final_iteration = context.sampler.get_chain()[-1, :, :]
+            p0 = final_iteration.tolist()
 
-        nwalkers = len(p0)
+        nwalkers = context.sampler.get_chain().shape[1]
 
         # Init sampler for current context
-        self.pre_fitting(nwalkers=nwalkers, read_only=False, batch_size=batch_size)
+        self.pre_fitting(nwalkers=nwalkers, read_only=False, reset=False, batch_size=batch_size)
 
         result = self.sampler.run_mcmc(
             p0,
@@ -249,7 +267,7 @@ class Context:
             skip_initial_state_check=True,
         )
 
-        self._dump_meta()
+        self._dump_meta(batch_size=batch_size)
         return result
 
     def get_post_parameters(self):
@@ -276,7 +294,7 @@ class Context:
         with open(file_name, "w") as fp:
             json.dump(parameters, fp)
 
-    def _dump_meta(self, metadata=None):
+    def _dump_meta(self, batch_size, metadata=None):
         """Save parameters name as attributes."""
         if metadata is None:
             metadata = {
@@ -299,6 +317,8 @@ class Context:
                 opt[name].attrs["config"] = json.dumps(self.config)
                 # configurations, maybe users will manually add some maps
                 opt[name].attrs["_cached_configs"] = json.dumps(_cached_configs)
+                # batch size
+                opt[name].attrs["batch_size"] = batch_size
 
     def get_template(
         self,
