@@ -91,7 +91,7 @@ def test_backend():
     _cached_functions.clear()
     _cached_configs.clear()
     instruct = apt.utils.load_json("rn220.json")
-    instruct['backend_h5'] = 'test_backend.h5'
+    instruct["backend_h5"] = "test_backend.h5"
     context = apt.Context(instruct)
     context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
 
