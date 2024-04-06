@@ -8,3 +8,4 @@ recommonmark==0.7.1
 sphinx==5.2.3
 sphinx_rtd_theme==1.0.0
 Jinja2==3.0.3
+lxml_html_clean
