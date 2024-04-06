@@ -149,9 +149,9 @@ def get_file_path(fname):
     * can be downloaded from MongoDB, download and return cached path
 
     """
-    # 1. From absolute path
+    # 1. From absolute path if file exists
     # Usually Config.default is a absolute path
-    if fname.startswith("/"):
+    if os.path.isfile(fname):
         return fname
 
     # 2. From local folder

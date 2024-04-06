@@ -84,3 +84,19 @@ def test_literature_context():
     parameters = context.get_post_parameters()
     context.get_num_events_accepted(parameters, batch_size=batch_size)
     check_unused_configs()
+
+
+def test_backend():
+    """Test backend, initialize from backend and continue fitting."""
+    _cached_functions.clear()
+    _cached_configs.clear()
+    instruct = apt.utils.load_json("rn220.json")
+    instruct["backend_h5"] = "test_backend.h5"
+    context = apt.Context(instruct)
+    context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
+
+    _cached_functions.clear()
+    _cached_configs.clear()
+    context = apt.Context.from_backend("test_backend.h5")
+    context.continue_fitting(iteration=2, batch_size=int(1e4))
+    assert context.sampler.get_chain().shape[0] == 4
