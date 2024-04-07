@@ -11,20 +11,66 @@ from appletree.utils import exporter
 export, __all__ = exporter(export_self=False)
 
 
-def atanh_clip(x):
-    return jnp.arctanh((x + 1) % 2 - 1)
-
-
-def n_photon_mean_model0(num_quanta, p_mu_0):
-    return (
-        jnp.sin(jsp.special.erf(atanh_clip(jnp.sqrt(jnp.arcsinh(num_quanta)))))
-        * num_quanta
-        / p_mu_0
+def n_photon_mean_model(num_quanta, p_mu_0=0.9982161, p_mu_1=0.418):
+    """
+    \begin{aligned}
+    \mu= & p_{\mu_0}\left( \sqrt{x_0}+ \operatorname{asinh}^3\left(\sin ^3
+    \left(\log \left(x_0+p_{\mu_0}\right)\right)\right)-1/0.249\right)^2 \\
+    & -\operatorname{atan}^2\left(\operatorname{erfc}\left(\sin \left(\log 
+    \left(x_0+p_{\mu_0}\right)\right)\right)\right)
+    & x_0 \log \left(p_{\mu_1} \tanh \left(\sin \left(\sin \left(\tan \left(
+    \sinh \left(\sin \left(\log \left(x_0+1\right)\right)\right)\right)\right)
+    \right)\right)+1\right)^3
+    \end{aligned}
+    """
+    result = p_mu_0 * (
+        jnp.sqrt(num_quanta) + 
+        jnp.arcsinh(
+            jnp.sin(
+                jnp.log(num_quanta + p_mu_0)
+            )**3
+        ) - 1/0.249
+    )**2 - jnp.log(
+        jsp.special.erfc(
+            jnp.sin(
+                jnp.log(
+                    num_quanta + p_mu_0
+                )
+            )
+        )
+    +1) - (
+        num_quanta * 
+        jnp.log(
+            p_mu_1 * jnp.tanh(
+                jnp.sin(
+                    jnp.sin(
+                        jnp.tan(
+                            jnp.sinh(
+                                jnp.sin(
+                                    jnp.log(num_quanta+1)
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        +1)**3
     )
-
-
-def n_photon_std_model0(num_quanta, p_sigma_0):
-    return (num_quanta * p_sigma_0) + jnp.log2((jnp.log2(jnp.log2(jnp.arcsinh(num_quanta)))) ** 6)
+    return result
+ 
+def n_photon_std_model(num_quanta, p_sigma_0=0.4):
+    """
+    \sigma=x_0^{p_{\sigma_0}}-\sinh \left(\cosh \left(\sin \left(
+    \operatorname{asinh}\left(x_0\right)\right)\right)\right)
+    """
+    result = num_quanta**p_sigma_0 - jnp.sinh(
+        jnp.cosh(
+            jnp.sin(
+                jnp.arcsinh(num_quanta)
+            )
+        )
+    )
+    return result
 
 
 @export
@@ -60,8 +106,8 @@ class Emission(Plugin):
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, num_quanta):
-        n_photon_mean = n_photon_mean_model0(num_quanta, parameters["p_mu_0"])
-        n_photon_std = n_photon_std_model0(num_quanta, parameters["p_sigma_0"])
+        n_photon_mean = n_photon_mean_model(num_quanta, parameters["p_mu_0"], parameters["p_mu_1"],)
+        n_photon_std = n_photon_std_model(num_quanta, parameters["p_sigma_0"])
         key, _num_photon = randgen.truncate_normal(
             key, n_photon_mean, n_photon_std, vmin=0, vmax=num_quanta
         )
