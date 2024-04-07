@@ -167,10 +167,22 @@
         "prior_type": "free",
         "prior_args": {},
         "allowed_range": [
-            0,
-            10.0
+            0.9,
+            1.1
         ],
-        "init_mean": 1.044,
+        "init_mean": 1,
+        "init_std": 0.02,
+        "unit": "au",
+        "doc": "Parameter for Gaussian emission model mean"
+    },
+    "p_mu_1": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            0.1,
+            0.7
+        ],
+        "init_mean": 0.4,
         "init_std": 0.02,
         "unit": "au",
         "doc": "Parameter for Gaussian emission model mean"
@@ -179,11 +191,11 @@
         "prior_type": "free",
         "prior_args": {},
         "allowed_range": [
-            0,
-            1.0
+            0.2,
+            0.6
         ],
-        "init_mean": 0.0242,
-        "init_std": 0.0004,
+        "init_mean": 0.4,
+        "init_std": 0.02,
         "unit": "au",
         "doc": "Parameter for Gaussian emission model std"
     },
