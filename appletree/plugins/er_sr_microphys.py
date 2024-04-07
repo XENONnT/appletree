@@ -84,7 +84,7 @@ class Emission(Plugin):
 
     depends_on = ["num_quanta"]
     provides = ["num_photon", "num_electron"]
-    parameters = ("p_mu_0", "p_sigma_0")
+    parameters = ("p_mu_0", "p_mu_1", "p_sigma_0")
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, num_quanta):
