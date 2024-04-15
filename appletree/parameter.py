@@ -68,7 +68,7 @@ class Parameter:
                                 """
                             )
                     else:
-                        self.par_config[f"{par_name}_{self.par_config[par_name]["llh_name"]}"] = (
+                        self.par_config[f"{par_name}_{self.par_config[par_name]['llh_name']}"] = (
                             self.par_config[par_name]
                         )
                         self.par_config[f"{par_name}_{llh_name}"] = par_setting
