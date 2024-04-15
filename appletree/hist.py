@@ -16,11 +16,34 @@ def make_hist_mesh_grid(sample, bins=10, weights=None):
 
 @export
 @jit
+def make_hist_irreg_bin_1d(sample, bins, weights):
+    """Make a histogram with irregular binning.
+
+    Args:
+        sample: array with shape N.
+        bins: array with shape M.
+        weights: array with shape (N,).
+
+    """
+
+    ind = jnp.searchsorted(bins, sample)
+
+    hist = jnp.zeros(len(bins) + 1)
+    hist = hist.at[ind].add(weights)
+
+    return hist[1:-1]
+
+
+@export
+@jit
 def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights):
     """Make a histogram with irregular binning.
 
-    :param sample: array with shape (N, 2) :param bins_x: array with shape (M1, ) :param bins_y:
-    array with shape (M1-1, M2) :param weights: array with shape (N, )
+    Args:
+        sample: array with shape (N, 2).
+        bins_x: array with shape (M1, ).
+        bins_y: array with shape (M1-1, M2).
+        weights: array with shape (N,).
 
     """
     x = sample[:, 0]

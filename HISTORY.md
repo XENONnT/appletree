@@ -1,3 +1,39 @@
+v0.3.2 / 2024-03-06
+-------------------
+* Remove `scikit-learn` version requirement by @dachengx in https://github.com/XENONnT/appletree/pull/131
+* Use trusted publisher because username/password authentication is no longer supported by @dachengx in https://github.com/XENONnT/appletree/pull/132
+* Be compatible with `JAX_ENABLE_X64=1` by @dachengx in https://github.com/XENONnT/appletree/pull/134
+* Raise more information when file can not be found by @dachengx in https://github.com/XENONnT/appletree/pull/135
+* Preserve dtype of results in `multiple_simulations` by @dachengx in https://github.com/XENONnT/appletree/pull/137
+* Copy memory from GPU to CPU by @dachengx in https://github.com/XENONnT/appletree/pull/139
+* Bug fix when using `force_no_eff` with tuple `data_names` by @dachengx in https://github.com/XENONnT/appletree/pull/141
+* Add Gamma, Negative Binomial, and Generalized Poisson Distribution by @dachengx in https://github.com/XENONnT/appletree/pull/145
+* Add support for 1D fitting by @dachengx in https://github.com/XENONnT/appletree/pull/144
+* Correct the sigmas in TwoHalfNorm by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/143
+* Plotter for MCMC diagnostics by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/146
+
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.3.1...v0.3.2
+
+
+v0.3.1 / 2024-01-12
+-------------------
+* Smarter SigmaMap handling and needed_parameters by @xzh19980906 in https://github.com/XENONnT/appletree/pull/116
+* Move messages of used parameter in `SigmaMap.build` by @dachengx in https://github.com/XENONnT/appletree/pull/117
+* Set required_parameter as method of Config by @dachengx in https://github.com/XENONnT/appletree/pull/119
+* Optional applying efficiency in `multiple_simulations` by @dachengx in https://github.com/XENONnT/appletree/pull/123
+* Fix S1/S2 correction and gas gain when simulating S1/S2PE by @mhliu0001 in https://github.com/XENONnT/appletree/pull/122
+* Prevent already cached functions from being changed by @dachengx in https://github.com/XENONnT/appletree/pull/125
+* Update docstring to google style by @dachengx in https://github.com/XENONnT/appletree/pull/126
+* Update conf, add napoleon by @dachengx in https://github.com/XENONnT/appletree/pull/127
+* Small bug fix when no llh_name is used by @dachengx in https://github.com/XENONnT/appletree/pull/129
+
+New Contributors
+* @mhliu0001 made their first contribution in https://github.com/XENONnT/appletree/pull/122
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.3.0...v0.3.1
+
+
 v0.3.0 / 2023-08-31
 -------------------
 * Fix function name to `simulate_weighted_data`, nothing else changed by @dachengx in https://github.com/XENONnT/appletree/pull/99
@@ -13,7 +49,7 @@ v0.3.0 / 2023-08-31
 * Add function to check the usage of configs, check_unused_configs by @dachengx in https://github.com/XENONnT/appletree/pull/112
 * Proposal to use pre-commit for continuous integration by @dachengx in https://github.com/XENONnT/appletree/pull/113
 
-## New Contributors
+New Contributors
 * @hoetzsch made their first contribution in https://github.com/XENONnT/appletree/pull/101
 
 **Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.2.3...v0.3.0

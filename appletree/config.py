@@ -28,13 +28,15 @@ __all__.extend(["OMITTED"])
 def takes_config(*configs):
     """Decorator for plugin classes, to specify which configs it takes.
 
-    :param configs: Config instances of configs this plugin takes.
+    Args:
+        configs: Config instances of configs this plugin takes.
 
     """
 
     def wrapped(plugin_class):
         """
-        :param plugin_class: plugin needs configuration
+        Args:
+            plugin_class: plugin needs configuration
         """
         result = dict()
         for config in configs:
@@ -74,8 +76,11 @@ class Config:
     ):
         """Initialization.
 
-        :param name: name of the map :param type: Excepted type of the option's value. :param
-        default: Default value the option takes. :param help: description of the map
+        Args:
+            name: name of the map.
+            type: Excepted type of the option's value.
+            default: Default value the option takes.
+            help: description of the map.
 
         """
         self.name = name
@@ -137,9 +142,9 @@ class Constant(Config):
 class Map(Config):
     """Map is a special config that takes input files.
 
-    The method `apply` is dynamically assigned.
-    When using points, the `apply` will be `map_point`,
-    while using regular binning, the `apply` will be `map_regbin`.
+    The method ``apply`` is dynamically assigned.
+    When using points, the ``apply`` will be ``map_point``,
+    while using regular binning, the ``apply`` will be ``map_regbin``.
     When using log-binning, we will first convert the positions to log space.
 
     """
@@ -167,10 +172,12 @@ class Map(Config):
         else:
             self.file_path = file_path
 
+        # try to find the path first
+        _file_path = get_file_path(self.file_path)
         try:
             data = load_json(self.file_path)
         except Exception:
-            raise ValueError(f"Cannot load {self.name} from {self.file_path}!")
+            raise ValueError(f"Cannot load {self.name} from {_file_path}!")
 
         coordinate_type = data["coordinate_type"]
         if coordinate_type == "point" or coordinate_type == "log_point":
@@ -325,6 +332,8 @@ class SigmaMap(Config):
                 default = _configs_default
             maps[sigma] = Map(name=self.name + f"_{sigma}", default=default)
 
+            setattr(self, sigma, maps[sigma])
+
             if self.llh_name is None:
                 # if llh_name is not specified, no need to update _cached_configs
                 continue
@@ -351,8 +360,6 @@ class SigmaMap(Config):
                         f"configs, find {_value} and {value}."
                     )
                 _cached_configs[maps[sigma].name].update({self.llh_name: value})
-
-            setattr(self, sigma, maps[sigma])
 
         self.median.build(llh_name=self.llh_name)  # type: ignore
         self.lower.build(llh_name=self.llh_name)  # type: ignore

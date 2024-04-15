@@ -10,6 +10,9 @@ import pandas as pd
 import matplotlib as mpl
 from matplotlib.patches import Rectangle
 from matplotlib import pyplot as plt
+from scipy.special import erf
+from scipy.optimize import root
+from scipy.stats import chi2
 
 import GOFevaluation
 from appletree.share import _cached_configs
@@ -137,17 +140,18 @@ def _package_path(sub_directory):
 
 @export
 def get_file_path(fname):
-    """Find the full path to the resource file Try 5 methods in the following order.
+    """Find the full path to the resource file. Try 5 methods in the following order.
 
-    #. fname begin with '/', return absolute path #. url_base begin with '/', return url_base + name
-    #. can get file from _get_abspath, return appletree internal file path #. can be found in local
-    installed ntauxfiles, return ntauxfiles absolute path #. can be downloaded from MongoDB,
-    download and return cached path
+    * fname begin with '/', return absolute path
+    * url_base begin with '/', return url_base + name
+    * can get file from _get_abspath, return appletree internal file path
+    * can be found in local installed ntauxfiles, return ntauxfiles absolute path
+    * can be downloaded from MongoDB, download and return cached path
 
     """
-    # 1. From absolute path
+    # 1. From absolute path if file exists
     # Usually Config.default is a absolute path
-    if fname.startswith("/"):
+    if os.path.isfile(fname):
         return fname
 
     # 2. From local folder
@@ -247,6 +251,37 @@ def set_gpu_memory_usage(fraction=0.3):
 
 
 @export
+def get_equiprob_bins_1d(
+    data,
+    n_partitions,
+    clip=(-np.inf, +np.inf),
+    which_np=np,
+):
+    """Get 2D equiprobable binning edges.
+
+    Args:
+        data: array with shape N.
+        n_partitions: M1 which is the number of bins.
+        clip: lower and upper binning edges on the 0th dimension.
+            Data outside the clip will be dropped.
+        Data outside the y_clip will be dropped.
+        which_np: can be numpy or jax.numpy, determining the returned array type.
+
+    """
+    mask = data > clip[0]
+    mask &= data < clip[1]
+
+    bins = GOFevaluation.utils.get_equiprobable_binning(
+        data[mask],
+        n_partitions,
+    )
+    # To be strict, clip the inf(s)
+    bins = np.clip(bins, *clip)
+
+    return which_np.array(bins)
+
+
+@export
 def get_equiprob_bins_2d(
     data,
     n_partitions,
@@ -257,11 +292,14 @@ def get_equiprob_bins_2d(
 ):
     """Get 2D equiprobable binning edges.
 
-    :param data: array with shape (N, 2). :param n_partitions: [M1, M2] where M1 M2 are the number
-    of bins on each dimension. :param x_clip: lower and upper binning edges on the 0th dimension.
-    Data outside the x_clip will be dropped. :param y_clip: lower and upper binning edges on the 1st
-    dimension.     Data outside the y_clip will be dropped. :param which_np: can be numpy or
-    jax.numpy, determining the returned array type.
+    Args:
+        data: array with shape (N, 2).
+        n_partitions: [M1, M2] where M1 M2 are the number of bins on each dimension.
+        x_clip: lower and upper binning edges on the 0th dimension.
+            Data outside the x_clip will be dropped.
+        y_clip: lower and upper binning edges on the 1st dimension.
+        Data outside the y_clip will be dropped.
+        which_np: can be numpy or jax.numpy, determining the returned array type.
 
     """
     mask = data[:, 0] > x_clip[0]
@@ -285,8 +323,11 @@ def get_equiprob_bins_2d(
 def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
     """Plot histogram defined by irregular binning.
 
-    :param bins_x: array with shape (M1, ) :param bins_y: array with shape (M1-1, M2) :param hist:
-    array with shape (M1-1, M2-1) :param density: boolean.
+    Args:
+        bins_x: array with shape (M1,).
+        bins_y: array with shape (M1-1, M2).
+        hist: array with shape (M1-1, M2-1).
+        density: boolean.
 
     """
     hist = np.asarray(hist)
@@ -375,8 +416,10 @@ def add_spaces(x):
 def tree_to_svg(graph_tree, save_as="data_types", view=True):
     """Where to save this node.
 
-    :param graph_tree: Digraph instance :param save_as: str, file name :param view: bool, Open the
-    rendered result with the default application.
+    Args:
+        graph_tree: Digraph instance.
+        save_as: str, file name.
+        view: bool, Open the rendered result with the default application.
 
     """
     graph_tree.render(save_as, view=view)
@@ -392,8 +435,11 @@ def add_deps_to_graph_tree(
 ):
     """Recursively add nodes to graph base on plugin.deps.
 
-    :param context: Context instance :param graph_tree: Digraph instance :param data_names: Data
-    type name :param _seen: list or None, the seen data_name should not be plot
+    Args:
+        context: Context instance.
+        graph_tree: Digraph instance.
+        data_names: Data type name.
+        _seen: list or None, the seen data_name should not be plot.
 
     """
     if _seen is None:
@@ -431,9 +477,12 @@ def add_plugins_to_graph_tree(
 ):
     """Recursively add nodes to graph base on plugin.deps.
 
-    :param context: Context instance :param graph_tree: Digraph instance :param data_names: Data
-    type name :param _seen: list or None, the seen data_name should not be plot :param
-    with_data_names: bool, whether plot even with messy data_names
+    Args:
+        context: Context instance.
+        graph_tree: Digraph instance.
+        data_names: Data type name.
+        _seen: list or None, the seen data_name should not be plot.
+        with_data_names: bool, whether plot even with messy data_names
 
     """
     if _seen is None:
@@ -531,7 +580,9 @@ def _add_extension(module, subclass, base, force=False):
 def integrate_midpoint(x, y):
     """Calculate the integral using midpoint method.
 
-    :param x: 1D array-like :param y: 1D array-like, with the same length as x.
+    Args:
+        x: 1D array-like.
+        y: 1D array-like, with the same length as x.
 
     """
     _, res = cum_integrate_midpoint(x, y)
@@ -541,7 +592,9 @@ def integrate_midpoint(x, y):
 def cum_integrate_midpoint(x, y):
     """Calculate the cumulative integral using midpoint method.
 
-    :param x: 1D array-like :param y: 1D array-like, with the same length as x.
+    Args:
+        x: 1D array-like.
+        y: 1D array-like, with the same length as x.
 
     """
     x = np.array(x)
@@ -552,8 +605,35 @@ def cum_integrate_midpoint(x, y):
     return x_mid, np.cumsum(dx * y_mid)
 
 
+@export
 def check_unused_configs():
     """Check if there are unused configs."""
     unused_configs = set(_cached_configs.keys()) - _cached_configs.accessed_keys
     if unused_configs:
         warn(f"Detected unused configs: {unused_configs}, you might set the configs incorrectly.")
+
+
+@export
+def errors_to_two_half_norm_sigmas(errors):
+    """This function solves the sigmas for a two-half-norm distribution, such that the 16 and 84
+    percentile corresponds to the given errors.
+
+    In the two-half-norm distribution, the positive and negative errors are assumed to be
+    the std of the glued normal distributions. While we interpret the 16 and 84 percentile as
+    the input errors, thus we need to solve the sigmas for the two-half-norm distribution.
+    The solution is determined by the following conditions:
+    - The 16 percentile of the two-half-norm distribution should be the negative error.
+    - The 84 percentile of the two-half-norm distribution should be the positive error.
+    - The mode of the two-half-norm distribution should be 0.
+
+    """
+
+    def _to_solve(x, errors, p):
+        return [
+            x[0] / (x[0] + x[1]) * (1 - erf(errors[0] / x[0] / np.sqrt(2))) - p / 2,
+            x[1] / (x[0] + x[1]) * (1 - erf(errors[1] / x[1] / np.sqrt(2))) - p / 2,
+        ]
+
+    res = root(_to_solve, errors, args=(errors, 1 - chi2.cdf(1, 1)))
+    assert res.success, f"Cannot solve sigmas of TwoHalfNorm for errors {errors}!"
+    return res.x

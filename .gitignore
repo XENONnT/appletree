@@ -3,9 +3,12 @@ __pycache__
 *.egg-info
 *.eggs
 *.svg
+*.h5
 build
 docs/build
 docs/source/_build
 docs/source/build
 .coverage
 _temp.json
+docs/source/reference/release_notes.rst
+.hypothesis

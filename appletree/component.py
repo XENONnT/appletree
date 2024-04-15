@@ -11,7 +11,7 @@ from appletree.config import OMITTED
 from appletree.plugin import Plugin
 from appletree.share import _cached_configs, _cached_functions, set_global_config
 from appletree.utils import exporter, load_data
-from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_2d
+from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_1d, make_hist_irreg_bin_2d
 
 export, __all__ = exporter()
 
@@ -25,16 +25,19 @@ class Component:
 
     rate_name: str = ""
     norm_type: str = ""
+    # add_eps_to_hist==True was introduced as only a workaround
+    # for likelihood blowup problem when using meshgrid binning
     add_eps_to_hist: bool = True
+    force_no_eff: bool = False
 
     def __init__(self, name: Optional[str] = None, llh_name: Optional[str] = None, **kwargs):
         """Initialization.
 
-        :param bins: bins to generate the histogram.
-
-          * For irreg bins_type, bins must be bin edges of the two dimensions.
-          * For meshgrid bins_type, bins are sent to jnp.histogramdd.
-        :param bins_type: binning scheme, can be either irreg or meshgrid.
+        Args:
+            bins: bins to generate the histogram.
+                * For irreg bins_type, bins must be bin edges of the two dimensions.
+                * For meshgrid bins_type, bins are sent to jnp.histogramdd.
+            bins_type: binning scheme, can be either irreg or meshgrid.
 
         """
         if name is None:
@@ -50,12 +53,21 @@ class Component:
         if "bins" in kwargs.keys() and "bins_type" in kwargs.keys():
             self.set_binning(**kwargs)
 
+            if self.bins_type != "meshgrid" and self.add_eps_to_hist:
+                warn(
+                    "It is empirically dangerous to have add_eps_to_hist==True,\
+                        when your bins_type is not meshgrid! It may lead to very bad fit with\
+                        lots of eff==0."
+                )
+
     def set_binning(self, **kwargs):
         """Set binning of component."""
         if "bins" not in kwargs.keys() or "bins_type" not in kwargs.keys():
             raise ValueError("bins and bins_type must be set!")
         self.bins = kwargs.get("bins")
         self.bins_type = kwargs.get("bins_type")
+        if self.bins_type not in ["irreg", "meshgrid", None]:
+            raise ValueError(f"Unsupported bins_type {self.bins_type}!")
 
         if self.bins_type == "meshgrid":
             warning = "The usage of meshgrid binning is highly discouraged."
@@ -79,15 +91,29 @@ class Component:
         """Hook for simulation with histogram output."""
         raise NotImplementedError
 
-    def multiple_simulations(self, key, batch_size, parameters, times):
+    def multiple_simulations(self, key, batch_size, parameters, times, apply_eff=False):
         """Simulate many times and move results to CPU because the memory limit of GPU."""
         results_pile = []
+        assert times > 0, "times of multiple simulations must be greater than 0!"
         for _ in range(times):
             key, results = self.simulate(key, batch_size, parameters)
-            results_pile.append(np.array(results))
-        return key, np.hstack(results_pile)
+            if apply_eff:
+                if self.force_no_eff:
+                    raise RuntimeError(
+                        "You are forcing to apply efficiency! "
+                        "But component was set to not returning efficiency when "
+                        f"running {self.name}.deduce!"
+                    )
+                mask = np.array(results[-1]) > 0
+                for i in range(len(results)):
+                    results[i] = np.array(results[i])[mask]
+            results_pile.append(results)
+        results_pile = [
+            np.hstack([results_pile[j][i] for j in range(times)]) for i in range(len(results))
+        ]
+        return key, results_pile
 
-    def multiple_simulations_compile(self, key, batch_size, parameters, times):
+    def multiple_simulations_compile(self, key, batch_size, parameters, times, apply_eff=False):
         """Simulate many times after new compilation and move results to CPU because the memory
         limit of GPU."""
         results_pile = []
@@ -104,19 +130,28 @@ class Component:
                     g4_file_name = _cached_configs["g4"][0]
                     _cached_configs["g4"] = [g4_file_name, batch_size, key.sum().item()]
             self.compile()
-            key, results = self.multiple_simulations(key, batch_size, parameters, 1)
+            key, results = self.multiple_simulations(key, batch_size, parameters, 1, apply_eff)
             results_pile.append(results)
-        return key, np.hstack(results_pile)
+        results_pile = [
+            np.hstack([results_pile[j][i] for j in range(times)]) for i in range(len(results))
+        ]
+        return key, results_pile
 
     def implement_binning(self, mc, eff):
         """Apply binning to MC data.
 
-        :param mc: data from simulation. :param eff: efficiency of each event, as the weight when
-        making a histogram.
+        Args:
+            mc: data from simulation.
+            eff: efficiency of each event, as the weight when making a histogram.
 
         """
         if self.bins_type == "irreg":
-            hist = make_hist_irreg_bin_2d(mc, *self.bins, weights=eff)
+            if len(self.bins) == 1:
+                hist = make_hist_irreg_bin_1d(mc[:, 0], self.bins[0], weights=eff)
+            elif len(self.bins) == 2:
+                hist = make_hist_irreg_bin_2d(mc, *self.bins, weights=eff)
+            else:
+                raise ValueError(f"Currently only support 1D and 2D, but got {len(self.bins)}D!")
         elif self.bins_type == "meshgrid":
             hist = make_hist_mesh_grid(mc, bins=self.bins, weights=eff)
         else:
@@ -233,8 +268,10 @@ class ComponentSim(Component):
     ) -> list:
         """Deduce dependencies.
 
-        :param data_names: data names that simulation will output. :param dependencies: dependency
-        tree. :param nodep_data_name: data_name without dependency will not be deduced
+        Args:
+            data_names: data names that simulation will output.
+            dependencies: dependency tree.
+            nodep_data_name: data_name without dependency will not be deduced.
 
         """
         if dependencies is None:
@@ -352,8 +389,7 @@ class ComponentSim(Component):
     @code.setter
     def code(self, code):
         self._code = code
-        if self.llh_name not in _cached_functions.keys():
-            _cached_functions[self.llh_name] = dict()
+        _cached_functions[self.llh_name] = dict()
         self._compile = partial(exec, self.code, _cached_functions[self.llh_name])
 
     def deduce(
@@ -365,20 +401,24 @@ class ComponentSim(Component):
     ):
         """Deduce workflow and code.
 
-        :param data_names: data names that simulation will output. :param func_name: name of the
-        simulation function, used to cache it. :param nodep_data_name: data_name without dependency
-        will not be deduced :param force_no_eff: force to ignore the efficiency, used in yield
-        prediction
+        Args:
+            data_names: data names that simulation will output.
+            func_name: name of the simulation function, used to cache it.
+            nodep_data_name: data_name without dependency will not be deduced.
+            force_no_eff: force to ignore the efficiency, used in yield prediction.
 
         """
         if not isinstance(data_names, (list, tuple)):
             raise ValueError(f"Unsupported data_names type {type(data_names)}!")
         # make sure that 'eff' is the last data_name
+        data_names = list(data_names)
         if "eff" in data_names:
-            data_names = list(data_names)
             data_names.remove("eff")
         if not force_no_eff:
-            data_names = list(data_names) + ["eff"]
+            data_names += ["eff"]
+        else:
+            # track status of component
+            self.force_no_eff = True
 
         dependencies = self.dependencies_deduce(data_names, nodep_data_name=nodep_data_name)
         self.dependencies_simplify(dependencies)
@@ -392,16 +432,22 @@ class ComponentSim(Component):
     def simulate_hist(self, key, batch_size, parameters):
         """Simulate and return histogram.
 
-        :param key: key used for pseudorandom generator. :param batch_size: number of events to be
-        simulated. :param parameters: a dictionary that contains all parameters needed in
-        simulation.
+        Args:
+            key: key used for pseudorandom generator.
+            batch_size: number of events to be simulated.
+            parameters: a dictionary that contains all parameters needed in simulation.
 
         """
         key, result = self.simulate(key, batch_size, parameters)
-        mc = result[:-1]
-        assert len(mc) == len(self.bins), "Length of bins must be the same as length of bins_on!"
-        mc = jnp.asarray(mc).T
-        eff = result[-1]  # we guarantee that the last output is efficiency in self.deduce
+        if self.force_no_eff:
+            mc = jnp.asarray(result).T
+            eff = jnp.ones(mc.shape[0])
+        else:
+            mc = jnp.asarray(result[:-1]).T
+            eff = result[-1]  # we guarantee that the last output is efficiency in self.deduce
+        assert mc.shape[1] == len(
+            self.bins
+        ), "Length of bins must be the same as length of bins_on!"
 
         hist = self.implement_binning(mc, eff)
         normalization_factor = self.get_normalization(hist, parameters, batch_size)
@@ -442,7 +488,8 @@ class ComponentSim(Component):
     def set_config(self, configs):
         """Set new global configuration options.
 
-        :param configs: dict, configuration file name or dictionary
+        Args:
+            configs: dict, configuration file name or dictionary
 
         """
         set_global_config(configs)
@@ -454,7 +501,8 @@ class ComponentSim(Component):
     def show_config(self, data_names: Union[List[str], Tuple[str]] = ["cs1", "cs2", "eff"]):
         """Return configuration options that affect data_names.
 
-        :param data_names: Data type name
+        Args:
+            data_names: Data type name
 
         """
         dependencies = self.dependencies_deduce(
@@ -506,7 +554,7 @@ class ComponentSim(Component):
                     name=self.name + "_copy",
                     llh_name=llh_name,
                     bins=self.bins,
-                    bins_type=self.bins,
+                    bins_type=self.bins_type,
                 )
             else:
                 raise ValueError("Should provide bins and bins_type if you want to pass binning!")

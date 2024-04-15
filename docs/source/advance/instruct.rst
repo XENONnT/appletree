@@ -32,9 +32,7 @@ multiple items. In each item, it must contain
 * **"components"**: all components that define the model.
 * **"data_file_name"**: data file name, must be .pkl or .csv.
 * **"bins_type"**: can be "meshgrid" or "equiprob".
-* **"bins_on"**: names of variables that the histogram is applied on.
-    For most of the case, we only recommend "equiprob",
-    meaning a equi-probable binning defined by data.
+* **"bins_on"**: names of variables that the histogram is applied on. For most of the case, we only recommend "equiprob", meaning a equi-probable binning defined by data.
 * **"bins"**: number of bins.
 * **"x_clip"**: range of the first dimension.
 * **"y_clip"**: range of the second dimension.

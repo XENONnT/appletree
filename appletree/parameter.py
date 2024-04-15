@@ -4,6 +4,7 @@ import json
 import numpy as np
 
 from appletree.randgen import TwoHalfNorm
+from appletree.utils import errors_to_two_half_norm_sigmas
 
 
 class Parameter:
@@ -84,7 +85,8 @@ class Parameter:
         """Initializing parameters by sampling prior. If the prior is free, then sampling from the
         initial guess.
 
-        :param seed: integer, sent to np.random.seed(seed)
+        Args:
+            seed: integer, sent to np.random.seed(seed)
 
         """
         self._parameter_dict = {par_name: 0 for par_name in self.par_config.keys()}
@@ -130,10 +132,13 @@ class Parameter:
                 val = np.random.normal(**kwargs)
                 self._parameter_dict[par_name] = np.clip(val, *setting["allowed_range"])
             elif prior_type == "twohalfnorm":
+                # We need to convert errors to sigmas
+                # See the docstring of errors_to_two_half_norm_sigmas for details
+                sigmas = errors_to_two_half_norm_sigmas([args["sigma_pos"], args["sigma_neg"]])
                 kwargs = {
                     "mu": args["mu"],
-                    "sigma_pos": args["sigma_pos"],
-                    "sigma_neg": args["sigma_neg"],
+                    "sigma_pos": sigmas[0],
+                    "sigma_neg": sigmas[1],
                 }
                 val = TwoHalfNorm.rvs(**kwargs)
                 self._parameter_dict[par_name] = np.clip(val, *setting["allowed_range"])
@@ -199,14 +204,15 @@ class Parameter:
                 std = args["std"]
                 log_prior += -((val - mean) ** 2) / 2 / std**2
             elif prior_type == "twohalfnorm":
+                # We need to convert errors to sigmas
+                # See the docstring of errors_to_two_half_norm_sigmas for details
+                sigmas = errors_to_two_half_norm_sigmas([args["sigma_pos"], args["sigma_neg"]])
                 mu = args["mu"]
-                sigma_pos = args["sigma_pos"]
-                sigma_neg = args["sigma_neg"]
                 log_prior += TwoHalfNorm.logpdf(
                     x=val,
                     mu=mu,
-                    sigma_pos=sigma_pos,
-                    sigma_neg=sigma_neg,
+                    sigma_pos=sigmas[0],
+                    sigma_neg=sigmas[1],
                 )
             elif prior_type == "free":
                 pass
@@ -218,9 +224,10 @@ class Parameter:
     def check_parameter_exist(self, keys, return_not_exist=False):
         """Check whether the keys exist in parameters.
 
-        :param keys: Parameter names. Can be a single str, or a list of str. :param
-        return_not_exist: If False, function will return a bool if all keys exist.     If True,
-        function will additionally return the list of the not existing keys.
+        Args:
+            keys: Parameter names. Can be a single str, or a list of str.
+            return_not_exist: If False, function will return a bool if all keys exist.
+                If True, function will additionally return the list of the not existing keys.
 
         """
         if isinstance(keys, (set, list)):
@@ -247,12 +254,12 @@ class Parameter:
     def set_parameter(self, keys, vals=None):
         """Set parameter values.
 
-        :param keys: Parameter names. Can be either
-
-          * str: vals must be int or float.
-          * list: vals must have the same length.
-          * dict: vals will be overwritten as keys.values().
-        :param vals: Values to be set.
+        Args:
+            keys: Parameter names. Can be either
+                * str: vals must be int or float.
+                * list: vals must have the same length.
+                * dict: vals will be overwritten as keys.values().
+            vals: Values to be set.
 
         """
         all_exist, not_exist = self.check_parameter_exist(keys, return_not_exist=True)
@@ -273,7 +280,8 @@ class Parameter:
     def get_parameter(self, keys):
         """Return parameter values.
 
-        :param keys: Parameter names. Can be a single str, or a list of str.
+        Args:
+            keys: Parameter names. Can be a single str, or a list of str.
 
         """
         all_exist, not_exist = self.check_parameter_exist(keys, return_not_exist=True)

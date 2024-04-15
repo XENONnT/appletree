@@ -1,8 +1,11 @@
+import pytest
+
 import pandas as pd
 from jax import numpy as jnp
 
 import appletree as apt
 from appletree.utils import get_file_path
+from appletree.share import _cached_functions
 
 
 # Get parameters
@@ -35,19 +38,20 @@ def test_fixed_component():
         file_name="AC_Rn220.pkl",
     )
     ac.rate_name = "ac_rate"
-    ac.deduce(data_names=("cs1", "cs2"))
+    ac.deduce(data_names=["cs1", "cs2"])
     ac.simulate_hist(parameters)
     ac.simulate_weighted_data(parameters)
 
 
 def test_sim_component():
     """Test ComponentSim."""
+    _cached_functions.clear()
     er = apt.components.ERBand(
         bins=[bins_cs1, bins_cs2],
         bins_type="irreg",
     )
     er.deduce(
-        data_names=("cs1", "cs2"),
+        data_names=["cs1", "cs2"],
         func_name="er_sim",
     )
     er.compile()
@@ -56,7 +60,7 @@ def test_sim_component():
     batch_size = int(1e3)
     key = apt.randgen.get_key(seed=137)
 
-    key, r = er.multiple_simulations(key, batch_size, parameters, 5)
+    key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)
 
     key, h = er.simulate_hist(key, batch_size, parameters)
     apt.utils.plot_irreg_histogram_2d(*er.bins, h, density=False)
@@ -73,3 +77,23 @@ def test_sim_component():
             key, _ = test(key, batch_size, parameters)
 
     benchmark(key)
+
+    # if _cached_functions not cleared, this will raise an error
+    with pytest.raises(RuntimeError):
+        er.deduce(
+            data_names=("cs1", "cs2"),
+            func_name="er_sim",
+            force_no_eff=True,
+        )
+
+    _cached_functions.clear()
+    # re-deduce after clearing _cached_functions
+    er.deduce(
+        data_names=("cs1", "cs2"),
+        func_name="er_sim",
+        force_no_eff=True,
+    )
+    er.compile()
+    er.simulate_hist(key, batch_size, parameters)
+    with pytest.raises(RuntimeError):
+        key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)
