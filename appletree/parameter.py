@@ -9,26 +9,76 @@ from appletree.randgen import TwoHalfNorm
 class Parameter:
     """Parameter handler to update parameters and calculate prior."""
 
-    def __init__(self, parameter_config):
+    def __init__(self, parameter_config, multi=False):
         """Initialization.
 
         :param parameter_config: can be either
 
           * str: the json file name where the config is stored.
-          * dict: config dictionary.
+          * dict: config dictionary if multi=False. If multi=True, dictionary
+                  for each likelihood name, where the value is the json file name
+                  or the config dictionary.
+        
+        :param multi: if True, use different parameters for each likelihood.
 
         """
         if isinstance(parameter_config, str):
             with open(parameter_config, "r") as file:
                 self.par_config = json.load(file)
         elif isinstance(parameter_config, dict):
-            self.par_config = copy.deepcopy(parameter_config)
+            if not multi:
+                self.par_config = copy.deepcopy(parameter_config)
+            else:
+                self.read_multiple_parameters(parameter_config)
         else:
             raise RuntimeError("Parameter configuration should be file name or dictionary")
 
         self._parameter_fixed = set()
         self._parameter_fit = set()
         self.init_parameter()
+    
+    def read_multiple_parameters(self, parameter_config):
+        """Handle multiple parameter input."""
+        self.multi_par_config = {}
+        for llh_name in parameter_config.keys():
+            if isinstance(parameter_config[llh_name], str):
+                with open(parameter_config[llh_name], "r") as file:
+                    self.multi_par_config[llh_name] = json.load(file)
+            elif isinstance(parameter_config[llh_name], dict):
+                self.multi_par_config[llh_name] = copy.deepcopy(
+                    parameter_config[llh_name]
+                )
+            else:
+                raise RuntimeError("Parameter configuration should be file name or dictionary")
+        self.merge_multiple_parameters()
+    
+    def merge_multiple_parameters(self):
+        """Merge parameters according to the "shared" attribute."""
+        self.par_config = {}
+        shared_par_names = set()
+        for llh_name, single_par_config in self.multi_par_config.items():
+            for par_name, par_setting in single_par_config.items():
+                if par_name in self.par_config:
+                    if par_setting.get("shared", False):
+                        if par_setting != self.par_config[par_name]:
+                            raise ValueError(
+                                f"""
+                                Inconsistent parameter settings for {par_name}! 
+                                If this is intentional, set shared=False.
+                                """
+                            )
+                    else:
+                        self.par_config[f"{par_name}_{self.par_config[par_name]["llh_name"]}"] = (
+                            self.par_config[par_name]
+                        )
+                        self.par_config[f"{par_name}_{llh_name}"] = par_setting
+                        shared_par_names.update(par_name)
+                else:
+                    self.par_config[par_name] = par_setting
+                    if not par_setting.get("shared", False):
+                        self.par_config[par_name]["llh_name"] = llh_name
+        for shared_par_name in shared_par_names:
+            del self.par_config[shared_par_name]                
 
     def init_parameter(self, seed=None):
         """Initializing parameters by sampling prior. If the prior is free, then sampling from the
@@ -248,3 +298,18 @@ class Parameter:
     def get_all_parameter(self):
         """Return all parameters as a dict."""
         return self._parameter_dict
+
+    def get_parameter_for_likelihood(self, llh_name):
+        """Return all parameters for a certain likelihood, given multi=True."""
+        assert hasattr(self, "multi_par_config"), "Cannot call get_parameter_for_likelihood for single parameter."
+        if llh_name not in self.multi_par_config:
+            raise ValueError(f"Likelihood {llh_name} does not have a parameter configuration!")
+        parameter_for_likelihood = {}
+        for par_name in self.multi_par_config[llh_name].keys():
+            if par_name in self._parameter_dict:
+                parameter_for_likelihood[par_name] = self._parameter_dict[par_name]
+            elif f"{par_name}_{llh_name}" in self._parameter_dict:
+                parameter_for_likelihood[par_name] = self._parameter_dict[f"{par_name}_{llh_name}"]
+            else:
+                raise ValueError(f"{par_name} not found for likelihood {llh_name}!")
+        return parameter_for_likelihood

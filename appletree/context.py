@@ -50,7 +50,7 @@ class Context:
             self.par_config = self.get_parameter_config(instruct["par_config"])
         self.needed_parameters = self.update_parameter_config(instruct["likelihoods"])
 
-        self.par_manager = Parameter(self.par_config)
+        self.par_manager = Parameter(self.par_config, _cached_configs.get("multi_par", False))
 
         self.register_all_likelihood(instruct)
 
@@ -151,11 +151,18 @@ class Context:
         key = randgen.get_key()
         log_posterior = 0
         for likelihood in self.likelihoods.values():
-            key, log_likelihood_i = likelihood.get_log_likelihood(
-                key,
-                batch_size,
-                self.par_manager.get_all_parameter(),
-            )
+            if _cached_configs.get("multi_par", False):
+                key, log_likelihood_i = likelihood.get_log_likelihood(
+                    key,
+                    batch_size,
+                    self.par_manager.get_parameter_for_likelihood(likelihood.name),
+                )
+            else:
+                key, log_likelihood_i = likelihood.get_log_likelihood(
+                    key,
+                    batch_size,
+                    self.par_manager.get_all_parameter(),
+                )
             log_posterior += log_likelihood_i
 
         log_prior = self.par_manager.log_prior
