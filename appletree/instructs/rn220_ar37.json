@@ -41,7 +41,11 @@
             "bins_on": ["cs1", "cs2"],
             "bins": [15, 15],
             "x_clip": [0, 100],
-            "y_clip": [2e2, 1e4]
+            "y_clip": [2e2, 1e4],
+            "parameter_alias": {
+                "s1_cut_acc_sigma_rn220": "s1_cut_acc_sigma",
+                "s2_cut_acc_sigma_rn220": "s2_cut_acc_sigma"
+            }
         },
 
         "ar37_llh": {
@@ -57,7 +61,11 @@
             "bins_on": ["cs1", "cs2"],
             "bins": [20, 20],
             "x_clip": [0, 50],
-            "y_clip": [1250, 2200]
+            "y_clip": [1250, 2200],
+            "parameter_alias": {
+                "s1_cut_acc_sigma_ar37": "s1_cut_acc_sigma",
+                "s2_cut_acc_sigma_ar37": "s2_cut_acc_sigma"
+            }
         }
     },
 

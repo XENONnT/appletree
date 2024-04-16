@@ -159,7 +159,7 @@
         "unit": "1",
         "doc": "S1 efficiency shifter"
     },
-    "s1_cut_acc_sigma": {
+    "s1_cut_acc_sigma_rn220": {
         "prior_type": "norm",
         "prior_args": {
             "mean": 0.0,
@@ -174,7 +174,37 @@
         "unit": "1",
         "doc": "S1 cut acceptance shifter"
     },
-    "s2_cut_acc_sigma": {
+    "s1_cut_acc_sigma_ar37": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -5.0,
+            5.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S1 cut acceptance shifter"
+    },
+    "s2_cut_acc_sigma_rn220": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -5.0,
+            5.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S2 cut acceptance shifter"
+    },
+    "s2_cut_acc_sigma_ar37": {
         "prior_type": "norm",
         "prior_args": {
             "mean": 0.0,
