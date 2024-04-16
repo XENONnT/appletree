@@ -1,0 +1,333 @@
+{
+    "w": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0137,
+            "std": 0.0002
+        },
+        "allowed_range": [
+            0,
+            1.0
+        ],
+        "init_mean": 0.0137,
+        "init_std": 0.0002,
+        "unit": "keV",
+        "doc": "Mean energy to generate a quanta in liquid xenon"
+    },
+    "fano": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.059
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "Fano factor which describes the fluctuation of num of quanta"
+    },
+    "gas_gain": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 31.3
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "PE/electron",
+        "doc": "Gas gain"
+    },
+    "drift_velocity": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.0677
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "cm/us",
+        "doc": "Drift velocity"
+    },
+    "s2_threshold": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 500.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "PE",
+        "doc": "S2 threshold"
+    },
+    "field": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 23.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "V/cm",
+        "doc": "Drift field"
+    },
+    "nex_ni_ratio": {
+        "prior_type": "uniform",
+        "prior_args": {
+            "lower": 0.06,
+            "upper": 0.20
+        },
+        "allowed_range": [
+            0.06,
+            0.20
+        ],
+        "init_mean": 0.11,
+        "init_std": 0.02,
+        "unit": "1",
+        "doc": "Mean ratio of excimers and ions"
+    },
+    "g1": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.1515,
+            "std": 0.0014
+        },
+        "allowed_range": [
+            0,
+            1.0
+        ],
+        "init_mean": 0.1515,
+        "init_std": 0.0014,
+        "unit": "PE/photon",
+        "doc": "g1"
+    },
+    "g2": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 16.45,
+            "std": 0.64
+        },
+        "allowed_range": [
+            0,
+            100.0
+        ],
+        "init_mean": 16.45,
+        "init_std": 0.64,
+        "unit": "PE/electron",
+        "doc": "g2"
+    },
+    "p_dpe": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.227,
+            "std": 0.024
+        },
+        "allowed_range": [
+            0,
+            1.0
+        ],
+        "init_mean": 0.227,
+        "init_std": 0.024,
+        "unit": "1",
+        "doc": "DPE probability"
+    },
+    "elife_sigma": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 0.02
+        },
+        "allowed_range": [
+            -1.0,
+            1.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 0.02,
+        "unit": "1",
+        "doc": "elife shifter"
+    },
+    "s1_eff_3f_sigma": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -5.0,
+            5.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S1 efficiency shifter"
+    },
+    "s1_cut_acc_sigma_rn220": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -5.0,
+            5.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S1 cut acceptance shifter of Rn220"
+    },
+    "s1_cut_acc_sigma_ar37": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -5.0,
+            5.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S1 cut acceptance shifter of Ar37"
+    },
+    "s2_cut_acc_sigma_rn220": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -5.0,
+            5.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S2 cut acceptance shifter of Rn220"
+    },
+    "s2_cut_acc_sigma_ar37": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0,
+            "std": 1.0
+        },
+        "allowed_range": [
+            -5.0,
+            5.0
+        ],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S2 cut acceptance shifter of Ar37"
+    },
+    "py0": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            -10000000000.0,
+            10000000000.0
+        ],
+        "init_mean": 0.126,
+        "init_std": 0.02,
+        "unit": "au",
+        "doc": "py0"
+    },
+    "py1": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            -10000000000.0,
+            10000000000.0
+        ],
+        "init_mean": 43.1,
+        "init_std": 1.0,
+        "unit": "au",
+        "doc": "py1"
+    },
+    "py2": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            -10000000000.0,
+            10000000000.0
+        ],
+        "init_mean": -0.3,
+        "init_std": 0.05,
+        "unit": "au",
+        "doc": "py2"
+    },
+    "py3": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            -10000000000.0,
+            10000000000.0
+        ],
+        "init_mean": 0.94,
+        "init_std": 0.25,
+        "unit": "au",
+        "doc": "py3"
+    },
+    "py4": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            -10000000000.0,
+            10000000000.0
+        ],
+        "init_mean": 0.59,
+        "init_std": 0.25,
+        "unit": "au",
+        "doc": "py4"
+    },
+    "rf0": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            -10000000000.0,
+            10000000000.0
+        ],
+        "init_mean": 0.029,
+        "init_std": 0.005,
+        "unit": "au",
+        "doc": "rf0"
+    },
+    "rf1": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            -10000000000.0,
+            10000000000.0
+        ],
+        "init_mean": 0.26,
+        "init_std": 0.1,
+        "unit": "au",
+        "doc": "rf1"
+    },
+    "ac_rate": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 10.0,
+            "std": 2.0
+        },
+        "allowed_range": [
+            0,
+            10000000000.0
+        ],
+        "init_mean": 11.2,
+        "init_std": 2.24,
+        "unit": "1",
+        "doc": "ac_rate"
+    },
+    "er_rate": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [
+            0,
+            10000000000.0
+        ],
+        "init_mean": 2000,
+        "init_std": 100,
+        "unit": "1",
+        "doc": "er_rate"
+    }
+}

@@ -1,5 +1,7 @@
 from warnings import warn
 from typing import Type, Dict, Set, Optional, cast
+import inspect
+from copy import deepcopy
 
 import numpy as np
 from jax import numpy as jnp
@@ -11,6 +13,27 @@ from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_1d, make_his
 from appletree.utils import load_data, get_equiprob_bins_1d, get_equiprob_bins_2d
 from appletree.component import Component, ComponentSim, ComponentFixed
 from appletree.randgen import TwoHalfNorm, BandTwoHalfNorm
+
+
+def need_replacing_alias(func):
+    """Decorator to replace alias in parameters from key to value."""
+
+    def wrapper(self, *args, **kwargs):
+        sig = inspect.signature(func)
+        bound = sig.bind(self, *args, **kwargs)
+        bound.apply_defaults()
+
+        # Check if 'parameters' is in the arguments and replace aliases
+        if "parameters" in bound.arguments:
+            # Replace alias in 'parameters'
+            bound.arguments["parameters"] = self.replace_alias(bound.arguments["parameters"])
+        else:
+            raise ValueError(f"'parameters' must be in the arguments of {func.__name__}!")
+
+        # Call the function with possibly modified arguments
+        return func(*bound.args, **bound.kwargs)
+
+    return wrapper
 
 
 class Likelihood:
@@ -25,6 +48,7 @@ class Likelihood:
                 * bins_type: either meshgrid or equiprob
                 * bins_on: observables where we will perform inference on, usually [cs1, cs2]
                 * x_clip, y_clip: ROI of the fitting, should be list of upper and lower boundary
+                * parameter_alias: alias of parameters that will be renamed from key to value
 
         """
         if name is None:
@@ -37,6 +61,7 @@ class Likelihood:
         self._bins_type = config["bins_type"]
         self._bins_on = config["bins_on"]
         self._bins = config["bins"]
+        self._parameter_alias = config.get("parameter_alias", dict())
         if isinstance(self._bins_on, str):
             self._dim = 1
             self._bins_on = [self._bins_on]
@@ -235,11 +260,30 @@ class Likelihood:
         # Update needed parameters
         self.needed_parameters |= self.components[component_name].needed_parameters
 
+        # Replace alias in needed parameters
+        for k, v in self._parameter_alias.items():
+            if v in self.needed_parameters:
+                self.needed_parameters.add(k)
+                self.needed_parameters.remove(v)
+
+    def replace_alias(self, parameters):
+        """Replace alias in parameters from key to value.
+
+        Note that the value will be popped out.
+
+        """
+        _parameters = deepcopy(parameters)
+        for k, v in self._parameter_alias.items():
+            if k in _parameters:
+                _parameters[v] = _parameters.pop(k)
+        return _parameters
+
     def _sanity_check(self):
         """Check equality between number of bins group and observables."""
         if len(self._bins_on) != len(self._bins):
             raise RuntimeError("Length of bins must be the same as length of bins_on!")
 
+    @need_replacing_alias
     def _simulate_model_hist(self, key, batch_size, parameters):
         """Histogram of simulated observables.
 
@@ -260,6 +304,7 @@ class Likelihood:
             hist += _hist
         return key, hist
 
+    @need_replacing_alias
     def simulate_weighted_data(self, key, batch_size, parameters):
         """Simulate weighted histogram.
 
@@ -281,6 +326,7 @@ class Likelihood:
         result = list(r for r in np.hstack(result))
         return key, result
 
+    @need_replacing_alias
     def get_log_likelihood(self, key, batch_size, parameters):
         """Get log likelihood of given parameters.
 
@@ -298,6 +344,7 @@ class Likelihood:
             llh = -np.inf
         return key, llh
 
+    @need_replacing_alias
     def get_num_events_accepted(self, batch_size, parameters):
         """Get number of events in the histogram under given parameters.
 
@@ -384,6 +431,7 @@ class LikelihoodLit(Likelihood):
         self._bins_type = None
         self._bins_on = config["bins_on"]
         self._dim = len(self._bins_on)
+        self._parameter_alias = config.get("parameter_alias", dict())
 
         self.needed_parameters: Set[str] = set()
         self.component_bins_type = None
@@ -411,6 +459,7 @@ class LikelihoodLit(Likelihood):
         if self._dim != 2:
             raise AssertionError(self.warning)
 
+    @need_replacing_alias
     def _simulate_yields(self, key, batch_size, parameters):
         """Histogram of simulated observables.
 
@@ -434,6 +483,7 @@ class LikelihoodLit(Likelihood):
         # cache the component name
         self.only_component = list(self.components.keys())[0]
 
+    @need_replacing_alias
     def get_log_likelihood(self, key, batch_size, parameters):
         """Get log likelihood of given parameters.
 
