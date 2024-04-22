@@ -382,6 +382,9 @@ class Context:
                 self.par_config.update({k: self.par_config[v]})
                 from_parameters.append(v)
                 needed_parameters.add(k)
+            for k, v in likelihood["parameter_alias"].items():
+                from_parameters.append(v)
+                needed_parameters.add(k)
             for k in likelihood["components"].keys():
                 needed_rate_parameters.append(k + "_rate")
         for p in from_parameters:
