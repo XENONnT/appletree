@@ -3,8 +3,13 @@ __version__ = "0.3.2"
 # stop jax to preallocate memory
 import os
 
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
-os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform"
+if "AGGRESSIVE_MEMORY_ALLOCATION" not in os.environ:
+    os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+    os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", "platform")
+    XLA_PYTHON_CLIENT_PREALLOCATE = os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"]
+    XLA_PYTHON_CLIENT_ALLOCATOR = os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"]
+    print(f"XLA_PYTHON_CLIENT_PREALLOCATE is set to {XLA_PYTHON_CLIENT_PREALLOCATE}")
+    print(f"XLA_PYTHON_CLIENT_ALLOCATOR is set to {XLA_PYTHON_CLIENT_ALLOCATOR}")
 
 from . import utils
 from .utils import *
