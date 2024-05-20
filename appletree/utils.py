@@ -335,7 +335,7 @@ def plot_irreg_histogram_2d(bins_x, bins_y, hist, **kwargs):
     bins_y = np.asarray(bins_y)
 
     density = kwargs.get("density", False)
-    cmap = mpl.cm.get_cmap("RdBu_r")
+    cmap = mpl.cm.RdBu_r
 
     loc = []
     width = []
