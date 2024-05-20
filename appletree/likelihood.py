@@ -386,18 +386,18 @@ class Likelihood:
 
             print(f"{indent}COMPONENT {i}: {name}")
             if isinstance(component, ComponentSim):
-                print(f"{indent*2}type: simulation")
-                print(f"{indent*2}rate_par: {component.rate_name}")
-                print(f"{indent*2}pars: {need}")
+                print(f"{indent * 2}type: simulation")
+                print(f"{indent * 2}rate_par: {component.rate_name}")
+                print(f"{indent * 2}pars: {need}")
                 if not short:
-                    print(f"{indent*2}worksheet: {component.worksheet}")
+                    print(f"{indent * 2}worksheet: {component.worksheet}")
             elif isinstance(component, ComponentFixed):
-                print(f"{indent*2}type: fixed")
-                print(f"{indent*2}file_name: {component._file_name}")
-                print(f"{indent*2}rate_par: {component.rate_name}")
-                print(f"{indent*2}pars: {need}")
+                print(f"{indent * 2}type: fixed")
+                print(f"{indent * 2}file_name: {component._file_name}")
+                print(f"{indent * 2}rate_par: {component.rate_name}")
+                print(f"{indent * 2}pars: {need}")
                 if not short:
-                    print(f"{indent*2}from_file: {component._file_name}")
+                    print(f"{indent * 2}from_file: {component._file_name}")
             else:
                 pass
             print()
@@ -525,7 +525,7 @@ class LikelihoodLit(Likelihood):
         print("LOGPDF\n")
         print(f"{indent}logpdf_args:")
         for k, v in self.logpdf_args.items():
-            print(f"{indent*2}{k}: {v}")
+            print(f"{indent * 2}{k}: {v}")
         print("\n" + "-" * 40)
 
         print("MODEL\n")
@@ -536,18 +536,18 @@ class LikelihoodLit(Likelihood):
 
             print(f"{indent}COMPONENT {i}: {name}")
             if isinstance(component, ComponentSim):
-                print(f"{indent*2}type: simulation")
-                print(f"{indent*2}rate_par: {component.rate_name}")
-                print(f"{indent*2}pars: {need}")
+                print(f"{indent * 2}type: simulation")
+                print(f"{indent * 2}rate_par: {component.rate_name}")
+                print(f"{indent * 2}pars: {need}")
                 if not short:
-                    print(f"{indent*2}worksheet: {component.worksheet}")
+                    print(f"{indent * 2}worksheet: {component.worksheet}")
             elif isinstance(component, ComponentFixed):
-                print(f"{indent*2}type: fixed")
-                print(f"{indent*2}file_name: {component._file_name}")
-                print(f"{indent*2}rate_par: {component.rate_name}")
-                print(f"{indent*2}pars: {need}")
+                print(f"{indent * 2}type: fixed")
+                print(f"{indent * 2}file_name: {component._file_name}")
+                print(f"{indent * 2}rate_par: {component.rate_name}")
+                print(f"{indent * 2}pars: {need}")
                 if not short:
-                    print(f"{indent*2}from_file: {component._file_name}")
+                    print(f"{indent * 2}from_file: {component._file_name}")
             else:
                 pass
             print()
