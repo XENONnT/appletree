@@ -244,10 +244,10 @@ def set_gpu_memory_usage(fraction=0.3):
 
     """
     if fraction > 1:
-        fraction = 1
+        fraction = 0.99
     if fraction <= 0:
         raise ValueError("fraction must be positive!")
-    os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = f"{fraction:.2f}"
+    os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = f".{int(fraction * 100):d}"
 
 
 @export
