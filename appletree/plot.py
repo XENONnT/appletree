@@ -30,7 +30,7 @@ class Plotter:
         self.posterior = backend.get_log_prob(discard=discard, thin=thin)
         self.prior = backend.get_blobs(discard=discard, thin=thin)
         # We drop iterations with inf and nan posterior
-        mask = ~np.isinf(self.posterior) & ~np.isnan(self.posterior)
+        mask = ~np.isfinite(self.posterior)
         mask = np.all(mask, axis=1)
         self.chain = self.chain[mask]
         self.posterior = self.posterior[mask]
@@ -40,7 +40,7 @@ class Plotter:
         self.flat_posterior = backend.get_log_prob(discard=discard, thin=thin, flat=True)
         self.flat_prior = backend.get_blobs(discard=discard, thin=thin, flat=True)
         # We drop samples with inf and nan posterior
-        mask = ~np.isinf(self.flat_posterior) & ~np.isnan(self.flat_posterior)
+        mask = ~np.isfinite(self.flat_posterior)
         self.flat_chain = self.flat_chain[mask]
         self.flat_posterior = self.flat_posterior[mask]
         self.flat_prior = self.flat_prior[mask]
