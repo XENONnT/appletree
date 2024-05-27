@@ -37,9 +37,7 @@ class Plotter:
         self.prior = self.prior[mask]
 
         self.flat_chain = backend.get_chain(discard=discard, thin=thin, flat=True)
-        self.flat_posterior = backend.get_log_prob(
-            discard=discard, thin=thin, flat=True
-        )
+        self.flat_posterior = backend.get_log_prob(discard=discard, thin=thin, flat=True)
         self.flat_prior = backend.get_blobs(discard=discard, thin=thin, flat=True)
         # We drop samples with inf and nan posterior
         mask = ~np.isinf(self.flat_posterior) & ~np.isnan(self.flat_posterior)
@@ -56,9 +54,7 @@ class Plotter:
 
         self.n_iter, self.n_walker, self.n_param = self.chain.shape
 
-    def make_all_plots(
-        self, save=False, save_path=".", fmt=["png", "pdf"], **save_kwargs
-    ):
+    def make_all_plots(self, save=False, save_path=".", fmt=["png", "pdf"], **save_kwargs):
         """Make all plots and save them if save is True.
 
         The plot styles are default. save_kwargs will be passed to fig.savefig().
@@ -177,17 +173,13 @@ class Plotter:
         axes = []
         for i in range(self.n_param):
             ax = fig.add_subplot(n_rows, n_cols, i + 1)
-            ax.hist(
-                self.flat_chain[:, i], density=True, label="Posterior", **hist_kwargs
-            )
+            ax.hist(self.flat_chain[:, i], density=True, label="Posterior", **hist_kwargs)
             prior = self.param_prior[self.param_names[i]]
             prior_type = prior["prior_type"]
             args = prior["prior_args"]
             if prior_type != "free":
                 x = np.linspace(*ax.get_xlim(), 100)
-                ax.plot(
-                    x, pdf[prior_type](x, **args), color="grey", ls="--", label="Prior"
-                )
+                ax.plot(x, pdf[prior_type](x, **args), color="grey", ls="--", label="Prior")
             ax.set_xlabel(self.param_names[i])
             ax.set_ylabel("PDF")
             ax.set_ylim(0, None)
