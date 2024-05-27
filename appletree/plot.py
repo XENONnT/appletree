@@ -27,11 +27,23 @@ class Plotter:
         backend = emcee.backends.HDFBackend(self.backend_file_name, read_only=True)
 
         self.chain = backend.get_chain(discard=discard, thin=thin)
-        self.flat_chain = backend.get_chain(discard=discard, thin=thin, flat=True)
         self.posterior = backend.get_log_prob(discard=discard, thin=thin)
-        self.flat_posterior = backend.get_log_prob(discard=discard, thin=thin, flat=True)
         self.prior = backend.get_blobs(discard=discard, thin=thin)
+        # We drop iterations with inf and nan posterior
+        mask = np.isfinite(self.posterior)
+        mask = np.all(mask, axis=1)
+        self.chain = self.chain[mask]
+        self.posterior = self.posterior[mask]
+        self.prior = self.prior[mask]
+
+        self.flat_chain = backend.get_chain(discard=discard, thin=thin, flat=True)
+        self.flat_posterior = backend.get_log_prob(discard=discard, thin=thin, flat=True)
         self.flat_prior = backend.get_blobs(discard=discard, thin=thin, flat=True)
+        # We drop samples with inf and nan posterior
+        mask = np.isfinite(self.flat_posterior)
+        self.flat_chain = self.flat_chain[mask]
+        self.flat_posterior = self.flat_posterior[mask]
+        self.flat_prior = self.flat_prior[mask]
 
         with h5py.File(self.backend_file_name, "r") as f:
             self.param_names = f["mcmc"].attrs["parameter_fit"]
@@ -199,7 +211,8 @@ class Plotter:
         if fig is None:
             fig = plt.figure(figsize=(2 * (self.n_param + 2), 2 * (self.n_param + 2)))
         samples = np.concatenate(
-            (self.flat_chain, self.flat_posterior[:, None], self.flat_prior[:, None]), axis=1
+            (self.flat_chain, self.flat_posterior[:, None], self.flat_prior[:, None]),
+            axis=1,
         )
         labels = np.concatenate((self.param_names, ["log posterior", "log prior"]))
 
