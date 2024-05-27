@@ -34,7 +34,7 @@ class Plotter:
         self.chain = self.chain[mask]
         self.posterior = self.posterior[mask]
         self.prior = self.prior[mask]
-        
+
         self.flat_chain = backend.get_chain(discard=discard, thin=thin, flat=True)
         self.flat_posterior = backend.get_log_prob(discard=discard, thin=thin, flat=True)
         self.flat_prior = backend.get_blobs(discard=discard, thin=thin, flat=True)
