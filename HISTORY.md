@@ -1,3 +1,20 @@
+v0.4.0 / 2024-05-27
+-------------------
+* Try using jax.random.binomial by @dachengx in https://github.com/XENONnT/appletree/pull/148
+* Turn off add_eps_to_hist in NR and ER by @FaroutYLq in https://github.com/XENONnT/appletree/pull/152
+* Debug when `bins_type` is not set by @dachengx in https://github.com/XENONnT/appletree/pull/153
+* Specifically install `lxml_html_clean` by @dachengx in https://github.com/XENONnT/appletree/pull/157
+* Initialize context from backend by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/156
+* Add `parameter_alias` to translate parameters in `par_config` by @dachengx in https://github.com/XENONnT/appletree/pull/160
+* Allow user to aggressively use memory by @dachengx in https://github.com/XENONnT/appletree/pull/164
+* Fix a bug of plotter which contains inf by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/165
+
+New Contributors
+* @FaroutYLq made their first contribution in https://github.com/XENONnT/appletree/pull/152
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.3.2...v0.4.0
+
+
 v0.3.2 / 2024-03-06
 -------------------
 * Remove `scikit-learn` version requirement by @dachengx in https://github.com/XENONnT/appletree/pull/131
