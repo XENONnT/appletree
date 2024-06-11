@@ -146,5 +146,16 @@
         "init_std": 0.5,
         "unit": "1",
         "doc": "NEST parameter iota"
+    },
+    "rate": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 1.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "Placeholder for compatibility"
     }
 }
