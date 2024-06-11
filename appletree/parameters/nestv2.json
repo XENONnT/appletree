@@ -11,14 +11,15 @@
         "doc": "Density of the lXe"
     },
     "alpha": {
-        "prior_type": "uniform",
+        "prior_type": "twohalfnorm",
         "prior_args": {
-            "lower": 8.5,
-            "upper": 21.0
+            "mu": 11.0,
+            "sigma_pos": 2.0,
+            "sigma_neg": 0.5
         },
         "allowed_range": [
-            8.5,
-            21.0
+            1e-10,
+            1e10
         ],
         "init_mean": 11.0,
         "init_std": 0.5,
@@ -26,14 +27,14 @@
         "doc": "NEST parameter alpha"
     },
     "beta": {
-        "prior_type": "uniform",
+        "prior_type": "norm",
         "prior_args": {
-            "lower": 0.85,
-            "upper": 1.35
+            "mean": 1.1,
+            "std": 0.05
         },
         "allowed_range": [
-            0.85,
-            1.35
+            -1e10,
+            1e10
         ],
         "init_mean": 1.1,
         "init_std": 0.05,
@@ -41,14 +42,14 @@
         "doc": "NEST parameter beta"
     },
     "gamma": {
-        "prior_type": "uniform",
+        "prior_type": "norm",
         "prior_args": {
-            "lower": 0.0375,
-            "upper": 0.0585
+            "mean": 0.0480,
+            "std": 0.0021
         },
         "allowed_range": [
-            0.0375,
-            0.0585
+            1e-10,
+            1e10
         ],
         "init_mean": 0.0480,
         "init_std": 0.0021,
@@ -56,14 +57,14 @@
         "doc": "NEST parameter gamma"
     },
     "delta": {
-        "prior_type": "uniform",
+        "prior_type": "norm",
         "prior_args": {
-            "lower": -0.0873,
-            "upper": -0.0193
+            "mean": -0.0533,
+            "std": 0.0068
         },
         "allowed_range": [
-            -0.0873,
-            -0.0193
+            -1e10,
+            1e10
         ],
         "init_mean": -0.0533,
         "init_std": 0.0068,
@@ -71,14 +72,15 @@
         "doc": "NEST parameter delta"
     },
     "epsilon": {
-        "prior_type": "uniform",
+        "prior_type": "twohalfnorm",
         "prior_args": {
-            "lower": 0.0,
-            "upper": 29.6
+            "mu": 12.6,
+            "sigma_pos": 3.4,
+            "sigma_neg": 2.9
         },
         "allowed_range": [
-            0.0,
-            29.6
+            1e-10,
+            1e10
         ],
         "init_mean": 12.6,
         "init_std": 2.9,
@@ -86,14 +88,14 @@
         "doc": "NEST parameter epsilon"
     },
     "zeta": {
-        "prior_type": "uniform",
+        "prior_type": "norm",
         "prior_args": {
-            "lower": 0.0,
-            "upper": 0.8
+            "mean": 0.3,
+            "std": 0.1
         },
         "allowed_range": [
-            0.0,
-            0.8
+            1e-10,
+            1e10
         ],
         "init_mean": 0.3,
         "init_std": 0.1,
@@ -101,14 +103,14 @@
         "doc": "NEST parameter zeta"
     },
     "eta": {
-        "prior_type": "uniform",
+        "prior_type": "norm",
         "prior_args": {
-            "lower": -3.0,
-            "upper": 7.0
+            "mean": 2.0,
+            "std": 1.0
         },
         "allowed_range": [
-            -3.0,
-            7.0
+            -1e10,
+            1e10
         ],
         "init_mean": 2.0,
         "init_std": 1.0,
@@ -116,14 +118,14 @@
         "doc": "NEST parameter eta"
     },
     "theta": {
-        "prior_type": "uniform",
+        "prior_type": "norm",
         "prior_args": {
-            "lower": 0.05,
-            "upper": 0.55
+            "mean": 0.3,
+            "std": 0.05
         },
         "allowed_range": [
-            0.05,
-            0.55
+            -1e10,
+            1e10
         ],
         "init_mean": 0.3,
         "init_std": 0.05,
@@ -131,14 +133,14 @@
         "doc": "NEST parameter theta"
     },
     "iota": {
-        "prior_type": "uniform",
+        "prior_type": "norm",
         "prior_args": {
-            "lower": -0.5,
-            "upper": 4.5
+            "mean": 2.0,
+            "std": 0.5
         },
         "allowed_range": [
-            -0.5,
-            4.5
+            -1e10,
+            1e10
         ],
         "init_mean": 2.0,
         "init_std": 0.5,
@@ -146,33 +148,31 @@
         "doc": "NEST parameter iota"
     },
     "fano_ni": {
-        "prior_type": "free",
-        "prior_args": {},
-        "allowed_range": [
-            0.0,
-            1.0
-        ],
-        "init_mean": 0.4,
-        "init_std": 0.04,
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.4
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
         "unit": "1",
         "doc": "NEST parameter fano_ni"
     },
     "fano_nex": {
-        "prior_type": "free",
-        "prior_args": {},
-        "allowed_range": [
-            0.0,
-            1.0
-        ],
-        "init_mean": 0.4,
-        "init_std": 0.04,
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.4
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
         "unit": "1",
-        "doc": "NEST parameter fano_ni"
+        "doc": "NEST parameter fano_nex"
     },
     "A": {
         "prior_type": "fixed",
         "prior_args": {
-            "val": 0.1
+            "val": 0.04
         },
         "allowed_range": null,
         "init_mean": null,
@@ -181,26 +181,24 @@
         "doc": "NEST parameter A"
     },
     "xi": {
-        "prior_type": "free",
-        "prior_args": {},
-        "allowed_range": [
-            0.0,
-            1.0
-        ],
-        "init_mean": 0.5,
-        "init_std": 0.05,
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.5
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
         "unit": "1",
         "doc": "NEST parameter xi"
     },
     "omega": {
-        "prior_type": "free",
-        "prior_args": {},
-        "allowed_range": [
-            0.0,
-            1.0
-        ],
-        "init_mean": 0.19,
-        "init_std": 0.02,
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.19
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
         "unit": "1",
         "doc": "NEST parameter omega"
     },
@@ -214,5 +212,16 @@
         "init_std": null,
         "unit": "1",
         "doc": "NEST parameter alpha2"
+    },
+    "rate": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 1.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "Placeholder for compatibility"
     }
 }
