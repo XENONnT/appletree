@@ -55,9 +55,9 @@ class Component:
 
             if self.bins_type != "meshgrid" and self.add_eps_to_hist:
                 warn(
-                    "It is empirically dangerous to have add_eps_to_hist==True,\
-                        when your bins_type is not meshgrid! It may lead to very bad fit with\
-                        lots of eff==0."
+                    "It is empirically dangerous to have add_eps_to_hist==True, "
+                    "when your bins_type is not meshgrid! It may lead to very bad fit with "
+                    "lots of eff==0."
                 )
 
     def set_binning(self, **kwargs):
