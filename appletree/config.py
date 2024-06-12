@@ -148,6 +148,9 @@ class Map(Config):
     When using log-binning, we will first convert the positions to log space.
 
     """
+    def __init__(self, method="IDW", **kwargs):
+        super().__init__(**kwargs)
+        self.method = method
 
     def build(self, llh_name: Optional[str] = None):
         """Cache the map to jnp.array."""
@@ -248,9 +251,19 @@ class Map(Config):
         if len(self.coordinate_lowers) == 1:
             setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_1d)
         elif len(self.coordinate_lowers) == 2:
-            setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_2d)
-        elif len(self.coordinate_lowers) == 3:
-            setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_3d)
+            if self.method == "IDW":
+                setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_2d)
+            elif self.method == "NN":
+                setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_nearest_neighbor_2d)
+            else:
+                raise ValueError(f"Unknown method {self.method} for 2D regular binning.")
+        elif len(self.coordinate_lowers) == 3 and self.method == "IDW":
+            if self.method == "IDW":
+                setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_3d)
+            elif self.method == "NN":
+                setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_nearest_neighbor_3d)
+            else:
+                raise ValueError(f"Unknown method {self.method} for 3D regular binning.")
         if self.coordinate_type == "log_regbin":
             if jnp.any(self.coordinate_lowers <= 0) or jnp.any(self.coordinate_uppers <= 0):
                 raise ValueError(

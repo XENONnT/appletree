@@ -257,3 +257,62 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
     )
 
     return val
+
+
+@jit
+def find_nearest_indices(x, y):
+    x = x[:, jnp.newaxis]
+    differences = jnp.abs(x - y)
+    indices = jnp.argmin(differences, axis=1)
+    return indices
+
+
+
+@export
+@jit
+def map_interpolator_regular_binning_nearest_neighbor_2d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
+    """Nearest neighbor 2D interpolation. A uniform mesh grid binning is assumed.
+
+    Args:
+        pos: array with shape (N, 2), positions at which the interp is calculated.
+        ref_pos_lowers: array with shape (2,), the lower edges of the binning on each dimension.
+        ref_pos_uppers: array with shape (2,), the upper edges of the binning on each dimension.
+        ref_val: array with shape (M1, M2), map values.
+
+    """
+    n0, n1 = ref_val.shape
+
+    bins0 = jnp.linspace(ref_pos_lowers[0], ref_pos_uppers[0], n0)
+    ind0 = find_nearest_indices(pos[:, 0], bins0)
+
+    bins1 = jnp.linspace(ref_pos_lowers[1], ref_pos_uppers[1], n1)
+    ind1 = find_nearest_indices(pos[:, 1], bins1)
+
+    val = ref_val[ind0, ind1]
+    return val
+
+@export
+@jit
+def map_interpolator_regular_binning_nearest_neighbor_3d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
+    """Nearest neighbor 3D interpolation. A uniform mesh grid binning is assumed.
+
+    Args:
+        pos: array with shape (N, 3), positions at which the interp is calculated.
+        ref_pos_lowers: array with shape (3,), the lower edges of the binning on each dimension.
+        ref_pos_uppers: array with shape (3,), the upper edges of the binning on each dimension.
+        ref_val: array with shape (M1, M2, M3), map values.
+
+    """
+    n0, n1, n2 = ref_val.shape
+
+    bins0 = jnp.linspace(ref_pos_lowers[0], ref_pos_uppers[0], n0)
+    ind0 = find_nearest_indices(pos[:, 0], bins0)
+
+    bins1 = jnp.linspace(ref_pos_lowers[1], ref_pos_uppers[1], n1)
+    ind1 = find_nearest_indices(pos[:, 1], bins1)
+
+    bins2 = jnp.linspace(ref_pos_lowers[2], ref_pos_uppers[2], n2)
+    ind2 = find_nearest_indices(pos[:, 2], bins2)
+
+    val = ref_val[ind0, ind1, ind2]
+    return val
