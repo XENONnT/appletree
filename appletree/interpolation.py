@@ -267,10 +267,11 @@ def find_nearest_indices(x, y):
     return indices
 
 
-
 @export
 @jit
-def map_interpolator_regular_binning_nearest_neighbor_2d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
+def map_interpolator_regular_binning_nearest_neighbor_2d(
+    pos, ref_pos_lowers, ref_pos_uppers, ref_val
+):
     """Nearest neighbor 2D interpolation. A uniform mesh grid binning is assumed.
 
     Args:
@@ -291,9 +292,12 @@ def map_interpolator_regular_binning_nearest_neighbor_2d(pos, ref_pos_lowers, re
     val = ref_val[ind0, ind1]
     return val
 
+
 @export
 @jit
-def map_interpolator_regular_binning_nearest_neighbor_3d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
+def map_interpolator_regular_binning_nearest_neighbor_3d(
+    pos, ref_pos_lowers, ref_pos_uppers, ref_val
+):
     """Nearest neighbor 3D interpolation. A uniform mesh grid binning is assumed.
 
     Args:

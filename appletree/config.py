@@ -148,6 +148,7 @@ class Map(Config):
     When using log-binning, we will first convert the positions to log space.
 
     """
+
     def __init__(self, method="IDW", **kwargs):
         super().__init__(**kwargs)
         self.method = method
@@ -254,14 +255,22 @@ class Map(Config):
             if self.method == "IDW":
                 setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_2d)
             elif self.method == "NN":
-                setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_nearest_neighbor_2d)
+                setattr(
+                    self,
+                    "interpolator",
+                    interpolation.map_interpolator_regular_binning_nearest_neighbor_2d,
+                )
             else:
                 raise ValueError(f"Unknown method {self.method} for 2D regular binning.")
         elif len(self.coordinate_lowers) == 3 and self.method == "IDW":
             if self.method == "IDW":
                 setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_3d)
             elif self.method == "NN":
-                setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_nearest_neighbor_3d)
+                setattr(
+                    self,
+                    "interpolator",
+                    interpolation.map_interpolator_regular_binning_nearest_neighbor_3d,
+                )
             else:
                 raise ValueError(f"Unknown method {self.method} for 3D regular binning.")
         if self.coordinate_type == "log_regbin":
@@ -315,6 +324,7 @@ class SigmaMap(Config):
     in Component.needed_parameters.
 
     """
+
     def __init__(self, method="IDW", **kwargs):
         super().__init__(**kwargs)
         self.method = method
