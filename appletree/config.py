@@ -315,6 +315,9 @@ class SigmaMap(Config):
     in Component.needed_parameters.
 
     """
+    def __init__(self, method="IDW", **kwargs):
+        super().__init__(**kwargs)
+        self.method = method
 
     def build(self, llh_name: Optional[str] = None):
         """Read maps."""
@@ -343,7 +346,7 @@ class SigmaMap(Config):
                     )
                 # If only one file is given, then use the same file for all sigmas
                 default = _configs_default
-            maps[sigma] = Map(name=self.name + f"_{sigma}", default=default)
+            maps[sigma] = Map(method=self.method, name=self.name + f"_{sigma}", default=default)
 
             setattr(self, sigma, maps[sigma])
 
