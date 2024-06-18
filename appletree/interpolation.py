@@ -269,6 +269,37 @@ def find_nearest_indices(x, y):
 
 @export
 @jit
+def map_interpolator_linear_1d(pos, ref_pos, ref_val):
+    """Linear 1D interpolation. Copied to prevent misuse of other arguments of jnp.interp.
+
+    Args:
+        pos: array with shape (N,), as the points to be interpolated.
+        ref_pos: array with shape (M,), as the reference points.
+        ref_val: array with shape (M,), as the reference values.
+
+    """
+    return jnp.interp(pos, ref_pos, ref_val)
+
+
+@export
+@jit
+def map_interpolator_nearest_neighbor_1d(pos, ref_pos, ref_val):
+    """Nearest neighbor 1D interpolation.
+
+    Args:
+        pos: array with shape (N,), as the points to be interpolated.
+        ref_pos: array with shape (M,), as the reference points.
+        ref_val: array with shape (M,), as the reference values.
+
+    """
+    ind = find_nearest_indices(pos, ref_pos)
+
+    val = ref_val[ind]
+    return val
+
+
+@export
+@jit
 def map_interpolator_regular_binning_nearest_neighbor_2d(
     pos, ref_pos_lowers, ref_pos_uppers, ref_val
 ):

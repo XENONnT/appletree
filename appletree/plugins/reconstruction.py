@@ -13,7 +13,12 @@ export, __all__ = exporter(export_self=False)
 
 @export
 @takes_config(
-    Map(name="posrec_reso", default="_posrec_reso.json", help="Position reconstruction resolution"),
+    Map(
+        name="posrec_reso",
+        method="LERP",
+        default="_posrec_reso.json",
+        help="Position reconstruction resolution",
+    ),
 )
 class PositionRecon(Plugin):
     depends_on = ["x", "y", "z", "num_electron_drifted"]
@@ -35,8 +40,18 @@ class PositionRecon(Plugin):
 
 @export
 @takes_config(
-    Map(name="s1_bias_3f", default="_s1_bias.json", help="3fold S1 reconstruction bias"),
-    Map(name="s1_smear_3f", default="_s1_smearing.json", help="3fold S1 reconstruction smearing"),
+    Map(
+        name="s1_bias_3f",
+        method="LERP",
+        default="_s1_bias.json",
+        help="3fold S1 reconstruction bias",
+    ),
+    Map(
+        name="s1_smear_3f",
+        method="LERP",
+        default="_s1_smearing.json",
+        help="3fold S1 reconstruction smearing",
+    ),
 )
 class S1(Plugin):
     depends_on = ["num_s1_phd", "num_s1_pe"]
@@ -53,8 +68,18 @@ class S1(Plugin):
 
 @export
 @takes_config(
-    Map(name="s2_bias", default="_s2_bias.json", help="S2 reconstruction bias"),
-    Map(name="s2_smear", default="_s2_smearing.json", help="S2 reconstruction smearing"),
+    Map(
+        name="s2_bias",
+        method="LERP",
+        default="_s2_bias.json",
+        help="S2 reconstruction bias",
+    ),
+    Map(
+        name="s2_smear",
+        method="LERP",
+        default="_s2_smearing.json",
+        help="S2 reconstruction smearing",
+    ),
 )
 class S2(Plugin):
     depends_on = ["num_s2_pe"]

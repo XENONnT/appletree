@@ -76,7 +76,12 @@ class S1PE(Plugin):
 
 @export
 @takes_config(
-    Map(name="elife", default="_elife.json", help="Electron lifetime correction"),
+    Map(
+        name="elife",
+        method="LERP",
+        default="_elife.json",
+        help="Electron lifetime correction",
+    ),
 )
 class DriftLoss(Plugin):
     depends_on = ["z"]

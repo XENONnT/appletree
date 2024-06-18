@@ -24,6 +24,7 @@ class S2Threshold(Plugin):
 @takes_config(
     SigmaMap(
         name="s1_eff_3f",
+        method="NN",
         default="_3fold_recon_eff.json",
         help="3fold S1 reconstruction efficiency",
     ),
@@ -44,6 +45,7 @@ class S1ReconEff(Plugin):
 @takes_config(
     SigmaMap(
         name="s1_cut_acc",
+        method="LERP",
         default=["_s1_cut_acc.json", "_s1_cut_acc.json", "_s1_cut_acc.json"],
         help="S1 cut acceptance",
     ),
@@ -64,6 +66,7 @@ class S1CutAccept(Plugin):
 @takes_config(
     SigmaMap(
         name="s2_cut_acc",
+        method="LERP",
         default=["_s2_cut_acc.json", "_s2_cut_acc.json", "_s2_cut_acc.json", "s2_cut_acc_sigma"],
         help="S2 cut acceptance",
     ),

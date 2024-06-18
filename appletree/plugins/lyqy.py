@@ -12,7 +12,12 @@ export, __all__ = exporter(export_self=False)
 
 @export
 @takes_config(
-    Map(name="ly_median", default="_nr_ly.json", help="Light yield curve from NESTv2"),
+    Map(
+        name="ly_median",
+        method="LERP",
+        default="_nr_ly.json",
+        help="Light yield curve from NESTv2",
+    ),
 )
 class LightYield(Plugin):
     depends_on = ["energy"]
@@ -39,7 +44,12 @@ class NumberPhoton(Plugin):
 
 @export
 @takes_config(
-    Map(name="qy_median", default="_nr_qy.json", help="Charge yield curve from NESTv2"),
+    Map(
+        name="qy_median",
+        method="LERP",
+        default="_nr_qy.json",
+        help="Charge yield curve from NESTv2",
+    ),
 )
 class ChargeYield(Plugin):
     depends_on = ["energy"]
