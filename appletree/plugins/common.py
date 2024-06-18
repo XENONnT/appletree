@@ -43,7 +43,12 @@ class UniformEnergySpectra(Plugin):
 
 @export
 @takes_config(
-    Map(name="energy_spectrum", default="_nr_spectrum.json", help="Recoil energy spectrum"),
+    Map(
+        name="energy_spectrum",
+        method="LERP",
+        default="_nr_spectrum.json",
+        help="Recoil energy spectrum",
+    ),
 )
 class FixedEnergySpectra(Plugin):
     depends_on = ["batch_size"]
