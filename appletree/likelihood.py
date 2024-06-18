@@ -476,10 +476,10 @@ class LikelihoodLit(Likelihood):
         result = [np.array(r) for r in result]
         return key, result
 
-    def register_component(self, *args, **kwargs):
+    def register_component(self, component_cls, *args, **kwargs):
         if len(self.components) != 0:
             raise AssertionError(self.warning)
-        super().register_component(*args, **kwargs)
+        super().register_component(component_cls, *args, **kwargs)
         # cache the component name
         self.only_component = list(self.components.keys())[0]
 
