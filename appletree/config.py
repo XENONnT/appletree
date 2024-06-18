@@ -213,7 +213,22 @@ class Map(Config):
         self.coordinate_system = jnp.asarray(data["coordinate_system"], dtype=float)
         self.map = jnp.asarray(data["map"], dtype=float)
 
-        setattr(self, "interpolator", interpolation.curve_interpolator)
+        if self.method == "IDW":
+            setattr(self, "interpolator", interpolation.curve_interpolator)
+        elif self.method == "NN":
+            setattr(
+                self,
+                "interpolator",
+                interpolation.map_interpolator_nearest_neighbor_1d,
+            )
+        elif self.method == "LERP":
+            setattr(
+                self,
+                "interpolator",
+                interpolation.map_interpolator_linear_1d,
+            )
+        else:
+            raise ValueError(f"Unknown method {self.method} for 1D regular binning.")
         if self.coordinate_type == "log_point":
             if jnp.any(self.coordinate_system <= 0):
                 raise ValueError(
