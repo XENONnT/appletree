@@ -262,7 +262,7 @@ class Map(Config):
                 )
             else:
                 raise ValueError(f"Unknown method {self.method} for 2D regular binning.")
-        elif len(self.coordinate_lowers) == 3 and self.method == "IDW":
+        elif len(self.coordinate_lowers) == 3:
             if self.method == "IDW":
                 setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_3d)
             elif self.method == "NN":
