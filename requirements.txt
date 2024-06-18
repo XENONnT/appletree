@@ -7,7 +7,7 @@ immutabledict
 jax
 matplotlib
 multihist
-numpy
+numpy<2.0.0
 numpyro
 pandas
 scikit-learn
