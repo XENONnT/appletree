@@ -1,3 +1,13 @@
+v0.5.0 / 2024-06-30
+-------------------
+* Nestv2 parameter by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/167
+* Nearest neighbor interpolator by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/168
+* Add 1D nearest neighbour and linear interpolator by @dachengx in https://github.com/XENONnT/appletree/pull/170
+* Fix software versions in tests by @dachengx in https://github.com/XENONnT/appletree/pull/171
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.4.0...v0.5.0
+
+
 v0.4.0 / 2024-05-27
 -------------------
 * Try using jax.random.binomial by @dachengx in https://github.com/XENONnT/appletree/pull/148
@@ -28,7 +38,6 @@ v0.3.2 / 2024-03-06
 * Add support for 1D fitting by @dachengx in https://github.com/XENONnT/appletree/pull/144
 * Correct the sigmas in TwoHalfNorm by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/143
 * Plotter for MCMC diagnostics by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/146
-
 
 **Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.3.1...v0.3.2
 
