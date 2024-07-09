@@ -1,12 +1,10 @@
 import appletree as apt
-from appletree.share import _cached_configs, _cached_functions
 from appletree.utils import get_file_path, load_json, check_unused_configs
 
 
 def test_rn220_context():
     """Test Context of Rn220 fitting."""
-    _cached_functions.clear()
-    _cached_configs.clear()
+    apt.clear_cache()
     context = apt.ContextRn220()
 
     context.print_context_summary(short=False)
@@ -33,8 +31,7 @@ def test_rn220_context_1d():
         ["equiprob", "meshgrid", "irreg"],
         [bins, bins, [instruction["likelihoods"]["rn220_llh"]["clip"]]],
     ):
-        _cached_functions.clear()
-        _cached_configs.clear()
+        apt.clear_cache()
         instruction["likelihoods"]["rn220_llh"]["bins_type"] = bins_type
         instruction["likelihoods"]["rn220_llh"]["bins"] = bins
         context = apt.Context(instruction)
@@ -43,8 +40,7 @@ def test_rn220_context_1d():
 
 def test_rn220_ar37_context():
     """Test Context of Rn220 & Ar37 combine fitting."""
-    _cached_functions.clear()
-    _cached_configs.clear()
+    apt.clear_cache()
     context = apt.ContextRn220Ar37()
 
     context.print_context_summary(short=False)
@@ -59,8 +55,7 @@ def test_rn220_ar37_context():
 
 def test_neutron_context():
     """Test Context of neutron combine fitting."""
-    _cached_functions.clear()
-    _cached_configs.clear()
+    apt.clear_cache()
     instruct = get_file_path("neutron_low.json")
     context = apt.Context(instruct)
 
@@ -71,8 +66,7 @@ def test_neutron_context():
 
 def test_literature_context():
     """Test Context of neutron combine fitting."""
-    _cached_functions.clear()
-    _cached_configs.clear()
+    apt.clear_cache()
     instruct = get_file_path("literature_lyqy.json")
     context = apt.Context(instruct)
 
