@@ -54,13 +54,13 @@ class PositionRecon(Plugin):
     ),
 )
 class S1(Plugin):
-    depends_on = ["num_s1_phd", "num_s1_pe"]
+    depends_on = ["num_s1_pe"]
     provides = ["s1_area"]
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, num_s1_phd, num_s1_pe):
-        mean = self.s1_bias_3f.apply(num_s1_phd)
-        std = self.s1_smear_3f.apply(num_s1_phd)
+    def simulate(self, key, parameters, num_s1_pe):
+        mean = self.s1_bias_3f.apply(num_s1_pe)
+        std = self.s1_smear_3f.apply(num_s1_pe)
         key, bias = randgen.normal(key, mean, std)
         s1_area = num_s1_pe * (1.0 + bias)
         return key, s1_area
