@@ -58,7 +58,7 @@ class S1(Plugin):
     provides = ["s1_area"]
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters num_s1_pe):
+    def simulate(self, key, parameters, num_s1_pe):
         mean = self.s1_bias_3f.apply(num_s1_pe)
         std = self.s1_smear_3f.apply(num_s1_pe)
         key, bias = randgen.normal(key, mean, std)
