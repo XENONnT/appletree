@@ -151,8 +151,16 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
         an updated seed, random variables.
 
     """
-    lower_norm, upper_norm = (vmin - mean) / std, (vmax - mean) / std
-    key, rvs = random.truncated_normal(key, mean, std, lower_norm, upper_norm, shape=shape)
+    # Assume that vmin and vmax cannot both be None, and vmax > vmin
+    if vmin is None:
+        lower_norm = -jnp.inf
+        upper_norm = (vmax - mean) / std
+    elif vmax is None:
+        lower_norm = (vmin - mean) / st
+        upper_norm = jnp.inf
+    else:
+        lower_norm, upper_norm = (vmin - mean) / std, (vmax - mean) / std
+    key, rvs = random.truncated_normal(key, lower_norm, upper_norm, shape=shape)
     rvs = rvs * std + mean
     return key, rvs.astype(FLOAT)
 
