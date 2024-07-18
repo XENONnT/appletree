@@ -156,7 +156,7 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
         lower_norm = -jnp.inf
         upper_norm = (vmax - mean) / std
     elif vmax is None:
-        lower_norm = (vmin - mean) / st
+        lower_norm = (vmin - mean) / std
         upper_norm = jnp.inf
     else:
         lower_norm, upper_norm = (vmin - mean) / std, (vmax - mean) / std
