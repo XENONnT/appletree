@@ -131,6 +131,7 @@ def normal(key, mean, std, shape=()):
     rvs = random.normal(seed, shape=shape) * std + mean
     return key, rvs.astype(FLOAT)
 
+
 @export
 @partial(jit, static_argnums=(5,))
 def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
@@ -151,17 +152,16 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
 
     """
     lower_norm, upper_norm = (vmin - mean) / std, (vmax - mean) / std
-    key, rvs = random.truncated_normal(
-        key, mean, std, lower_norm, upper_norm, shape=shape
-    )
+    key, rvs = random.truncated_normal(key, mean, std, lower_norm, upper_norm, shape=shape)
     rvs = rvs * std + mean
     return key, rvs.astype(FLOAT)
+
 
 @export
 @partial(jit, static_argnums=(5,))
 def truncate_normal_naive(key, mean, std, vmin=None, vmax=None, shape=()):
-    """Truncated normal distribution random sampler, with naive clipping.
-    This is DEPRECATED because this does not yield a continuous distribution.
+    """Truncated normal distribution random sampler, with naive clipping. This is DEPRECATED because
+    this does not yield a continuous distribution.
 
     Args:
         key: seed for random generator.
@@ -180,6 +180,7 @@ def truncate_normal_naive(key, mean, std, vmin=None, vmax=None, shape=()):
     key, rvs = normal(key, mean, std, shape=shape)
     rvs = jnp.clip(rvs, a_min=vmin, a_max=vmax)
     return key, rvs.astype(FLOAT)
+
 
 @export
 @partial(jit, static_argnums=(4,))
