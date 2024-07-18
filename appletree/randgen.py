@@ -163,7 +163,7 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
     shape = shape or jnp.broadcast_shapes(
         jnp.shape(mean), jnp.shape(std), jnp.shape(lower_norm), jnp.shape(upper_norm)
     )
-    key, rvs = random.truncated_normal(key, lower_norm, upper_norm, shape=shape)
+    rvs = random.truncated_normal(key, lower_norm, upper_norm, shape=shape)
     rvs = rvs * std + mean
     return key, rvs.astype(FLOAT)
 
