@@ -151,6 +151,43 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
         an updated seed, random variables.
 
     """
+    # Assume that vmin and vmax cannot both be None, and vmax > vmin
+    if vmin is None:
+        lower_norm = -jnp.inf
+        upper_norm = (vmax - mean) / std
+    elif vmax is None:
+        lower_norm = (vmin - mean) / std
+        upper_norm = jnp.inf
+    else:
+        lower_norm, upper_norm = (vmin - mean) / std, (vmax - mean) / std
+    shape = shape or jnp.broadcast_shapes(
+        jnp.shape(mean), jnp.shape(std), jnp.shape(lower_norm), jnp.shape(upper_norm)
+    )
+    rvs = random.truncated_normal(key, lower_norm, upper_norm, shape=shape)
+    rvs = rvs * std + mean
+    return key, rvs.astype(FLOAT)
+
+
+@export
+@partial(jit, static_argnums=(5,))
+def truncate_normal_naive(key, mean, std, vmin=None, vmax=None, shape=()):
+    """Truncated normal distribution random sampler, with naive clipping. This is DEPRECATED because
+    this does not yield a continuous distribution.
+
+    Args:
+        key: seed for random generator.
+        mean: <jnp.array>-like mean in normal distribution.
+        std: <jnp.array>-like std in normal distribution.
+        vmin: <jnp.array>-like min value to clip. By default it's None.
+            vmin and vmax cannot be both None.
+        vmax: <jnp.array>-like max value to clip. By default it's None.
+            vmin and vmax cannot be both None.
+        shape: parameter passed to normal(..., shape=shape)
+
+    Returns:
+        an updated seed, random variables.
+
+    """
     key, rvs = normal(key, mean, std, shape=shape)
     rvs = jnp.clip(rvs, a_min=vmin, a_max=vmax)
     return key, rvs.astype(FLOAT)
