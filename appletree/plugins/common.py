@@ -8,6 +8,10 @@ from appletree.plugin import Plugin
 from appletree.config import takes_config, Constant, Map
 from appletree.utils import exporter
 
+import scipy.integrate as integrate
+
+import numpy as np
+
 export, __all__ = exporter()
 
 
@@ -74,6 +78,33 @@ class MonoEnergySpectra(Plugin):
     @partial(jit, static_argnums=(0, 3))
     def simulate(self, key, parameters, batch_size):
         energy = jnp.full(batch_size, self.mono_energy.value)
+        return key, energy
+
+@export
+@takes_config(
+    Constant(name="WIMP_mass", type=float, default=100, help="WIMP Mass in GeV"),
+    Constant(name="delta", type=float, default=100*1e-6, help="Mass splitting in GeV"),
+    Constant(name="c", type=float, default=300000, help="Speed of light in km/s"),
+    Constant(name="v0", type=float, default=220, help="DM Halo speed in km/s"),
+    Constant(name="vE", type=float, default=232, help="Earth relative speed in km/s"),
+    Constant(name="nuclear_mass", type=float, default=131, help="Mean Xe nuclear mass"),
+)
+class iDMEnergySpectra(Plugin):
+    depends_on = ["batch_size"]
+    provides = ["energy"]
+
+    @partial(jit, static_argnums=(0, 3))
+    def simulate(self, key, parameters, batch_size):
+        
+        def reduced_mass(m1, m2):
+            return 1/(1/m1 + 1/m2)
+
+        def vmin(E):
+            return self.c*np.sqrt(1/(2*self.nuclear_mass*E)) * (E*self.nuclear_mass/reduced_mass(self.nuclear_mass, self.WIMP_mass) + self.delta)
+        
+        EE = np.linspace(0, 1000*1e-6, 2001)
+        dRdE = [integrate.quad(f, vmin(E), np.inf)[0] for E in EE]
+        energy = np.random.choice(EE*1e6, size = batch_size, p = dRdE/np.sum(dRdE))
         return key, energy
 
 
