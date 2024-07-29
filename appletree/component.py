@@ -5,6 +5,7 @@ from typing import Tuple, List, Dict, Optional, Union, Set
 import numpy as np
 import pandas as pd
 from jax import numpy as jnp
+from strax import deterministic_hash
 
 from appletree import utils
 from appletree.config import OMITTED
@@ -335,6 +336,8 @@ class ComponentSim(Component):
         if isinstance(data_names, str):
             data_names = [data_names]
 
+        instances = set()
+
         code = ""
         indent = " " * 4
 
@@ -350,6 +353,7 @@ class ComponentSim(Component):
         for work in self.worksheet:
             plugin = work[0]
             instance = plugin + "_" + self.name
+            instances.add(instance)
             code += f"{instance} = {plugin}('{self.llh_name}')\n"
 
         # define functions
@@ -369,6 +373,7 @@ class ComponentSim(Component):
         code += f"{indent}return {output}\n"
 
         self.code = code
+        self.instances = instances
 
         if func_name in _cached_functions[self.llh_name].keys():
             warning = f"Function name {func_name} is already cached. "
@@ -474,10 +479,21 @@ class ComponentSim(Component):
         with open(file_path, "w") as f:
             f.write(self.code)
 
-    def lineage(self, data_name: str = "cs2"):
-        """Return lineage of plugins."""
-        assert isinstance(data_name, str)
-        pass
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(
+            {
+                **{
+                    "code": self.code,
+                },
+                **dict(
+                    zip(
+                        self.instances,
+                        [_cached_functions[self.llh_name][p].lineage_hash for p in self.instances],
+                    )
+                ),
+            }
+        )
 
     def set_config(self, configs):
         """Set new global configuration options.

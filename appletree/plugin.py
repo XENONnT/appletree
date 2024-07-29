@@ -3,6 +3,7 @@ from copy import deepcopy
 from typing import List, Tuple, Optional
 
 from immutabledict import immutabledict
+from strax import deterministic_hash
 
 from appletree import utils
 from appletree.utils import exporter
@@ -89,6 +90,24 @@ class Plugin:
                 mesg += f".simulate should be '{depend}'. "
                 mesg += f"Plugin {self.__class__.__name__} is insane, check dependency!"
                 raise ValueError(mesg)
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(
+            {
+                **{
+                    "depends_on": self.depends_on,
+                    "provides": self.provides,
+                    "parameters": self.parameters,
+                },
+                **dict(
+                    zip(
+                        self.takes_config.keys(),
+                        [v.lineage_hash for v in self.takes_config.values()],
+                    )
+                ),
+            }
+        )
 
 
 @export

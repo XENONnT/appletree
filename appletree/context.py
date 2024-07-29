@@ -389,8 +389,3 @@ class Context:
                 # Drop unused parameters
                 self.par_config.pop(p)
         return needed_parameters
-
-    def lineage(self, data_name: str = "cs2"):
-        """Return lineage of plugins."""
-        assert isinstance(data_name, str)
-        pass
