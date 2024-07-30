@@ -7,8 +7,9 @@ from datetime import datetime
 from typing import Set, Optional
 
 import numpy as np
-import emcee
 import h5py
+import emcee
+from strax import deterministic_hash
 
 import appletree as apt
 from appletree import randgen
@@ -390,7 +391,17 @@ class Context:
                 self.par_config.pop(p)
         return needed_parameters
 
-    def lineage(self, data_name: str = "cs2"):
-        """Return lineage of plugins."""
-        assert isinstance(data_name, str)
-        pass
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(
+            {
+                **self.instruct,
+                **self.par_config,
+                **dict(
+                    zip(
+                        self.likelihoods.keys(),
+                        [v.lineage_hash for v in self.likelihoods.values()],
+                    )
+                ),
+            }
+        )

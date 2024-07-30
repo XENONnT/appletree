@@ -12,4 +12,5 @@ numpyro
 pandas
 scikit-learn
 scipy
+strax
 straxen

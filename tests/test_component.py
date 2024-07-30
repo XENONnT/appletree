@@ -1,7 +1,7 @@
 import pytest
 
+import numpy as np
 import pandas as pd
-from jax import numpy as jnp
 
 import appletree as apt
 from appletree.utils import get_file_path
@@ -26,7 +26,7 @@ bins_cs1, bins_cs2 = apt.utils.get_equiprob_bins_2d(
     order=[0, 1],
     x_clip=[0, 100],
     y_clip=[1e2, 1e4],
-    which_np=jnp,
+    which_np=np,
 )
 
 
@@ -39,6 +39,7 @@ def test_fixed_component():
     )
     ac.rate_name = "ac_rate"
     ac.deduce(data_names=["cs1", "cs2"])
+    ac.lineage_hash
     ac.simulate_hist(parameters)
     ac.simulate_weighted_data(parameters)
 
@@ -94,6 +95,7 @@ def test_sim_component():
         force_no_eff=True,
     )
     er.compile()
+    er.lineage_hash
     er.simulate_hist(key, batch_size, parameters)
     with pytest.raises(RuntimeError):
         key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)

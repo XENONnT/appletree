@@ -5,12 +5,13 @@ from typing import Tuple, List, Dict, Optional, Union, Set
 import numpy as np
 import pandas as pd
 from jax import numpy as jnp
+from strax import deterministic_hash
 
 from appletree import utils
 from appletree.config import OMITTED
 from appletree.plugin import Plugin
 from appletree.share import _cached_configs, _cached_functions, set_global_config
-from appletree.utils import exporter, load_data
+from appletree.utils import exporter, get_file_path, load_data, calculate_sha256
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_1d, make_hist_irreg_bin_2d
 
 export, __all__ = exporter()
@@ -181,6 +182,10 @@ class Component:
         """Hook for compiling simulation code."""
         pass
 
+    @property
+    def lineage_hash(self):
+        raise NotImplementedError
+
 
 @export
 class ComponentSim(Component):
@@ -335,6 +340,8 @@ class ComponentSim(Component):
         if isinstance(data_names, str):
             data_names = [data_names]
 
+        instances = set()
+
         code = ""
         indent = " " * 4
 
@@ -350,6 +357,7 @@ class ComponentSim(Component):
         for work in self.worksheet:
             plugin = work[0]
             instance = plugin + "_" + self.name
+            instances.add(instance)
             code += f"{instance} = {plugin}('{self.llh_name}')\n"
 
         # define functions
@@ -369,6 +377,7 @@ class ComponentSim(Component):
         code += f"{indent}return {output}\n"
 
         self.code = code
+        self.instances = instances
 
         if func_name in _cached_functions[self.llh_name].keys():
             warning = f"Function name {func_name} is already cached. "
@@ -474,11 +483,6 @@ class ComponentSim(Component):
         with open(file_path, "w") as f:
             f.write(self.code)
 
-    def lineage(self, data_name: str = "cs2"):
-        """Return lineage of plugins."""
-        assert isinstance(data_name, str)
-        pass
-
     def set_config(self, configs):
         """Set new global configuration options.
 
@@ -559,6 +563,26 @@ class ComponentSim(Component):
             )
         return component
 
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(
+            {
+                **{
+                    "rate_name": self.rate_name,
+                    "norm_type": self.norm_type,
+                    "bins": self.bins,
+                    "bins_type": self.bins_type,
+                    "code": self.code,
+                },
+                **dict(
+                    zip(
+                        self.instances,
+                        [_cached_functions[self.llh_name][p].lineage_hash for p in self.instances],
+                    )
+                ),
+            }
+        )
+
 
 @export
 class ComponentFixed(Component):
@@ -601,6 +625,18 @@ class ComponentFixed(Component):
         result[-1] *= normalization_factor
 
         return result
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(
+            {
+                "rate_name": self.rate_name,
+                "norm_type": self.norm_type,
+                "bins": self.bins,
+                "bins_type": self.bins_type,
+                "file_name": calculate_sha256(get_file_path(self._file_name)),
+            }
+        )
 
 
 @export
