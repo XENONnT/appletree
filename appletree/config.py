@@ -546,7 +546,7 @@ class ConstantSet(Config):
 
         self._sanity_check()
         self.set_volume = len(self.value[1][0])
-        self.value = {k: jnp.array(v) for k, v in zip(*self.value)}
+        self.value = {k: np.array(v) for k, v in zip(*self.value)}
 
     def _sanity_check(self):
         """Check if parameter set lengths are same."""
