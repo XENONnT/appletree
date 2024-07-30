@@ -8,6 +8,7 @@ def test_rn220_context():
     _cached_functions.clear()
     _cached_configs.clear()
     context = apt.ContextRn220()
+    context.lineage_hash
 
     context.print_context_summary(short=False)
     context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
@@ -38,6 +39,7 @@ def test_rn220_context_1d():
         instruction["likelihoods"]["rn220_llh"]["bins_type"] = bins_type
         instruction["likelihoods"]["rn220_llh"]["bins"] = bins
         context = apt.Context(instruction)
+        context.lineage_hash
         context.print_context_summary(short=False)
 
 
@@ -46,6 +48,7 @@ def test_rn220_ar37_context():
     _cached_functions.clear()
     _cached_configs.clear()
     context = apt.ContextRn220Ar37()
+    context.lineage_hash
 
     context.print_context_summary(short=False)
 
@@ -63,6 +66,7 @@ def test_neutron_context():
     _cached_configs.clear()
     instruct = get_file_path("neutron_low.json")
     context = apt.Context(instruct)
+    context.lineage_hash
 
     context.print_context_summary(short=False)
     context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
@@ -75,6 +79,7 @@ def test_literature_context():
     _cached_configs.clear()
     instruct = get_file_path("literature_lyqy.json")
     context = apt.Context(instruct)
+    context.lineage_hash
 
     context.print_context_summary(short=False)
 
@@ -93,6 +98,7 @@ def test_backend():
     instruct = apt.utils.load_json("rn220.json")
     instruct["backend_h5"] = "test_backend.h5"
     context = apt.Context(instruct)
+    context.lineage_hash
     context.fitting(nwalkers=100, iteration=2, batch_size=int(1e4))
 
     _cached_functions.clear()

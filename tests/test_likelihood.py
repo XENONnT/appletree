@@ -19,6 +19,7 @@ def test_er_likelihood():
     llh = apt.Likelihood(**instruct)
     llh.register_component(apt.components.AC, "rn220_ac", "AC_Rn220.pkl")
     llh.register_component(apt.components.ERBand, "rn220_er")
+    llh.lineage_hash
     llh.print_likelihood_summary(short=True)
 
     # Get parameters
@@ -47,6 +48,7 @@ def test_nr_likelihood():
     )
     llh = apt.Likelihood(**instruct)
     llh.register_component(apt.components.NR, "neutron_nr")
+    llh.lineage_hash
     llh.print_likelihood_summary(short=True)
 
     # Get parameters

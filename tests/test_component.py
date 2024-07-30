@@ -39,6 +39,7 @@ def test_fixed_component():
     )
     ac.rate_name = "ac_rate"
     ac.deduce(data_names=["cs1", "cs2"])
+    ac.lineage_hash
     ac.simulate_hist(parameters)
     ac.simulate_weighted_data(parameters)
 
@@ -94,6 +95,7 @@ def test_sim_component():
         force_no_eff=True,
     )
     er.compile()
+    er.lineage_hash
     er.simulate_hist(key, batch_size, parameters)
     with pytest.raises(RuntimeError):
         key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)
