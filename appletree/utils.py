@@ -1,6 +1,7 @@
 import os
 import json
 from warnings import warn
+import hashlib
 import importlib_resources
 from time import time
 
@@ -201,6 +202,15 @@ def get_file_path(fname):
 
     # raise error when can not find corresponding file
     raise RuntimeError(f"Can not find {fname}, please check your file system")
+
+
+@export
+def calculate_sha256(file_path):
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
 
 
 @export
@@ -585,11 +595,11 @@ def integrate_midpoint(x, y):
         y: 1D array-like, with the same length as x.
 
     """
-    _, res = cum_integrate_midpoint(x, y)
+    _, res = cumulative_integrate_midpoint(x, y)
     return res[-1]
 
 
-def cum_integrate_midpoint(x, y):
+def cumulative_integrate_midpoint(x, y):
     """Calculate the cumulative integral using midpoint method.
 
     Args:

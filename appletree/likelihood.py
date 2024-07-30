@@ -4,13 +4,18 @@ import inspect
 from copy import deepcopy
 
 import numpy as np
-from jax import numpy as jnp
-
 from scipy.stats import norm
+from strax import deterministic_hash
 
 from appletree import randgen
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_1d, make_hist_irreg_bin_2d
-from appletree.utils import load_data, get_equiprob_bins_1d, get_equiprob_bins_2d
+from appletree.utils import (
+    get_file_path,
+    load_data,
+    get_equiprob_bins_1d,
+    get_equiprob_bins_2d,
+    calculate_sha256,
+)
 from appletree.component import Component, ComponentSim, ComponentFixed
 from appletree.randgen import TwoHalfNorm, BandTwoHalfNorm
 
@@ -108,25 +113,25 @@ class Likelihood:
             self.component_bins_type = "meshgrid"
             if self._dim == 1:
                 if isinstance(self._bins[0], int):
-                    bins = jnp.linspace(*config["clip"], self._bins[0] + 1)
+                    bins = np.linspace(*config["clip"], self._bins[0] + 1)
                 else:
-                    bins = jnp.array(self._bins[0])
+                    bins = np.array(self._bins[0])
                     if "x_clip" in config:
                         warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
                         warn(warning)
                 self._bins = (bins,)
             elif self._dim == 2:
                 if isinstance(self._bins[0], int):
-                    x_bins = jnp.linspace(*config["x_clip"], self._bins[0] + 1)
+                    x_bins = np.linspace(*config["x_clip"], self._bins[0] + 1)
                 else:
-                    x_bins = jnp.array(self._bins[0])
+                    x_bins = np.array(self._bins[0])
                     if "x_clip" in config:
                         warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
                         warn(warning)
                 if isinstance(self._bins[1], int):
-                    y_bins = jnp.linspace(*config["y_clip"], self._bins[1] + 1)
+                    y_bins = np.linspace(*config["y_clip"], self._bins[1] + 1)
                 else:
-                    y_bins = jnp.array(self._bins[1])
+                    y_bins = np.array(self._bins[1])
                     if "y_clip" in config:
                         warning = "y_clip is ignored when bins_type is meshgrid and bins is not int"
                         warn(warning)
@@ -134,7 +139,7 @@ class Likelihood:
             self.data_hist = make_hist_mesh_grid(
                 self.data,
                 bins=self._bins,
-                weights=jnp.ones(len(self.data)),
+                weights=np.ones(len(self.data)),
             )
         elif self._bins_type == "equiprob":
             if not all([isinstance(b, int) for b in self._bins]):
@@ -144,13 +149,13 @@ class Likelihood:
                     self.data[:, 0],
                     self._bins[0],
                     clip=config["clip"],
-                    which_np=jnp,
+                    which_np=np,
                 )
                 self._bins = [self._bins]
                 self.data_hist = make_hist_irreg_bin_1d(
                     self.data[:, 0],
                     bins=self._bins[0],
-                    weights=jnp.ones(len(self.data)),
+                    weights=np.ones(len(self.data)),
                 )
             elif self._dim == 2:
                 self._bins = get_equiprob_bins_2d(
@@ -158,38 +163,38 @@ class Likelihood:
                     self._bins,
                     x_clip=config["x_clip"],
                     y_clip=config["y_clip"],
-                    which_np=jnp,
+                    which_np=np,
                 )
                 self.data_hist = make_hist_irreg_bin_2d(
                     self.data,
                     bins_x=self._bins[0],
                     bins_y=self._bins[1],
-                    weights=jnp.ones(len(self.data)),
+                    weights=np.ones(len(self.data)),
                 )
             self.component_bins_type = "irreg"
         elif self._bins_type == "irreg":
-            self._bins = [jnp.array(b) for b in self._bins]
+            self._bins = [np.array(b) for b in self._bins]
             if self._dim == 1:
                 if isinstance(self._bins[0], int):
-                    bins = jnp.linspace(*config["clip"], self._bins[0] + 1)
+                    bins = np.linspace(*config["clip"], self._bins[0] + 1)
                 else:
-                    bins = jnp.array(self._bins[0])
+                    bins = np.array(self._bins[0])
                     if "x_clip" in config:
                         warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
                         warn(warning)
                 self._bins = (bins,)
             elif self._dim == 2:
                 if isinstance(self._bins[0], int):
-                    x_bins = jnp.linspace(*config["x_clip"], self._bins[0] + 1)
+                    x_bins = np.linspace(*config["x_clip"], self._bins[0] + 1)
                 else:
-                    x_bins = jnp.array(self._bins[0])
+                    x_bins = np.array(self._bins[0])
                     if "x_clip" in config:
                         warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
                         warn(warning)
                 if isinstance(self._bins[1], int):
-                    y_bins = jnp.linspace(*config["y_clip"], self._bins[1] + 1)
+                    y_bins = np.linspace(*config["y_clip"], self._bins[1] + 1)
                 else:
-                    y_bins = jnp.array(self._bins[1])
+                    y_bins = np.array(self._bins[1])
                     if "y_clip" in config:
                         warning = "y_clip is ignored when bins_type is meshgrid and bins is not int"
                         warn(warning)
@@ -212,14 +217,14 @@ class Likelihood:
                 self.data_hist = make_hist_irreg_bin_1d(
                     self.data[:, 0],
                     bins=self._bins[0],
-                    weights=jnp.ones(len(self.data)),
+                    weights=np.ones(len(self.data)),
                 )
             elif self._dim == 2:
                 self.data_hist = make_hist_irreg_bin_2d(
                     self.data,
                     bins_x=self._bins[0],
                     bins_y=self._bins[1],
-                    weights=jnp.ones(len(self.data)),
+                    weights=np.ones(len(self.data)),
                 )
         else:
             raise ValueError("'bins_type' should either be meshgrid, equiprob or irreg")
@@ -293,7 +298,7 @@ class Likelihood:
             parameters: dict of parameters used in simulation.
 
         """
-        hist = jnp.zeros_like(self.data_hist)
+        hist = np.zeros_like(self.data_hist)
         for component_name, component in self.components.items():
             if isinstance(component, ComponentSim):
                 key, _hist = component.simulate_hist(key, batch_size, parameters)
@@ -338,7 +343,7 @@ class Likelihood:
         """
         key, model_hist = self._simulate_model_hist(key, batch_size, parameters)
         # Poisson likelihood
-        llh = jnp.sum(self.data_hist * jnp.log(model_hist) - model_hist)
+        llh = np.sum(self.data_hist * np.log(model_hist) - model_hist)
         llh = float(llh)
         if np.isnan(llh):
             llh = -np.inf
@@ -403,6 +408,23 @@ class Likelihood:
             print()
 
         print("-" * 40)
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(
+            {
+                **{
+                    "config": self._config,
+                    "sha256": calculate_sha256(get_file_path(self._data_file_name)),
+                },
+                **dict(
+                    zip(
+                        self.components.keys(),
+                        [v.lineage_hash for v in self.components.values()],
+                    )
+                ),
+            }
+        )
 
 
 class LikelihoodLit(Likelihood):
@@ -553,3 +575,19 @@ class LikelihoodLit(Likelihood):
             print()
 
         print("-" * 40)
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(
+            {
+                **{
+                    "config": self._config,
+                },
+                **dict(
+                    zip(
+                        self.components.keys(),
+                        [v.lineage_hash for v in self.components.values()],
+                    )
+                ),
+            }
+        )

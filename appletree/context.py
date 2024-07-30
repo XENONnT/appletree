@@ -7,8 +7,9 @@ from datetime import datetime
 from typing import Set, Optional
 
 import numpy as np
-import emcee
 import h5py
+import emcee
+from strax import deterministic_hash
 
 import appletree as apt
 from appletree import randgen
@@ -389,3 +390,18 @@ class Context:
                 # Drop unused parameters
                 self.par_config.pop(p)
         return needed_parameters
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(
+            {
+                **self.instruct,
+                **self.par_config,
+                **dict(
+                    zip(
+                        self.likelihoods.keys(),
+                        [v.lineage_hash for v in self.likelihoods.values()],
+                    )
+                ),
+            }
+        )

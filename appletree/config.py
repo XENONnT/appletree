@@ -14,7 +14,8 @@ from appletree.utils import (
     load_json,
     get_file_path,
     integrate_midpoint,
-    cum_integrate_midpoint,
+    cumulative_integrate_midpoint,
+    calculate_sha256,
 )
 from appletree import interpolation
 from appletree.interpolation import FLOAT_POS_MIN, FLOAT_POS_MAX
@@ -332,7 +333,7 @@ class Map(Config):
     def pdf_to_cdf(self, x, pdf):
         """Convert pdf map to cdf map."""
         norm = integrate_midpoint(x, pdf)
-        x, cdf = cum_integrate_midpoint(x, pdf)
+        x, cdf = cumulative_integrate_midpoint(x, pdf)
         cdf /= norm
         return x, cdf
 
@@ -343,6 +344,7 @@ class Map(Config):
                 "llh_name": self.llh_name,
                 "method": self.method,
                 "file_path": os.path.basename(self.file_path),
+                "sha256": calculate_sha256(self.file_path),
             }
         )
 
