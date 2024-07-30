@@ -1,7 +1,7 @@
 import pytest
 
+import numpy as np
 import pandas as pd
-from jax import numpy as jnp
 
 import appletree as apt
 from appletree.utils import get_file_path
@@ -26,7 +26,7 @@ bins_cs1, bins_cs2 = apt.utils.get_equiprob_bins_2d(
     order=[0, 1],
     x_clip=[0, 100],
     y_clip=[1e2, 1e4],
-    which_np=jnp,
+    which_np=np,
 )
 
 

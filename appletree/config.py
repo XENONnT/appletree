@@ -344,7 +344,7 @@ class Map(Config):
                 "llh_name": self.llh_name,
                 "method": self.method,
                 "file_path": os.path.basename(self.file_path),
-                "sha256": calculate_sha256(self.file_path),
+                "sha256": calculate_sha256(get_file_path(self.file_path)),
             }
         )
 
