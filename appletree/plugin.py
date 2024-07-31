@@ -94,19 +94,15 @@ class Plugin:
     @property
     def lineage(self):
         return {
-            **{
-                "depends_on": self.depends_on,
-                "provides": self.provides,
-                "parameters": self.parameters,
-            },
-            **{
-                "takes_config": dict(
-                    zip(
-                        self.takes_config.keys(),
-                        [v.lineage for v in self.takes_config.values()],
-                    )
+            "depends_on": self.depends_on,
+            "provides": self.provides,
+            "parameters": self.parameters,
+            "takes_config": dict(
+                zip(
+                    self.takes_config.keys(),
+                    [v.lineage for v in self.takes_config.values()],
                 )
-            },
+            ),
         }
 
     @property

@@ -570,24 +570,25 @@ class ComponentSim(Component):
 
     @property
     def lineage(self):
-        return {
-            **{
-                "rate_name": self.rate_name,
-                "norm_type": self.norm_type,
+        bins_dict = dict()
+        if hasattr(self, "bins") or hasattr(self, "bins_type"):
+            bins_dict = {
                 "bins": (
                     tuple(b.tolist() for b in self.bins) if self.bins is not None else self.bins
                 ),
                 "bins_type": self.bins_type,
-                "code": self.code,
-            },
-            **{
-                "instances": dict(
-                    zip(
-                        self.instances,
-                        [_cached_functions[self.llh_name][p].lineage for p in self.instances],
-                    )
+            }
+        return {
+            "rate_name": self.rate_name,
+            "norm_type": self.norm_type,
+            "code": self.code,
+            "instances": dict(
+                zip(
+                    self.instances,
+                    [_cached_functions[self.llh_name][p].lineage for p in self.instances],
                 )
-            },
+            ),
+            **bins_dict,
         }
 
 

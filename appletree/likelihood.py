@@ -415,23 +415,19 @@ class Likelihood:
     @property
     def lineage(self):
         return {
-            **{
-                "config": self._config,
-                "file_path": (
-                    os.path.basename(self._data_file_name)
-                    if not utils.FULL_PATH_LINEAGE
-                    else get_file_path(self._data_file_name)
-                ),
-                "sha256": calculate_sha256(get_file_path(self._data_file_name)),
-            },
-            **{
-                "components": dict(
-                    zip(
-                        self.components.keys(),
-                        [v.lineage for v in self.components.values()],
-                    )
+            "config": self._config,
+            "file_path": (
+                os.path.basename(self._data_file_name)
+                if not utils.FULL_PATH_LINEAGE
+                else get_file_path(self._data_file_name)
+            ),
+            "sha256": calculate_sha256(get_file_path(self._data_file_name)),
+            "components": dict(
+                zip(
+                    self.components.keys(),
+                    [v.lineage for v in self.components.values()],
                 )
-            },
+            ),
         }
 
     @property
@@ -591,15 +587,11 @@ class LikelihoodLit(Likelihood):
     @property
     def lineage(self):
         return {
-            **{
-                "config": self._config,
-            },
-            **{
-                "components": dict(
-                    zip(
-                        self.components.keys(),
-                        [v.lineage_hash for v in self.components.values()],
-                    )
+            "config": self._config,
+            "components": dict(
+                zip(
+                    self.components.keys(),
+                    [v.lineage_hash for v in self.components.values()],
                 )
-            },
+            ),
         }

@@ -399,14 +399,14 @@ class Context:
     def lineage(self):
         return {
             **self.instruct,
-            **{"par_config": self.par_config},
             **{
+                "par_config": self.par_config,
                 "likelihoods": dict(
                     zip(
                         self.likelihoods.keys(),
                         [v.lineage for v in self.likelihoods.values()],
                     )
-                )
+                ),
             },
         }
 
