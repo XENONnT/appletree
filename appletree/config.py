@@ -8,6 +8,7 @@ from warnings import warn
 import numpy as np
 from strax import deterministic_hash
 
+from appletree import utils
 from appletree.share import _cached_configs
 from appletree.utils import (
     exporter,
@@ -112,8 +113,12 @@ class Config:
         return None
 
     @property
-    def lineage_hash(self):
+    def lineage(self):
         raise NotImplementedError
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(self.lineage)
 
 
 @export
@@ -145,13 +150,11 @@ class Constant(Config):
             self.value = value
 
     @property
-    def lineage_hash(self):
-        return deterministic_hash(
-            {
-                "llh_name": self.llh_name,
-                "value": self.value,
-            }
-        )
+    def lineage(self):
+        return {
+            "llh_name": self.llh_name,
+            "value": self.value,
+        }
 
 
 @export
@@ -338,15 +341,17 @@ class Map(Config):
         return x, cdf
 
     @property
-    def lineage_hash(self):
-        return deterministic_hash(
-            {
-                "llh_name": self.llh_name,
-                "method": self.method,
-                "file_path": os.path.basename(self.file_path),
-                "sha256": calculate_sha256(get_file_path(self.file_path)),
-            }
-        )
+    def lineage(self):
+        return {
+            "llh_name": self.llh_name,
+            "method": self.method,
+            "file_path": (
+                os.path.basename(self.file_path)
+                if not utils.FULL_PATH_LINEAGE
+                else get_file_path(self.file_path)
+            ),
+            "sha256": calculate_sha256(get_file_path(self.file_path)),
+        }
 
 
 @export
@@ -500,16 +505,14 @@ class SigmaMap(Config):
         return median + add
 
     @property
-    def lineage_hash(self):
-        return deterministic_hash(
-            {
-                "llh_name": self.llh_name,
-                "method": self.method,
-                "median": self.median.lineage_hash,
-                "lower": self.lower.lineage_hash,
-                "upper": self.upper.lineage_hash,
-            }
-        )
+    def lineage(self):
+        return {
+            "llh_name": self.llh_name,
+            "method": self.method,
+            "median": self.median.lineage,
+            "lower": self.lower.lineage,
+            "upper": self.upper.lineage,
+        }
 
 
 @export
@@ -559,10 +562,8 @@ class ConstantSet(Config):
         assert np.all(np.isclose(volumes, volumes[0])), mesg
 
     @property
-    def lineage_hash(self):
-        return deterministic_hash(
-            {
-                "llh_name": self.llh_name,
-                "value": self.value,
-            }
-        )
+    def lineage(self):
+        return {
+            "llh_name": self.llh_name,
+            "value": self.value,
+        }

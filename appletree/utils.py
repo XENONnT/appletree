@@ -28,6 +28,10 @@ except ImportError:
 
 SKIP_MONGO_DB = True
 
+JSON_OPTIONS = dict(sort_keys=True, indent=4)
+
+FULL_PATH_LINEAGE = False
+
 
 def exporter(export_self=False):
     """Export utility modified from https://stackoverflow.com/a/41895194
@@ -206,11 +210,19 @@ def get_file_path(fname):
 
 @export
 def calculate_sha256(file_path):
+    """Get sha256 hash of the file."""
     sha256_hash = hashlib.sha256()
     with open(file_path, "rb") as f:
         for byte_block in iter(lambda: f.read(4096), b""):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
+
+
+@export
+def dump_lineage(file_path, entity):
+    """Dump lineage of whatever level into .json file."""
+    with open(file_path, "w") as f:
+        f.write(json.dumps(entity.lineage, **JSON_OPTIONS))
 
 
 @export

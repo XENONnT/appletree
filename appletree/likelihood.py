@@ -1,3 +1,4 @@
+import os
 from warnings import warn
 from typing import Type, Dict, Set, Optional, cast
 import inspect
@@ -7,6 +8,7 @@ import numpy as np
 from scipy.stats import norm
 from strax import deterministic_hash
 
+from appletree import utils
 from appletree import randgen
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_1d, make_hist_irreg_bin_2d
 from appletree.utils import (
@@ -228,6 +230,7 @@ class Likelihood:
                 )
         else:
             raise ValueError("'bins_type' should either be meshgrid, equiprob or irreg")
+        assert isinstance(self._bins, tuple), "bins should be tuple after setting binning!"
 
     def register_component(
         self, component_cls: Type[Component], component_name: str, file_name: Optional[str] = None
@@ -410,21 +413,30 @@ class Likelihood:
         print("-" * 40)
 
     @property
-    def lineage_hash(self):
-        return deterministic_hash(
-            {
-                **{
-                    "config": self._config,
-                    "sha256": calculate_sha256(get_file_path(self._data_file_name)),
-                },
-                **dict(
+    def lineage(self):
+        return {
+            **{
+                "config": self._config,
+                "file_path": (
+                    os.path.basename(self._data_file_name)
+                    if not utils.FULL_PATH_LINEAGE
+                    else get_file_path(self._data_file_name)
+                ),
+                "sha256": calculate_sha256(get_file_path(self._data_file_name)),
+            },
+            **{
+                "components": dict(
                     zip(
                         self.components.keys(),
-                        [v.lineage_hash for v in self.components.values()],
+                        [v.lineage for v in self.components.values()],
                     )
-                ),
-            }
-        )
+                )
+            },
+        }
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(self.lineage)
 
 
 class LikelihoodLit(Likelihood):
@@ -577,17 +589,17 @@ class LikelihoodLit(Likelihood):
         print("-" * 40)
 
     @property
-    def lineage_hash(self):
-        return deterministic_hash(
-            {
-                **{
-                    "config": self._config,
-                },
-                **dict(
+    def lineage(self):
+        return {
+            **{
+                "config": self._config,
+            },
+            **{
+                "components": dict(
                     zip(
                         self.components.keys(),
                         [v.lineage_hash for v in self.components.values()],
                     )
-                ),
-            }
-        )
+                )
+            },
+        }
