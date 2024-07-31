@@ -153,7 +153,7 @@ class Likelihood:
                     clip=config["clip"],
                     which_np=np,
                 )
-                self._bins = [self._bins]
+                self._bins = (self._bins,)
                 self.data_hist = make_hist_irreg_bin_1d(
                     self.data[:, 0],
                     bins=self._bins[0],
