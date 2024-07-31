@@ -570,15 +570,20 @@ class ComponentSim(Component):
 
     @property
     def lineage(self):
-        return {
-            **{
-                "rate_name": self.rate_name,
-                "norm_type": self.norm_type,
+        bins_dict = dict()
+        if getattr(self, "bins", None) or getattr(self, "bins_type", None):
+            bins_dict = {
                 "bins": (
                     tuple(b.tolist() for b in self.bins) if self.bins is not None else self.bins
                 ),
                 "bins_type": self.bins_type,
+            }
+        return {
+            **{
+                "rate_name": self.rate_name,
+                "norm_type": self.norm_type,
                 "code": self.code,
+                **bins_dict,
             },
             **{
                 "instances": dict(
