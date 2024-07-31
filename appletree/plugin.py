@@ -92,22 +92,26 @@ class Plugin:
                 raise ValueError(mesg)
 
     @property
-    def lineage_hash(self):
-        return deterministic_hash(
-            {
-                **{
-                    "depends_on": self.depends_on,
-                    "provides": self.provides,
-                    "parameters": self.parameters,
-                },
-                **dict(
+    def lineage(self):
+        return {
+            **{
+                "depends_on": self.depends_on,
+                "provides": self.provides,
+                "parameters": self.parameters,
+            },
+            **{
+                "takes_config": dict(
                     zip(
                         self.takes_config.keys(),
-                        [v.lineage_hash for v in self.takes_config.values()],
+                        [v.lineage for v in self.takes_config.values()],
                     )
-                ),
-            }
-        )
+                )
+            },
+        }
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(self.lineage)
 
 
 @export

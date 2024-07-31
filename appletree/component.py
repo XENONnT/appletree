@@ -1,3 +1,4 @@
+import os
 from warnings import warn
 from functools import partial
 from typing import Tuple, List, Dict, Optional, Union, Set
@@ -183,8 +184,12 @@ class Component:
         pass
 
     @property
-    def lineage_hash(self):
+    def lineage(self):
         raise NotImplementedError
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(self.lineage)
 
 
 @export
@@ -564,24 +569,26 @@ class ComponentSim(Component):
         return component
 
     @property
-    def lineage_hash(self):
-        return deterministic_hash(
-            {
-                **{
-                    "rate_name": self.rate_name,
-                    "norm_type": self.norm_type,
-                    "bins": self.bins,
-                    "bins_type": self.bins_type,
-                    "code": self.code,
-                },
-                **dict(
+    def lineage(self):
+        return {
+            **{
+                "rate_name": self.rate_name,
+                "norm_type": self.norm_type,
+                "bins": (
+                    tuple(b.tolist() for b in self.bins) if self.bins is not None else self.bins
+                ),
+                "bins_type": self.bins_type,
+                "code": self.code,
+            },
+            **{
+                "instances": dict(
                     zip(
                         self.instances,
-                        [_cached_functions[self.llh_name][p].lineage_hash for p in self.instances],
+                        [_cached_functions[self.llh_name][p].lineage for p in self.instances],
                     )
-                ),
-            }
-        )
+                )
+            },
+        }
 
 
 @export
@@ -627,16 +634,19 @@ class ComponentFixed(Component):
         return result
 
     @property
-    def lineage_hash(self):
-        return deterministic_hash(
-            {
-                "rate_name": self.rate_name,
-                "norm_type": self.norm_type,
-                "bins": self.bins,
-                "bins_type": self.bins_type,
-                "file_name": calculate_sha256(get_file_path(self._file_name)),
-            }
-        )
+    def lineage(self):
+        return {
+            "rate_name": self.rate_name,
+            "norm_type": self.norm_type,
+            "bins": tuple(b.tolist() for b in self.bins) if self.bins is not None else self.bins,
+            "bins_type": self.bins_type,
+            "file_path": (
+                os.path.basename(self._file_name)
+                if not utils.FULL_PATH_LINEAGE
+                else get_file_path(self._file_name)
+            ),
+            "sha256": calculate_sha256(get_file_path(self._file_name)),
+        }
 
 
 @export

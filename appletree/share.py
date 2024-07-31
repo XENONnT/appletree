@@ -15,7 +15,7 @@ class RecordingDict(dict):
         return super().__setitem__(key, value)
 
     def __repr__(self):
-        return json.dumps(self, indent=4)
+        return json.dumps(self, sort_keys=True, indent=4)
 
     def __str__(self):
         return self.__repr__()
