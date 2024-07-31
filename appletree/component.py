@@ -571,7 +571,7 @@ class ComponentSim(Component):
     @property
     def lineage(self):
         bins_dict = dict()
-        if getattr(self, "bins", None) or getattr(self, "bins_type", None):
+        if hasattr(self, "bins") or hasattr(self, "bins_type"):
             bins_dict = {
                 "bins": (
                     tuple(b.tolist() for b in self.bins) if self.bins is not None else self.bins
