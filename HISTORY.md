@@ -1,3 +1,16 @@
+v0.5.1 / 2024-07-31
+-------------------
+* Fix S1 bias coordinate by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/174
+* Modified truncate_normal with jax.random.truncated_normal by @mhliu0001 in https://github.com/XENONnT/appletree/pull/175
+* Revert "Modified truncate_normal with jax.random.truncated_normal" by @mhliu0001 in https://github.com/XENONnT/appletree/pull/176
+* Change eps added to histogram to mean(eff) by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/177
+* Add lineage hash for all levels: `Config`, `Plugin`, `Component`, and `Context` by @dachengx in https://github.com/XENONnT/appletree/pull/178
+* Separate and save lineage for all levels by @dachengx in https://github.com/XENONnT/appletree/pull/179
+* Allow component lineage with no binning by @dachengx in https://github.com/XENONnT/appletree/pull/180
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.5.0...v0.5.1
+
+
 v0.5.0 / 2024-06-30
 -------------------
 * Nestv2 parameter by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/167

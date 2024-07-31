@@ -21,7 +21,7 @@ with open("HISTORY.md") as file:
 
 setuptools.setup(
     name="appletree",
-    version="0.5.0",
+    version="0.5.1",
     description="A high-Performance Program simuLatEs and fiTs REsponse of xEnon.",
     author="Appletree contributors, the XENON collaboration",
     long_description=readme + "\n\n" + history,
