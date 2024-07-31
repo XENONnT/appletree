@@ -7,13 +7,14 @@ from datetime import datetime
 from typing import Set, Optional
 
 import numpy as np
-import emcee
 import h5py
+import emcee
+from strax import deterministic_hash
 
 import appletree as apt
 from appletree import randgen
 from appletree import Parameter
-from appletree.utils import load_json, get_file_path
+from appletree.utils import JSON_OPTIONS, load_json, get_file_path
 from appletree.share import _cached_configs, set_global_config
 
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -302,19 +303,23 @@ class Context:
         if self.backend_h5 is not None:
             name = self.sampler.backend.name
             with h5py.File(self.backend_h5, "r+") as opt:
-                opt[name].attrs["metadata"] = json.dumps(metadata)
+                opt[name].attrs["metadata"] = json.dumps(metadata, **JSON_OPTIONS)
                 # parameters prior configuration
-                opt[name].attrs["par_config"] = json.dumps(self.par_manager.par_config)
+                opt[name].attrs["par_config"] = json.dumps(
+                    self.par_manager.par_config, **JSON_OPTIONS
+                )
                 # max posterior parameters
-                opt[name].attrs["post_parameters"] = json.dumps(self.get_post_parameters())
+                opt[name].attrs["post_parameters"] = json.dumps(
+                    self.get_post_parameters(), **JSON_OPTIONS
+                )
                 # the order of parameters saved in backend
                 opt[name].attrs["parameter_fit"] = self.par_manager.parameter_fit
                 # instructions
-                opt[name].attrs["instruct"] = json.dumps(self.instruct)
+                opt[name].attrs["instruct"] = json.dumps(self.instruct, **JSON_OPTIONS)
                 # configs
-                opt[name].attrs["config"] = json.dumps(self.config)
+                opt[name].attrs["config"] = json.dumps(self.config, **JSON_OPTIONS)
                 # configurations, maybe users will manually add some maps
-                opt[name].attrs["_cached_configs"] = json.dumps(_cached_configs)
+                opt[name].attrs["_cached_configs"] = json.dumps(_cached_configs, **JSON_OPTIONS)
                 # batch size
                 opt[name].attrs["batch_size"] = batch_size
 
@@ -390,7 +395,21 @@ class Context:
                 self.par_config.pop(p)
         return needed_parameters
 
-    def lineage(self, data_name: str = "cs2"):
-        """Return lineage of plugins."""
-        assert isinstance(data_name, str)
-        pass
+    @property
+    def lineage(self):
+        return {
+            **self.instruct,
+            **{"par_config": self.par_config},
+            **{
+                "likelihoods": dict(
+                    zip(
+                        self.likelihoods.keys(),
+                        [v.lineage for v in self.likelihoods.values()],
+                    )
+                )
+            },
+        }
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(self.lineage)

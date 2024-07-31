@@ -1,3 +1,4 @@
+import os
 from typing import Optional, Union, Any
 
 from immutabledict import immutabledict
@@ -5,14 +6,17 @@ from jax import numpy as jnp
 from warnings import warn
 
 import numpy as np
+from strax import deterministic_hash
 
+from appletree import utils
 from appletree.share import _cached_configs
 from appletree.utils import (
     exporter,
     load_json,
     get_file_path,
     integrate_midpoint,
-    cum_integrate_midpoint,
+    cumulative_integrate_midpoint,
+    calculate_sha256,
 )
 from appletree import interpolation
 from appletree.interpolation import FLOAT_POS_MIN, FLOAT_POS_MAX
@@ -108,6 +112,14 @@ class Config:
     def required_parameter(self, llh_name=None):
         return None
 
+    @property
+    def lineage(self):
+        raise NotImplementedError
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(self.lineage)
+
 
 @export
 class Constant(Config):
@@ -136,6 +148,13 @@ class Constant(Config):
                 raise ValueError(mesg)
         else:
             self.value = value
+
+    @property
+    def lineage(self):
+        return {
+            "llh_name": self.llh_name,
+            "value": self.value,
+        }
 
 
 @export
@@ -317,9 +336,22 @@ class Map(Config):
     def pdf_to_cdf(self, x, pdf):
         """Convert pdf map to cdf map."""
         norm = integrate_midpoint(x, pdf)
-        x, cdf = cum_integrate_midpoint(x, pdf)
+        x, cdf = cumulative_integrate_midpoint(x, pdf)
         cdf /= norm
         return x, cdf
+
+    @property
+    def lineage(self):
+        return {
+            "llh_name": self.llh_name,
+            "method": self.method,
+            "file_path": (
+                os.path.basename(self.file_path)
+                if not utils.FULL_PATH_LINEAGE
+                else get_file_path(self.file_path)
+            ),
+            "sha256": calculate_sha256(get_file_path(self.file_path)),
+        }
 
 
 @export
@@ -472,6 +504,16 @@ class SigmaMap(Config):
         add = jnp.where(sigma > 0, add_pos, add_neg)
         return median + add
 
+    @property
+    def lineage(self):
+        return {
+            "llh_name": self.llh_name,
+            "method": self.method,
+            "median": self.median.lineage,
+            "lower": self.lower.lineage,
+            "upper": self.upper.lineage,
+        }
+
 
 @export
 class ConstantSet(Config):
@@ -507,7 +549,7 @@ class ConstantSet(Config):
 
         self._sanity_check()
         self.set_volume = len(self.value[1][0])
-        self.value = {k: jnp.array(v) for k, v in zip(*self.value)}
+        self.value = {k: np.array(v) for k, v in zip(*self.value)}
 
     def _sanity_check(self):
         """Check if parameter set lengths are same."""
@@ -518,3 +560,10 @@ class ConstantSet(Config):
         volumes = [len(v) for v in self.value[1]]
         mesg = "Parameter set lengths should be the same"
         assert np.all(np.isclose(volumes, volumes[0])), mesg
+
+    @property
+    def lineage(self):
+        return {
+            "llh_name": self.llh_name,
+            "value": self.value,
+        }

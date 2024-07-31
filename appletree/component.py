@@ -1,3 +1,4 @@
+import os
 from warnings import warn
 from functools import partial
 from typing import Tuple, List, Dict, Optional, Union, Set
@@ -5,12 +6,13 @@ from typing import Tuple, List, Dict, Optional, Union, Set
 import numpy as np
 import pandas as pd
 from jax import numpy as jnp
+from strax import deterministic_hash
 
 from appletree import utils
 from appletree.config import OMITTED
 from appletree.plugin import Plugin
 from appletree.share import _cached_configs, _cached_functions, set_global_config
-from appletree.utils import exporter, load_data
+from appletree.utils import exporter, get_file_path, load_data, calculate_sha256
 from appletree.hist import make_hist_mesh_grid, make_hist_irreg_bin_1d, make_hist_irreg_bin_2d
 
 export, __all__ = exporter()
@@ -52,13 +54,6 @@ class Component:
 
         if "bins" in kwargs.keys() and "bins_type" in kwargs.keys():
             self.set_binning(**kwargs)
-
-            if self.bins_type != "meshgrid" and self.add_eps_to_hist:
-                warn(
-                    "It is empirically dangerous to have add_eps_to_hist==True, "
-                    "when your bins_type is not meshgrid! It may lead to very bad fit with "
-                    "lots of eff==0."
-                )
 
     def set_binning(self, **kwargs):
         """Set binning of component."""
@@ -158,7 +153,8 @@ class Component:
             raise ValueError(f"Unsupported bins_type {self.bins_type}!")
         if self.add_eps_to_hist:
             # as an uncertainty to prevent blowing up
-            hist = jnp.clip(hist, 1.0, jnp.inf)
+            # uncertainty = 1e-10 + jnp.mean(eff)
+            hist = jnp.clip(hist, 1e-10 + jnp.mean(eff), jnp.inf)
         return hist
 
     def get_normalization(self, hist, parameters, batch_size=None):
@@ -186,6 +182,14 @@ class Component:
     def compile(self):
         """Hook for compiling simulation code."""
         pass
+
+    @property
+    def lineage(self):
+        raise NotImplementedError
+
+    @property
+    def lineage_hash(self):
+        return deterministic_hash(self.lineage)
 
 
 @export
@@ -341,6 +345,8 @@ class ComponentSim(Component):
         if isinstance(data_names, str):
             data_names = [data_names]
 
+        instances = set()
+
         code = ""
         indent = " " * 4
 
@@ -356,6 +362,7 @@ class ComponentSim(Component):
         for work in self.worksheet:
             plugin = work[0]
             instance = plugin + "_" + self.name
+            instances.add(instance)
             code += f"{instance} = {plugin}('{self.llh_name}')\n"
 
         # define functions
@@ -375,6 +382,7 @@ class ComponentSim(Component):
         code += f"{indent}return {output}\n"
 
         self.code = code
+        self.instances = instances
 
         if func_name in _cached_functions[self.llh_name].keys():
             warning = f"Function name {func_name} is already cached. "
@@ -480,11 +488,6 @@ class ComponentSim(Component):
         with open(file_path, "w") as f:
             f.write(self.code)
 
-    def lineage(self, data_name: str = "cs2"):
-        """Return lineage of plugins."""
-        assert isinstance(data_name, str)
-        pass
-
     def set_config(self, configs):
         """Set new global configuration options.
 
@@ -565,6 +568,28 @@ class ComponentSim(Component):
             )
         return component
 
+    @property
+    def lineage(self):
+        return {
+            **{
+                "rate_name": self.rate_name,
+                "norm_type": self.norm_type,
+                "bins": (
+                    tuple(b.tolist() for b in self.bins) if self.bins is not None else self.bins
+                ),
+                "bins_type": self.bins_type,
+                "code": self.code,
+            },
+            **{
+                "instances": dict(
+                    zip(
+                        self.instances,
+                        [_cached_functions[self.llh_name][p].lineage for p in self.instances],
+                    )
+                )
+            },
+        }
+
 
 @export
 class ComponentFixed(Component):
@@ -607,6 +632,21 @@ class ComponentFixed(Component):
         result[-1] *= normalization_factor
 
         return result
+
+    @property
+    def lineage(self):
+        return {
+            "rate_name": self.rate_name,
+            "norm_type": self.norm_type,
+            "bins": tuple(b.tolist() for b in self.bins) if self.bins is not None else self.bins,
+            "bins_type": self.bins_type,
+            "file_path": (
+                os.path.basename(self._file_name)
+                if not utils.FULL_PATH_LINEAGE
+                else get_file_path(self._file_name)
+            ),
+            "sha256": calculate_sha256(get_file_path(self._file_name)),
+        }
 
 
 @export
