@@ -574,7 +574,9 @@ class ComponentSim(Component):
             **{
                 "rate_name": self.rate_name,
                 "norm_type": self.norm_type,
-                "bins": tuple(b.tolist() for b in self.bins),
+                "bins": (
+                    tuple(b.tolist() for b in self.bins) if self.bins is not None else self.bins
+                ),
                 "bins_type": self.bins_type,
                 "code": self.code,
             },
@@ -636,7 +638,7 @@ class ComponentFixed(Component):
         return {
             "rate_name": self.rate_name,
             "norm_type": self.norm_type,
-            "bins": tuple(b.tolist() for b in self.bins),
+            "bins": tuple(b.tolist() for b in self.bins) if self.bins is not None else self.bins,
             "bins_type": self.bins_type,
             "file_path": (
                 os.path.basename(self._file_name)
