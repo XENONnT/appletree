@@ -579,20 +579,16 @@ class ComponentSim(Component):
                 "bins_type": self.bins_type,
             }
         return {
-            **{
-                "rate_name": self.rate_name,
-                "norm_type": self.norm_type,
-                "code": self.code,
-                **bins_dict,
-            },
-            **{
-                "instances": dict(
-                    zip(
-                        self.instances,
-                        [_cached_functions[self.llh_name][p].lineage for p in self.instances],
-                    )
+            "rate_name": self.rate_name,
+            "norm_type": self.norm_type,
+            "code": self.code,
+            "instances": dict(
+                zip(
+                    self.instances,
+                    [_cached_functions[self.llh_name][p].lineage for p in self.instances],
                 )
-            },
+            ),
+            **bins_dict,
         }
 
 
