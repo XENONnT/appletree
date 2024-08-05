@@ -265,7 +265,7 @@ class Plotter:
 
         """
         n_cols = 2
-        n_rows = int(np.ceil(self.n_param / n_cols))
+        n_rows = int(np.ceil(self.n_param / n_cols)) + 1
 
         if fig is None:
             fig = plt.figure(figsize=(10, 3 * n_rows))
@@ -279,7 +279,7 @@ class Plotter:
             f = np.fft.fft(x - np.mean(x), n=2 * n)
             acf = np.fft.ifft(f * np.conjugate(f))[: len(x)].real
             acf /= 4 * n
-            if norm:
+            if norm and acf[0] != 0:
                 acf /= acf[0]
             return acf
 
@@ -314,7 +314,6 @@ class Plotter:
             tau = np.empty(len(N))
             for j, n in enumerate(N):
                 tau[j] = autocorr_new(chain[:, :n])
-
             ax = fig.add_subplot(n_rows, n_cols, i + 1)
             ax.plot(N, tau, label="Sample estimation", **plot_kwargs)
             ax.plot(N, N / 50, "k--", label="N / 50")
@@ -322,6 +321,30 @@ class Plotter:
             ax.set_yscale("log")
             ax.set_ylabel(f"Auto correlation of {self.param_names[i]}")
             axes.append(ax)
+
+        prior = self.prior.T
+        tau = np.empty(len(N))
+        for j, n in enumerate(N):
+            tau[j] = autocorr_new(prior[:, :n])
+        ax = fig.add_subplot(n_rows, n_cols, self.n_param + 1)
+        ax.plot(N, tau, label="Sample estimation", **plot_kwargs)
+        ax.plot(N, N / 50, "k--", label="N / 50")
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_ylabel(f"Auto correlation of log prior")
+        axes.append(ax)
+
+        posterior = self.posterior.T
+        tau = np.empty(len(N))
+        for j, n in enumerate(N):
+            tau[j] = autocorr_new(posterior[:, :n])
+        ax = fig.add_subplot(n_rows, n_cols, self.n_param + 2)
+        ax.plot(N, tau, label="Sample estimation", **plot_kwargs)
+        ax.plot(N, N / 50, "k--", label="N / 50")
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_ylabel(f"Auto correlation of log posterior")
+        axes.append(ax)
 
         # Set xlabels of the last two axes
         axes[-1].set_xlabel("Number of iterations")
