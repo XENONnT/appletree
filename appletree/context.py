@@ -64,6 +64,9 @@ class Context:
             nwalkers = file["mcmc"].attrs["nwalkers"]
             batch_size = file["mcmc"].attrs["batch_size"]
         tree = cls(instruct)
+        # Overwrite the backend_h5 file name. If the user renames the
+        # backend file then it could be different from the one in intruct
+        tree.backend_h5 = backend_h5_file_name 
         tree.pre_fitting(nwalkers, batch_size=batch_size)
         return tree
 
