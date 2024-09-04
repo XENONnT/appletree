@@ -1,0 +1,83 @@
+[tool]
+[tool.poetry]
+name = "appletree"
+version = "0.5.1"
+description = "A high-Performance Program simuLatEs and fiTs REsponse of xEnon."
+readme = "README.md"
+authors = [
+  "Appletree contributors, the XENON collaboration",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "License :: OSI Approved :: BSD License",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+repository = "https://github.com/XENONnT/appletree"
+
+[tool.poetry.scripts]
+rechunker = "bin.rechunker:main"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.13"
+jax = "*"
+corner = "*"
+emcee = "*"
+GOFevaluation = "*"
+h5py = "*"
+immutabledict = "*"
+matplotlib = "*"
+multihist = "*"
+numpy = "<2.0.0"
+numpyro = "*"
+pandas = "*"
+scikit-learn = "*"
+scipy = "*"
+strax = "*"
+straxen = "*"
+graphviz = "*"
+commonmark = { version = "0.9.1", optional = true }
+m2r = { version = "0.2.1", optional = true }
+mistune = { version = "0.8.4", optional = true }
+nbsphinx = { version = "0.8.9", optional = true }
+recommonmark = { version = "0.7.1", optional = true }
+sphinx = { version = "5.2.3", optional = true }
+sphinx_rtd_theme = { version = "1.0.0", optional = true }
+Jinja2 = { version = "3.0.3", optional = true }
+lxml_html_clean = { version = "*", optional = true }
+
+[tool.poetry.extras]
+docs = [
+  "commonmark",
+  "m2r",
+  "mistune",
+  "nbsphinx",
+  "recommonmark",
+  "sphinx",
+  "sphinx_rtd_theme",
+  "Jinja2",
+  "lxml_html_clean",
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.8", "setuptools>=61.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+preview = true
+
+[tool.docformatter]
+recursive = true
+in-place = true
+style = "google"
+wrap-summaries = 100
+wrap-descriptions = 100
+blank = true
+
+[tool.doc8]
+max-line-length = 100

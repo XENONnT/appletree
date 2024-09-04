@@ -17,19 +17,19 @@ A high-Performance Program simuLatEs and fiTs REsponse of xEnon.
 With cpu support:
 
 ```
-pip install appletree[cpu]
+pip install appletree jax[cpu]
 ```
 
 With CUDA Toolkit 11.2 support:
 
 ```
-pip install appletree[cuda112] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip install appletree jax[cuda]==0.3.15 -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 ```
 
 With CUDA Toolkit 12.1 support:
 
 ```
-pip install appletree[cuda121] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip install appletree jax[cuda12_pip] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 ```
 
 ### Developer setup:
@@ -41,14 +41,14 @@ git clone https://github.com/XENONnT/appletree
 cd appletree
 ```
 
-To install the package and requirements in your environment, replace `pip install appletree[*]` to `python3 -m pip install .[*] --user` in the above `pip` commands.
+To install the package and requirements in your environment, add `--user` in the above commands.
 
-To install appletree in editable mode, insert `--editable` argument after `install` in the above `pip install` or `python3 -m pip install` commands.
+To install appletree in editable mode, insert `--editable` argument after `install` in the above `pip install` commands.
 
 For example, to install in your environment and in editable mode with CUDA Toolkit 12.1 support:
 
 ```
-python3 -m pip install --editable .[cuda121] --user -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip install --editable . jax[cuda]==0.3.15 -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html --user
 ```
 
 Then you are now good to go!
