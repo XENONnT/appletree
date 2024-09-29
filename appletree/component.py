@@ -344,9 +344,11 @@ class ComponentSim(Component):
             raise RuntimeError(f"data_names must be list or str, but given {type(data_names)}")
         if isinstance(data_names, str):
             data_names = [data_names]
-        
+
         if not isinstance(nodep_data_names, (list, str)):
-            raise RuntimeError(f"nodep_data_names must be list or str, but given {type(nodep_data_names)}")
+            raise RuntimeError(
+                f"nodep_data_names must be list or str, but given {type(nodep_data_names)}"
+            )
         if isinstance(nodep_data_names, str):
             nodep_data_names = [nodep_data_names]
 
@@ -373,8 +375,12 @@ class ComponentSim(Component):
         # define functions
         code += "\n"
         batch_size_index = next(
-            (index for index, data_name in enumerate(nodep_data_names) if data_name == "batch_size"),
-            -1
+            (
+                index
+                for index, data_name in enumerate(nodep_data_names)
+                if data_name == "batch_size"
+            ),
+            -1,
         )
         if batch_size_index >= 0:
             code += f"@partial(jit, static_argnums=({batch_size_index + 1}, ))\n"
