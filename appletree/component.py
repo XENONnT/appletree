@@ -421,7 +421,7 @@ class ComponentSim(Component):
         Args:
             data_names: data names that simulation will output.
             func_name: name of the simulation function, used to cache it.
-            nodep_data_name: data_name without dependency will not be deduced.
+            nodep_data_names: data_name without dependency will not be deduced.
             force_no_eff: force to ignore the efficiency, used in yield prediction.
 
         """
@@ -521,7 +521,7 @@ class ComponentSim(Component):
         """
         dependencies = self.dependencies_deduce(
             data_names,
-            nodep_data_name="batch_size",
+            nodep_data_names=["batch_size"],
         )
         r = []
         seen = []
