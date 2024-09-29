@@ -71,7 +71,7 @@ class EField(Plugin):
     def simulate(self, key, parameters, x, y, z):
         # Safe to use "if" because we expect config to be fixed
         if not self.efield_position_dependence.value:
-            return key, parameters["field"]
+            return key, jnp.ones(x.shape) * parameters["field"]
         r = jnp.sqrt(x**2 + y**2)
         pos_true = jnp.stack([r, z]).T
         return key, self.efield_map.apply(pos_true)
