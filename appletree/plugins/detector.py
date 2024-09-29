@@ -47,6 +47,7 @@ class S2LCE(Plugin):
         s2_lce = self.s2_lce.apply(pos_true)
         return key, s2_lce
 
+
 @export
 @takes_config(
     Constant(
@@ -65,13 +66,13 @@ class EField(Plugin):
     depends_on = ["x", "y", "z"]
     provides = ["field"]
     parameters = ["field"]
-    
+
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, x, y, z):
         # Safe to use "if" because we expect config to be fixed
         if not self.efield_position_dependece.value:
             return key, parameters["field"]
-        r = jnp.sqrt(x**2+y**2)
+        r = jnp.sqrt(x**2 + y**2)
         pos_true = jnp.stack([r, z]).T
         return key, self.efield_map.apply(pos_true)
 
