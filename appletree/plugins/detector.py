@@ -65,7 +65,7 @@ class S2LCE(Plugin):
 class EField(Plugin):
     depends_on = ["x", "y", "z"]
     provides = ["field"]
-    parameters = ["field"]
+    parameters = ("field",)
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, x, y, z):
