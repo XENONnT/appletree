@@ -70,7 +70,7 @@ class EField(Plugin):
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, x, y, z):
         # Safe to use "if" because we expect config to be fixed
-        if not self.efield_position_dependece.value:
+        if not self.efield_position_dependence.value:
             return key, parameters["field"]
         r = jnp.sqrt(x**2 + y**2)
         pos_true = jnp.stack([r, z]).T
