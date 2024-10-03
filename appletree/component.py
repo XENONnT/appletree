@@ -268,7 +268,7 @@ class ComponentSim(Component):
         self,
         data_names: Union[List[str], Tuple[str]] = ["cs1", "cs2", "eff"],
         dependencies: Optional[List[Dict]] = None,
-        nodep_data_names: Union[List[str], Tuple[str]] = "batch_size",
+        nodep_data_names: Union[List[str], Tuple[str]] = ["batch_size"],
     ) -> list:
         """Deduce dependencies.
 
