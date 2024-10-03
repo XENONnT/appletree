@@ -99,3 +99,35 @@ def test_sim_component():
     er.simulate_hist(key, batch_size, parameters)
     with pytest.raises(RuntimeError):
         key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)
+
+    # test for multiple nodep_data_names
+    with pytest.raises(RuntimeError):
+        er.deduce(
+            data_names=("cs1", "cs2"),
+            func_name="er_sim",
+            nodep_data_names=["x", "y", "z", "num_photon", "num_electron"],
+            force_no_eff=True,
+        )
+    _cached_functions.clear()
+    er.deduce(
+        data_names=("cs1", "cs2"),
+        func_name="er_sim",
+        nodep_data_names=["x", "y", "z", "num_photon", "num_electron"],
+        force_no_eff=True,
+    )
+    er.compile()
+    er.lineage_hash
+    x, y, z = np.zeros((3, batch_size))
+    num_photon = np.random.randint(1, 100)
+    num_electron = np.random.randint(1, 100)
+    er.simulate(key, x, y, z, num_photon, num_electron, parameters)
+    
+    _cached_functions.clear()
+    er.deduce(
+        data_names=("cs1", "cs2"),
+        func_name="er_sim",
+        nodep_data_names=["batch_size", "num_photon", "num_electron"],
+        force_no_eff=True,
+    )
+    er.compile()
+    er.simulate(key, batch_size, num_photon, num_electron, parameters)
