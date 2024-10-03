@@ -121,7 +121,7 @@ def test_sim_component():
     num_photon = np.random.randint(1, 100)
     num_electron = np.random.randint(1, 100)
     er.simulate(key, x, y, z, num_photon, num_electron, parameters)
-    
+
     _cached_functions.clear()
     er.deduce(
         data_names=("cs1", "cs2"),
