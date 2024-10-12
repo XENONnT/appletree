@@ -187,15 +187,10 @@ def get_file_path(fname):
     # 5. From MongoDB
     if not SKIP_MONGO_DB:
         try:
-            import straxen
+            import utilix
 
-            # https://straxen.readthedocs.io/en/latest/config_storage.html
-            # downloading-xenonnt-files-from-the-database  # noqa
-
-            # we need to add the straxen.MongoDownloader() in this
-            # try: except NameError: logic because the NameError
-            # gets raised if we don't have access to utilix.
-            downloader = straxen.MongoDownloader()
+            # Mongo downloader is implemented in utilix
+            downloader = utilix.mongo_storage.MongoDownloader()
             # FileNotFoundError, ValueErrors can be raised if we
             # cannot load the requested config
             fpath = downloader.download_single(fname)
