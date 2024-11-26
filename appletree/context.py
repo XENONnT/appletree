@@ -276,7 +276,9 @@ class Context:
         """Get parameters from the backend.
 
         Args:
-            which: str, 'mpe', 'random' or 'median'.
+            which: str, 'mpe', 'random' or 'median'. 'mpe' is the maximum posterior estimate,
+            i.e. the parameter set with the highest posterior value. 'random' returns a
+            random parameter set from the posterior distribution. 'median' is the marginal medians.
 
         """
         # Assign attributes for the first time
