@@ -272,23 +272,24 @@ class Context:
         self._dump_meta(batch_size=batch_size)
         return result
 
-    def get_post_parameters(self, which='mpe'):
+    def get_post_parameters(self, which="mpe"):
         """Get parameters from the backend.
 
         Args:
             which: str, 'mpe', 'random' or 'median'.
+
         """
         # Assign attributes for the first time
         # This speeds up if the user wanna call this function many times
-        if not hasattr(self, '_logp'):
+        if not hasattr(self, "_logp"):
             self._logp = self.sampler.get_log_prob(flat=True)
-        if not hasattr(self, '_chain'):
+        if not hasattr(self, "_chain"):
             self._chain = self.sampler.get_chain(flat=True)
-        if which == 'mpe':
+        if which == "mpe":
             _parameters = self._chain[np.argmax(self._logp)]
-        elif which == 'random':
+        elif which == "random":
             _parameters = self._chain[np.random.randint(len(self._logp))]
-        elif which == 'median':
+        elif which == "median":
             _parameters = np.median(self._chain, axis=0)
         else:
             raise ValueError(f"which should be 'mpe', 'random' or 'median', got {which}!")
