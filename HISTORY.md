@@ -1,3 +1,21 @@
+v0.5.2 / 2024-12-05
+-------------------
+* [pre-commit.ci] pre-commit autoupdate by @pre-commit-ci in https://github.com/XENONnT/appletree/pull/182
+* Use `pyproject.toml` to install appletree by @dachengx in https://github.com/XENONnT/appletree/pull/184
+* Fix backend filename if the user changes the h5 filename by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/185
+* [pre-commit.ci] pre-commit autoupdate by @pre-commit-ci in https://github.com/XENONnT/appletree/pull/183
+* use mongo downloader in utilix by @yuema137 in https://github.com/XENONnT/appletree/pull/190
+* Add `utilix` to `pyproject.toml` by @dachengx in https://github.com/XENONnT/appletree/pull/191
+* Update utilix dependency by @yuema137 in https://github.com/XENONnT/appletree/pull/192
+* Switch to master for docformatter by @dachengx in https://github.com/XENONnT/appletree/pull/194
+* More options for get_post_parameters by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/193
+
+New Contributors
+* @yuema137 made their first contribution in https://github.com/XENONnT/appletree/pull/190
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.5.1...v0.5.2
+
+
 v0.5.1 / 2024-07-31
 -------------------
 * Fix S1 bias coordinate by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/174
