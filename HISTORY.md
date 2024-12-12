@@ -1,3 +1,10 @@
+v0.5.3 / 2024-12-12
+-------------------
+* Remove numpy version constraint by @dachengx in https://github.com/XENONnT/appletree/pull/197
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.5.2...v0.5.3
+
+
 v0.5.2 / 2024-12-05
 -------------------
 * [pre-commit.ci] pre-commit autoupdate by @pre-commit-ci in https://github.com/XENONnT/appletree/pull/182
