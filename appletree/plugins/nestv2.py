@@ -89,20 +89,15 @@ class TotalQuanta(Plugin):
 
 
 @export
-@takes_config(
-    Constant(
-        name="literature_field", type=float, default=23.0, help="Drift field in each literature"
-    ),
-)
 class ThomasImelBox(Plugin):
-    depends_on = ["energy"]
+    depends_on = ["energy", "field"]
     provides = ["ThomasImel"]
     parameters = ("gamma", "delta", "liquid_xe_density")
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, energy):
+    def simulate(self, key, parameters, energy, field):
         ThomasImel = jnp.ones(shape=jnp.shape(energy))
-        ThomasImel *= parameters["gamma"] * self.literature_field.value ** parameters["delta"]
+        ThomasImel *= parameters["gamma"] * field ** parameters["delta"]
         ThomasImel *= (parameters["liquid_xe_density"] / 2.9) ** 0.3
         return key, ThomasImel
 
