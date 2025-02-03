@@ -1,3 +1,10 @@
+v0.5.4 / 2025-02-03
+-------------------
+* Use `importlib.resources.files` and support python 3.11 by @dachengx in https://github.com/XENONnT/appletree/pull/199
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.5.3...v0.5.4
+
+
 v0.5.3 / 2024-12-12
 -------------------
 * Remove numpy version constraint by @dachengx in https://github.com/XENONnT/appletree/pull/197
