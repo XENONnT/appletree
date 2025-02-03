@@ -2,7 +2,6 @@ import os
 import json
 from warnings import warn
 import hashlib
-import importlib
 from time import time
 
 from jax.lib import xla_bridge
@@ -17,6 +16,12 @@ from scipy.stats import chi2
 
 import GOFevaluation
 from appletree.share import _cached_configs
+
+try:
+    # Python 3.11+
+    from importlib.resources import files as _files
+except ImportError:
+    from importlib_resources import files as _files  # type: ignore
 
 NT_AUX_INSTALLED = False
 try:
@@ -140,7 +145,7 @@ def _get_abspath(file_name):
 
 def _package_path(sub_directory):
     """Get the abs path of the requested sub folder."""
-    return importlib.resources.files("appletree") / sub_directory
+    return _files("appletree") / sub_directory
 
 
 @export
