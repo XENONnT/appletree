@@ -3,6 +3,7 @@ import json
 from warnings import warn
 import hashlib
 from time import time
+from importlib.resources import files as _files
 
 from jax.lib import xla_bridge
 import numpy as np
@@ -16,12 +17,6 @@ from scipy.stats import chi2
 
 import GOFevaluation
 from appletree.share import _cached_configs
-
-try:
-    # Python 3.11+
-    from importlib.resources import files as _files
-except ImportError:
-    from importlib_resources import files as _files  # type: ignore
 
 NT_AUX_INSTALLED = False
 try:
