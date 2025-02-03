@@ -2,8 +2,8 @@ import os
 import json
 from warnings import warn
 import hashlib
-import importlib_resources
 from time import time
+from importlib.resources import files as _files
 
 from jax.lib import xla_bridge
 import numpy as np
@@ -140,7 +140,7 @@ def _get_abspath(file_name):
 
 def _package_path(sub_directory):
     """Get the abs path of the requested sub folder."""
-    return importlib_resources.files("appletree") / sub_directory
+    return _files("appletree") / sub_directory
 
 
 @export
