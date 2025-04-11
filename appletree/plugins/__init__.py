@@ -4,6 +4,9 @@ from .common import *
 from . import er_microphys
 from .er_microphys import *
 
+from . import dec_composite
+from .dec_composite import *
+
 from . import lyqy
 from .lyqy import *
 
