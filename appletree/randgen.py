@@ -12,7 +12,6 @@ from scipy.interpolate import interp1d
 
 from appletree.utils import exporter
 
-
 export, __all__ = exporter(export_self=False)
 
 if jax.config.x64_enabled:
