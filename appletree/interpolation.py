@@ -93,8 +93,8 @@ def curve_interpolator(pos, ref_pos, ref_val):
 @export
 @jit
 def map_interpolator_regular_binning_1d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
-    """Inverse distance weighting average as 1D interpolation using KNN(K=2). A uniform mesh grid
-    binning is assumed.
+    """Inverse distance weighting average as 1D interpolation using KNN(K=2). binning is assumed. A
+    uniform mesh grid.
 
     Args:
         pos: array with shape (N,), positions at which the interp is calculated.
@@ -112,8 +112,8 @@ def map_interpolator_regular_binning_1d(pos, ref_pos_lowers, ref_pos_uppers, ref
 @export
 @jit
 def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
-    """Inverse distance weighting average as 2D interpolation using KNN(K=4). A uniform mesh grid
-    binning is assumed.
+    """Inverse distance weighting average as 2D interpolation using KNN(K=4). binning is assumed. A
+    uniform mesh grid.
 
     Args:
         pos: array with shape (N, 2), positions at which the interp is calculated.
@@ -166,8 +166,8 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
 @export
 @jit
 def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
-    """Inverse distance weighting average as 3D interpolation using KNN(K=8). A uniform mesh grid
-    binning is assumed.
+    """Inverse distance weighting average as 3D interpolation using KNN(K=8). binning is assumed. A
+    uniform mesh grid.
 
     Args:
         pos: array with shape (N, 3), positions at which the interp is calculated.
@@ -270,12 +270,13 @@ def find_nearest_indices(x, y):
 @export
 @jit
 def map_interpolator_linear_1d(pos, ref_pos, ref_val):
-    """Linear 1D interpolation. Copied to prevent misuse of other arguments of jnp.interp.
+    """Linear 1D interpolation.
 
-    Args:
-        pos: array with shape (N,), as the points to be interpolated.
-        ref_pos: array with shape (M,), as the reference points.
-        ref_val: array with shape (M,), as the reference values.
+    Copied to prevent misuse of other arguments of jnp.interp.
+        Args:
+            pos: array with shape (N,), as the points to be interpolated.
+            ref_pos: array with shape (M,), as the reference points.
+            ref_val: array with shape (M,), as the reference values.
 
     """
     return jnp.interp(pos, ref_pos, ref_val)
@@ -303,13 +304,14 @@ def map_interpolator_nearest_neighbor_1d(pos, ref_pos, ref_val):
 def map_interpolator_regular_binning_nearest_neighbor_2d(
     pos, ref_pos_lowers, ref_pos_uppers, ref_val
 ):
-    """Nearest neighbor 2D interpolation. A uniform mesh grid binning is assumed.
+    """Nearest neighbor 2D interpolation.
 
-    Args:
-        pos: array with shape (N, 2), positions at which the interp is calculated.
-        ref_pos_lowers: array with shape (2,), the lower edges of the binning on each dimension.
-        ref_pos_uppers: array with shape (2,), the upper edges of the binning on each dimension.
-        ref_val: array with shape (M1, M2), map values.
+    A uniform mesh grid binning is assumed.
+        Args:
+            pos: array with shape (N, 2), positions at which the interp is calculated.
+            ref_pos_lowers: array with shape (2,), the lower edges of the binning on each dimension.
+            ref_pos_uppers: array with shape (2,), the upper edges of the binning on each dimension.
+            ref_val: array with shape (M1, M2), map values.
 
     """
     n0, n1 = ref_val.shape
@@ -329,13 +331,14 @@ def map_interpolator_regular_binning_nearest_neighbor_2d(
 def map_interpolator_regular_binning_nearest_neighbor_3d(
     pos, ref_pos_lowers, ref_pos_uppers, ref_val
 ):
-    """Nearest neighbor 3D interpolation. A uniform mesh grid binning is assumed.
+    """Nearest neighbor 3D interpolation.
 
-    Args:
-        pos: array with shape (N, 3), positions at which the interp is calculated.
-        ref_pos_lowers: array with shape (3,), the lower edges of the binning on each dimension.
-        ref_pos_uppers: array with shape (3,), the upper edges of the binning on each dimension.
-        ref_val: array with shape (M1, M2, M3), map values.
+    A uniform mesh grid binning is assumed.
+        Args:
+            pos: array with shape (N, 3), positions at which the interp is calculated.
+            ref_pos_lowers: array with shape (3,), the lower edges of the binning on each dimension.
+            ref_pos_uppers: array with shape (3,), the upper edges of the binning on each dimension.
+            ref_val: array with shape (M1, M2, M3), map values.
 
     """
     n0, n1, n2 = ref_val.shape
