@@ -97,8 +97,8 @@ def curve_interpolator(pos, ref_pos, ref_val):
 @export
 @jit
 def map_interpolator_regular_binning_1d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
-    """Inverse distance weighting average as 1D interpolation using KNN(K=2). binning is assumed. A
-    uniform mesh grid.
+    """Inverse distance weighting average as 1D interpolation using KNN(K=2). uniform mesh grid.
+    binning is assumed. A.
 
     Args:
         pos: array with shape (N,), positions at which the interp is calculated.
@@ -118,8 +118,8 @@ def map_interpolator_regular_binning_1d(pos, ref_pos_lowers, ref_pos_uppers, ref
 @export
 @jit
 def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
-    """Inverse distance weighting average as 2D interpolation using KNN(K=4). binning is assumed. A
-    uniform mesh grid.
+    """Inverse distance weighting average as 2D interpolation using KNN(K=4). uniform mesh grid.
+    binning is assumed. A.
 
     Args:
         pos: array with shape (N, 2), positions at which the interp is calculated.
@@ -174,8 +174,8 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
 @export
 @jit
 def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
-    """Inverse distance weighting average as 3D interpolation using KNN(K=8). binning is assumed. A
-    uniform mesh grid.
+    """Inverse distance weighting average as 3D interpolation using KNN(K=8). uniform mesh grid.
+    binning is assumed. A.
 
     Args:
         pos: array with shape (N, 3), positions at which the interp is calculated.

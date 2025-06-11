@@ -32,8 +32,8 @@ class Parameter:
         self.init_parameter()
 
     def init_parameter(self, seed=None):
-        """Initializing parameters by sampling prior. initial guess. If the prior is free, then
-        sampling from the.
+        """Initializing parameters by sampling prior. sampling from the. initial guess. If the prior
+        is free, then.
 
         Args:
             seed: integer, sent to np.random.seed(seed)
