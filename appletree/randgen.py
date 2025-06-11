@@ -312,21 +312,22 @@ else:
 @export
 @partial(jit, static_argnums=(3,))
 def negative_binomial(key, p, n, shape=()):
-    """Negative binomial distribution random sampler. Using Gamma–Poisson mixture.
+    """Negative binomial distribution random sampler.
 
-    Args:
-        key: seed for random generator.
-        p: <jnp.array>-like probability of a single success in negative binomial distribution.
-        n: <jnp.array>-like number of successes in negative binomial distribution.
-        shape: output shape.
-            If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
+    Using Gamma–Poisson mixture.
+        Args:
+            key: seed for random generator.
+            p: <jnp.array>-like probability of a single success in negative binomial distribution.
+            n: <jnp.array>-like number of successes in negative binomial distribution.
+            shape: output shape.
+                If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
 
-    Returns:
-        an updated seed, random variables.
+        Returns:
+            an updated seed, random variables.
 
-    References:
-        1. https://en.wikipedia.org/wiki/Negative_binomial_distribution#Gamma%E2%80%93Poisson_mixture  # noqa
-        2. https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.nbinom.html
+        References:
+            1. https://en.wikipedia.org/wiki/Negative_binomial_distribution#Gamma%E2%80%93Poisson_mixture  # noqa
+            2. https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.nbinom.html
 
     """
 
