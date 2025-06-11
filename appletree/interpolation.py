@@ -42,6 +42,8 @@ def map_interpolator_knn(pos, ref_pos, ref_val, k=3):
             weighted by the inverse of the distance to k nearest neighbors.
 
     """
+    assert len(pos.shape) == 2 and pos.shape[1] == ref_pos.shape[1], "pos must have 2 columns"
+
     pos = jnp.asarray(pos)
     ref_pos = jnp.asarray(ref_pos)
     ref_val = jnp.asarray(ref_val)
@@ -70,6 +72,8 @@ def curve_interpolator(pos, ref_pos, ref_val):
             weighted by the inverse of the distance to k nearest neighbors.
 
     """
+    assert len(pos.shape) == 1, "pos must have 1 columns"
+
     right = jnp.searchsorted(ref_pos, pos)
     left = right - 1
 
@@ -103,6 +107,8 @@ def map_interpolator_regular_binning_1d(pos, ref_pos_lowers, ref_pos_uppers, ref
         ref_val: array with shape (M1,), map values.
 
     """
+    assert len(pos.shape) == 1, "pos must have 1 columns"
+
     ref_pos = jnp.linspace(ref_pos_lowers, ref_pos_uppers, len(ref_val))
     val = curve_interpolator(pos, ref_pos, ref_val)
 
@@ -122,6 +128,8 @@ def map_interpolator_regular_binning_2d(pos, ref_pos_lowers, ref_pos_uppers, ref
         ref_val: array with shape (M1, M2), map values.
 
     """
+    assert len(pos.shape) == 2 and pos.shape[1] == 2, "pos must have 2 columns"
+
     num_bins = jnp.asarray(jnp.shape(ref_val))
     bin_sizes = (ref_pos_uppers - ref_pos_lowers) / (num_bins - 1)
     num_bins = num_bins[jnp.newaxis, :]
@@ -176,6 +184,8 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
         ref_val: array with shape (M1, M2, M3), map values.
 
     """
+    assert len(pos.shape) == 2 and pos.shape[1] == 3, "pos must have 3 columns"
+
     num_bins = jnp.asarray(jnp.shape(ref_val))
     bin_sizes = (ref_pos_uppers - ref_pos_lowers) / (num_bins - 1)
     num_bins = num_bins[jnp.newaxis, :]
@@ -279,6 +289,8 @@ def map_interpolator_linear_1d(pos, ref_pos, ref_val):
             ref_val: array with shape (M,), as the reference values.
 
     """
+    assert len(pos.shape) == 1, "pos must have 1 columns"
+
     return jnp.interp(pos, ref_pos, ref_val)
 
 
@@ -293,6 +305,8 @@ def map_interpolator_nearest_neighbor_1d(pos, ref_pos, ref_val):
         ref_val: array with shape (M,), as the reference values.
 
     """
+    assert len(pos.shape) == 1, "pos must have 1 columns"
+
     ind = find_nearest_indices(pos, ref_pos)
 
     val = ref_val[ind]
@@ -314,6 +328,8 @@ def map_interpolator_regular_binning_nearest_neighbor_2d(
             ref_val: array with shape (M1, M2), map values.
 
     """
+    assert len(pos.shape) == 2 and pos.shape[1] == 2, "pos must have 2 columns"
+
     n0, n1 = ref_val.shape
 
     bins0 = jnp.linspace(ref_pos_lowers[0], ref_pos_uppers[0], n0)
@@ -341,6 +357,8 @@ def map_interpolator_regular_binning_nearest_neighbor_3d(
             ref_val: array with shape (M1, M2, M3), map values.
 
     """
+    assert len(pos.shape) == 2 and pos.shape[1] == 3, "pos must have 3 columns"
+
     n0, n1, n2 = ref_val.shape
 
     bins0 = jnp.linspace(ref_pos_lowers[0], ref_pos_uppers[0], n0)
