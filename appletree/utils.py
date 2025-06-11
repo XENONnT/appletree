@@ -196,7 +196,7 @@ def get_file_path(fname):
             # cannot load the requested config
             fpath = downloader.download_single(fname)
             warn(f"Loading {fname} from mongo downloader to {fpath}")
-            return fname  # Keep the name and let get_resource do its thing
+            return fpath
         except (FileNotFoundError, ValueError, NameError, AttributeError):
             warn(f"Mongo downloader not possible or does not have {fname}")
 
