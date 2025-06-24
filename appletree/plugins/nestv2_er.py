@@ -37,7 +37,7 @@ class ExcitonIonRatioER(Plugin):
 class QyER(Plugin):
     depends_on = ["energy", "nex_ni_ratio"]
     provides = ["charge_yield"]
-    parameters = ("m1", "m2", "m3", "m4", "m7", "m8", "m9", "m10", "w", "field")
+    parameters = ("m1", "m2", "m3", "m4", "m7", "m8", "m9", "m10", "w", "field", "liquid_xe_density")
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, energy, nex_ni_ratio):
@@ -55,7 +55,14 @@ class QyER(Plugin):
         charge_yield += (m2 - m1) / (1 + (energy / m3) ** m4) ** m9
         charge_yield += jnp.ones(shape=jnp.shape(energy)) * m5
         charge_yield += -m5 / (1 + (energy / m7) ** m8) ** m10
-        charge_yield = jnp.clip(charge_yield, 0, jnp.inf)
+        
+        # coeff_TI = jnp.power(1. / parameters["liquid_xe_density"], 0.3)
+        # coeff_Ni = jnp.power(1. / parameters["liquid_xe_density"], 1.4)
+        # coeff_OL = jnp.power(1. / parameters["liquid_xe_density"], -1.7) / jnp.log(1. + coeff_TI * coeff_Ni * jnp.power(parameters["liquid_xe_density"], 1.7))
+
+        # charge_yield = charge_yield*(coeff_OL * jnp.log(1. + coeff_TI * coeff_Ni * jnp.power(parameters["liquid_xe_density"], 1.7)) * jnp.power(parameters["liquid_xe_density"], -1.7))
+        # charge_yield = jnp.clip(charge_yield, 0, jnp.inf)
+
         return key, charge_yield
 
 @export
@@ -67,6 +74,7 @@ class LyER(Plugin):
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, charge_yield):
         light_yield = 1.0 / parameters["w"] - charge_yield
+        light_yield = jnp.clip(light_yield, 0, jnp.inf)
         return key, light_yield
 
 
@@ -99,7 +107,7 @@ class MeanExcitonIonER(Plugin):
 class FanoFactor(Plugin):
     depends_on = ["_Nph", "_Ne"]
     provides = ["fano_nq", ]
-    parameters = ("delta_f", "field")
+    parameters = ("delta_f", "field", "liquid_xe_density")
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, _Nph, _Ne):
@@ -169,19 +177,20 @@ class OmegaER(Plugin):
 @export
 class TruePhotonElectronER(Plugin):
     depends_on = ["recombProb", "Variance", "Ni", "Nq", "energy"]
-    provides = ["num_photon", "num_electron"]
-    parameters = ("alpha2_er", "field")
+    provides = ["num_photon", "num_electron", "skewness"]
+    parameters = ("alpha2_er", "field" )
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, recombProb, Variance, Ni, Nq, energy,):
         fld = parameters["field"]
-        alpha2 =  (
-            1.0 / (1.0 + jnp.exp((energy - 26.7) / 6.4)) *
-                (parameters["alpha2_er"] + 
-                4.0 * jnp.exp(-fld / 225.0) * (1.0 - jnp.exp(-energy / 7.7))) +
-            1.0 / (1.0 + jnp.exp(-(energy - 26.7) / 6.4)) * 22.1 *
-                jnp.exp(-energy / 54.0) * jnp.exp(-jnp.sqrt(fld) / jnp.sqrt(71.0))
-        )
+        # alpha2 =  (
+        #     1.0 / (1.0 + jnp.exp((energy - 26.7) / 6.4)) *
+        #         (parameters["alpha2_er"] + 
+        #         4.0 * jnp.exp(-fld / 225.0) * (1.0 - jnp.exp(-energy / 7.7))) +
+        #     1.0 / (1.0 + jnp.exp(-(energy - 26.7) / 6.4)) * 22.1 *
+        #         jnp.exp(-energy / 54.0) * jnp.exp(-jnp.sqrt(fld) / jnp.sqrt(71.0))
+        # )
+        alpha2 = jnp.zeros(len(Ni))
 
         # these parameters will make mean num_electron is just (1. - recombProb) * Ni
         widthCorrection = (
@@ -202,7 +211,7 @@ class TruePhotonElectronER(Plugin):
         )
         num_electron = jnp.clip(num_electron.round().astype(int), 0, jnp.inf)
         num_photon = jnp.clip(Nq - num_electron, 0, jnp.inf)
-        return key, num_photon, num_electron
+        return key, num_photon, num_electron, alpha2
 
 
 @export
