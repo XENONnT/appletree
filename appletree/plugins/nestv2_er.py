@@ -177,12 +177,12 @@ class OmegaER(Plugin):
 @export
 class TruePhotonElectronER(Plugin):
     depends_on = ["recombProb", "Variance", "Ni", "Nq", "energy"]
-    provides = ["num_photon", "num_electron", "skewness"]
+    provides = ["num_photon", "num_electron"]
     parameters = ("alpha2_er", "field" )
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, recombProb, Variance, Ni, Nq, energy,):
-        fld = parameters["field"]
+        # fld = parameters["field"]
         # alpha2 =  (
         #     1.0 / (1.0 + jnp.exp((energy - 26.7) / 6.4)) *
         #         (parameters["alpha2_er"] + 
@@ -211,7 +211,7 @@ class TruePhotonElectronER(Plugin):
         )
         num_electron = jnp.clip(num_electron.round().astype(int), 0, jnp.inf)
         num_photon = jnp.clip(Nq - num_electron, 0, jnp.inf)
-        return key, num_photon, num_electron, alpha2
+        return key, num_photon, num_electron
 
 
 @export

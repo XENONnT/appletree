@@ -12,7 +12,7 @@ class ERBand(ComponentSim):
 
         self.register(apt.plugins.common.UniformEnergySpectra)
         self.register(apt.plugins.common.PositionSpectra)
-        self.register_all(apt.plugins.er_microphys)
+        self.register_all(apt.plugins.nestv2_er)
         self.register_all(apt.plugins.detector)
         self.register_all(apt.plugins.reconstruction)
         self.register_all(apt.plugins.efficiency)
@@ -27,7 +27,7 @@ class ERPeak(ComponentSim):
 
         self.register(apt.plugins.common.MonoEnergySpectra)
         self.register(apt.plugins.common.PositionSpectra)
-        self.register_all(apt.plugins.er_microphys)
+        self.register_all(apt.plugins.nestv2_er)
         self.register_all(apt.plugins.detector)
         self.register_all(apt.plugins.reconstruction)
         self.register_all(apt.plugins.efficiency)
