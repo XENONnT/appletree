@@ -85,7 +85,7 @@ class QyER(Plugin):
 class LyER(Plugin):
     depends_on = ["charge_yield"]
     provides = ["light_yield"]
-    parameters = "w"
+    parameters = ("w",)
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, charge_yield):
