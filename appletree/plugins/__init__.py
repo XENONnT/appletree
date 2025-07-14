@@ -19,8 +19,5 @@ from .efficiency import *
 from . import nestv2
 from .nestv2 import *
 
-from . import nestv2_er
-from .nestv2_er import *
-
 from . import nestv2_er_kate
 from .nestv2_er_kate import *
