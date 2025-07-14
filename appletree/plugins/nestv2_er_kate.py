@@ -129,7 +129,7 @@ class FanoFactor(Plugin):
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, _Nph, _Ne):
-        # Mimicing the behavior of NEST v2.4.0
+        # Mimicking the behavior of NEST v2.4.0
         # negative 0.0015 restores https://arxiv.org/abs/2211.10726v3 Eq. 8
         sign = jnp.sign(parameters["delta_f"])
         abs_delta_f = jnp.abs(parameters["delta_f"])
