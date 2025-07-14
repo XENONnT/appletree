@@ -12,11 +12,8 @@ from appletree.utils import exporter
 export, __all__ = exporter(export_self=False)
 
 # These scripts are copied from
-# https://github.com/NESTCollaboration/nest/releases/tag/v2.3.7
-# and https://github.com/NESTCollaboration/nest/blob/v2.3.7/src/NEST.cpp#L715-L794
-# Priors of the distribution is copied from https://arxiv.org/abs/2211.10726
-# and https://drive.google.com/file/d/1urVT3htFjIC1pQKyaCcFonvWLt74Kgvn/view
-# All variables begins with '_' are expectation values, such as `_Nph`, `_Ne`.
+# https://github.com/NESTCollaboration/nest/releases/tag/v2.4.0
+# and https://github.com/NESTCollaboration/nest/blob/v2.4.0/src/NEST.cpp#L1103-L1186
 
 
 
@@ -57,11 +54,14 @@ class QyER(Plugin):
         charge_yield += (m2 - m1) / (1 + (energy / m3) ** m4) ** m9
         charge_yield += jnp.ones(shape=jnp.shape(energy)) * m5
         charge_yield += -m5 / (1 + (energy / m7) ** m8) ** m10
-        charge_yield = jnp.clip(charge_yield, 0, jnp.inf)
-        coeff_TI = jnp.power(1. / DENSITY, 0.3);
-        coeff_Ni = jnp.power(1. / DENSITY, 1.4);
-        coeff_OL = jnp.power(1. / DENSITY, -1.7) / jnp.log(1. + coeff_TI * coeff_Ni * jnp.power(DENSITY, 1.7));
+    
+        coeff_TI = jnp.power(1. / DENSITY, 0.3)
+        coeff_Ni = jnp.power(1. / DENSITY, 1.4)
+        coeff_OL = jnp.power(1. / DENSITY, -1.7) / jnp.log(1. + coeff_TI * coeff_Ni * jnp.power(DENSITY, 1.7))
+    
         charge_yield = charge_yield*(coeff_OL * jnp.log(1. + coeff_TI * coeff_Ni * jnp.power(DENSITY, 1.7)) * jnp.power(DENSITY, -1.7))
+        charge_yield = jnp.clip(charge_yield, 0, jnp.inf)
+
         return key, charge_yield
 
 @export
@@ -73,6 +73,7 @@ class LyER(Plugin):
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, charge_yield):
         light_yield = 1.0 / parameters["w"] - charge_yield
+        light_yield = jnp.clip(light_yield, 0, jnp.inf)
         return key, light_yield
 
 
@@ -105,11 +106,24 @@ class MeanExcitonIonER(Plugin):
 class FanoFactor(Plugin):
     depends_on = ["_Nph", "_Ne"]
     provides = ["fano_nq", ]
-    parameters = ("delta_f", "field")
+    parameters = ("delta_f", "field", "liquid_xe_density")
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, _Nph, _Ne):
-        fano_nq = jnp.ones(len(_Nph))
+        # Mimicing the behavior of NEST v2.4.0
+        # negative 0.0015 restores https://arxiv.org/abs/2211.10726v3 Eq. 8
+        sign = jnp.sign(parameters["delta_f"])
+        abs_delta_f = jnp.abs(parameters["delta_f"])
+
+        # Fano factors in LXe for ER if delta_f is positive
+        fano_nq = (sign + 1.0) / 2.0 * jnp.ones(len(_Ne)) * abs_delta_f
+
+        # Fano factors in LXe for ER if delta_f is negative
+        fano_nq_const = (0.12707 - 0.029623 * parameters["liquid_xe_density"]
+                         - 0.0057042 * parameters["liquid_xe_density"]**2
+                         + 0.0015957 * parameters["liquid_xe_density"]**3)
+        fano_nq += (1.0 - sign) / 2.0 * (fano_nq_const + 
+                                         abs_delta_f * jnp.sqrt((_Nph + _Ne) * parameters["field"]))
 
         return key, fano_nq
 
@@ -127,8 +141,6 @@ class TrueExcitonIonER(Plugin):
         Nq = Nq.round().astype(int)
         key, Ni = randgen.binomial(key, alf, Nq)
         Nex = Nq - Ni
-        Nex = jnp.clip(Nex.round().astype(int), 0, Nq)
-        Ni = jnp.clip(Ni.round().astype(int), 0, Nq)
         return key, Ni, Nex, Nq
 
 
@@ -164,13 +176,10 @@ class OmegaER(Plugin):
 class TruePhotonElectronER(Plugin):
     depends_on = ["recombProb", "Variance", "Ni", "Nq", "energy"]
     provides = ["num_photon", "num_electron"]
-    parameters = ("alpha2_er", "field")
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, recombProb, Variance, Ni, Nq, energy,):
-    
-
-        key, num_electron = randgen.normal(key, (1-recombProb)*Ni, jnp.sqrt(Variance))
+        key, num_electron = randgen.normal(key, (1.0 - recombProb) * Ni, jnp.sqrt(Variance))
         num_electron = jnp.clip(num_electron.round().astype(int), 0, jnp.inf)
         num_photon = jnp.clip(Nq - num_electron, 0, jnp.inf)
         return key, num_photon, num_electron
