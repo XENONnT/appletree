@@ -5,7 +5,7 @@ from functools import partial
 
 from appletree import randgen
 from appletree.plugin import Plugin
-from appletree.config import takes_config, Constant, ConstantSet
+from appletree.config import takes_config, Constant
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
