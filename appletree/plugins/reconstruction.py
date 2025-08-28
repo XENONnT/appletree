@@ -4,9 +4,10 @@ from functools import partial
 from jax import numpy as jnp
 
 from appletree import randgen
-from appletree.config import takes_config, Map
+from appletree.config import takes_config, Map, Constant
 from appletree.plugin import Plugin
 from appletree.utils import exporter
+from appletree.customs2biassampler import JAXCustomSampler
 
 export, __all__ = exporter(export_self=False)
 
@@ -80,17 +81,32 @@ class S1(Plugin):
         default="_s2_smearing.json",
         help="S2 reconstruction smearing",
     ),
+    Constant(
+        name="bias_flag",
+        default=0,
+        help="Zero for no additional ambience bias, one for bias, nothing else. Don't do stupid things with this, I did not include any ValueErrors since I don't know how they comply with jax.",
+    )
 )
 class S2(Plugin):
     depends_on = ["num_s2_pe"]
     provides = ["s2_area"]
+
+    BiasSampler = JAXCustomSampler()
+    bias_prob = 0.3687
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, num_s2_pe):
         mean = self.s2_bias.apply(num_s2_pe)
         std = self.s2_smear.apply(num_s2_pe)
         key, bias = randgen.normal(key, mean, std)
-        s2_area = num_s2_pe * (1.0 + bias)
+        _s2_area = num_s2_pe * (1.0 + bias)
+
+        ones = jnp.ones(len(_s2_area))
+        key, p_binom = randgen.binomial(key, self.bias_prob, ones)
+        key, samples = self.BiasSampler.sample(key, len(_s2_area))
+        ambience_bias = jnp.where(p_binom, samples, 0)
+        s2_area = _s2_area + ambience_bias * self.bias_flag.value
+
         return key, s2_area
 
 
