@@ -35,7 +35,7 @@ class ExcitonIonRatioER(Plugin):
 class QyER(Plugin):
     depends_on = ["energy", "nex_ni_ratio"]
     provides = ["charge_yield"]
-    parameters = ("m1", "m2", "m3", "m4", "m7", "m8", "m9", "m10", "w", "field")
+    parameters = ("m1", "m2", "m3", "m4", "m7", "m8", "m9", "m10", "py3", "py4", "w", "field")
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, energy, nex_ni_ratio):
@@ -60,8 +60,10 @@ class QyER(Plugin):
             1.0 + (parameters["field"] / 139.260460) ** -0.65763592
         )
 
+        fd = 1.0 / (1.0 + jnp.exp(-(energy - parameters["py3"]) / parameters["py4"]))
+
         charge_yield = jnp.ones(shape=jnp.shape(energy)) * m1
-        charge_yield += (m2 - m1) / (1 + (energy / m3) ** m4) ** m9
+        charge_yield += (m2 - m1) / (1 + fd * (energy / m3) ** m4) ** m9
         charge_yield += jnp.ones(shape=jnp.shape(energy)) * m5
         charge_yield += -m5 / (1 + (energy / m7) ** m8) ** m10
 
@@ -122,9 +124,7 @@ class MeanExcitonIonER(Plugin):
 @export
 class FanoFactor(Plugin):
     depends_on = ["_Nph", "_Ne"]
-    provides = [
-        "fano_nq",
-    ]
+    provides = ["fano_nq",]
     parameters = ("delta_f", "field", "liquid_xe_density")
 
     @partial(jit, static_argnums=(0,))
@@ -167,8 +167,15 @@ class TrueExcitonIonER(Plugin):
         Nex = Nq - Ni
         return key, Ni, Nex, Nq
 
-
 @export
+@takes_config(
+    Constant(
+        name="binom_scale",
+        type=float,
+        default=1.0,
+        help="Scaling factor for binom component",
+    ),
+)
 class OmegaER(Plugin):
     depends_on = ["elecFrac", "recombProb", "Ni"]
     provides = ["omega", "Variance"]
@@ -201,27 +208,22 @@ class OmegaER(Plugin):
             )
         )
 
-        Variance = recombProb * (1.0 - recombProb) * Ni + omega * omega * Ni * Ni
+        Variance = self.binom_scale.value * recombProb * (1.0 - recombProb) * Ni + omega * omega * Ni * Ni
         return key, omega, Variance
 
 
 @export
 class TruePhotonElectronER(Plugin):
-    depends_on = ["recombProb", "Variance", "Ni", "Nq", "energy"]
+    depends_on = ["recombProb", "Variance", "Ni", "Nq", ]
     provides = ["num_photon", "num_electron"]
+    parameters = ("B_er", "k_er", "m_er")
 
     @partial(jit, static_argnums=(0,))
-    def simulate(
-        self,
-        key,
-        parameters,
-        recombProb,
-        Variance,
-        Ni,
-        Nq,
-        energy,
-    ):
-        key, num_electron = randgen.normal(key, (1.0 - recombProb) * Ni, jnp.sqrt(Variance))
+    def simulate(self, key, parameters, recombProb, Variance, Ni, Nq,):  
+        key, Ne = randgen.normal(key, (1.0 - recombProb) * Ni, jnp.sqrt(Variance))
+        Variance_Ne = parameters["B_er"] * jnp.clip(Ne / parameters["k_er"] - parameters["m_er"], 0, 1) * Ne * Ne
+
+        key, num_electron = randgen.normal(key, Ne, jnp.sqrt(Variance_Ne))
         num_electron = jnp.clip(num_electron.round().astype(int), 0, jnp.inf)
         num_photon = jnp.clip(Nq - num_electron, 0, jnp.inf)
         return key, num_photon, num_electron
