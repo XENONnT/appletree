@@ -151,6 +151,8 @@ class Likelihood:
                     self.data[:, 0],
                     self._bins[0],
                     clip=config["clip"],
+                    integer=config.get("integer", False),
+                    left=config.get("left", True),
                     which_np=np,
                 )
                 self._bins = (self._bins,)
@@ -165,6 +167,8 @@ class Likelihood:
                     self._bins,
                     x_clip=config["x_clip"],
                     y_clip=config["y_clip"],
+                    integer=config.get("integer", [False, False]),
+                    left=config.get("left", True),
                     which_np=np,
                 )
                 self.data_hist = make_hist_irreg_bin_2d(
