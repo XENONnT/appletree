@@ -26,7 +26,7 @@ rechunker = "bin.rechunker:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.13"
-jax = "*"
+jax = "<0.8.0"
 corner = "*"
 emcee = "*"
 GOFevaluation = ">=0.1.6"
