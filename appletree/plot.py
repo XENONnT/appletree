@@ -14,6 +14,8 @@ from appletree.randgen import TwoHalfNorm
 
 
 class Plotter:
+    min_autocorr_time = 100
+
     def __init__(self, backend_file_name, discard=0, thin=1):
         """Plotter for the MCMC chain.
 
@@ -23,12 +25,15 @@ class Plotter:
             thin: use samples every thin steps.
 
         """
+        self.discard = discard
+        self.thin = thin
+
         self.backend_file_name = backend_file_name
         backend = emcee.backends.HDFBackend(self.backend_file_name, read_only=True)
 
-        self.chain = backend.get_chain(discard=discard, thin=thin)
-        self.posterior = backend.get_log_prob(discard=discard, thin=thin)
-        self.prior = backend.get_blobs(discard=discard, thin=thin)
+        self.chain = backend.get_chain(discard=self.discard, thin=self.thin)
+        self.posterior = backend.get_log_prob(discard=self.discard, thin=self.thin)
+        self.prior = backend.get_blobs(discard=self.discard, thin=self.thin)
         # We drop iterations with inf and nan posterior
         mask = np.isfinite(self.posterior)
         mask = np.all(mask, axis=1)
@@ -36,9 +41,9 @@ class Plotter:
         self.posterior = self.posterior[mask]
         self.prior = self.prior[mask]
 
-        self.flat_chain = backend.get_chain(discard=discard, thin=thin, flat=True)
-        self.flat_posterior = backend.get_log_prob(discard=discard, thin=thin, flat=True)
-        self.flat_prior = backend.get_blobs(discard=discard, thin=thin, flat=True)
+        self.flat_chain = backend.get_chain(discard=self.discard, thin=self.thin, flat=True)
+        self.flat_posterior = backend.get_log_prob(discard=self.discard, thin=self.thin, flat=True)
+        self.flat_prior = backend.get_blobs(discard=self.discard, thin=self.thin, flat=True)
         # We drop samples with inf and nan posterior
         mask = np.isfinite(self.flat_posterior)
         self.flat_chain = self.flat_chain[mask]
@@ -118,22 +123,37 @@ class Plotter:
         axes = []
         for i in range(self.n_param):
             ax = fig.add_subplot(n_rows, n_cols, i + 1)
-            ax.plot(self.chain[:, :, i], **plot_kwargs)
+            for j in range(self.n_walker):
+                ax.plot(
+                    np.arange(self.chain.shape[0]) * self.thin + self.discard,
+                    self.chain[:, j, i],
+                    **plot_kwargs,
+                )
             ax.set_ylabel(self.param_names[i])
-            ax.set_xlim(0, self.n_iter)
+            ax.set_xlim(self.discard, self.n_iter * self.thin + self.discard)
             axes.append(ax)
 
         ax = fig.add_subplot(n_rows, n_cols, self.n_param + 1)
-        ax.plot(self.posterior, **plot_kwargs)
+        for j in range(self.n_walker):
+            ax.plot(
+                np.arange(self.posterior.shape[0]) * self.thin + self.discard,
+                self.posterior[:, j],
+                **plot_kwargs,
+            )
         ax.set_ylabel("log posterior")
-        ax.set_xlim(0, self.n_iter)
+        ax.set_xlim(self.discard, self.n_iter * self.thin + self.discard)
         ax.set_ylim(self.posterior.max() - 100, self.posterior.max())
         axes.append(ax)
 
         ax = fig.add_subplot(n_rows, n_cols, self.n_param + 2)
-        ax.plot(self.prior, **plot_kwargs)
+        for j in range(self.n_walker):
+            ax.plot(
+                np.arange(self.prior.shape[0]) * self.thin + self.discard,
+                self.prior[:, j],
+                **plot_kwargs,
+            )
         ax.set_ylabel("log prior")
-        ax.set_xlim(0, self.n_iter)
+        ax.set_xlim(self.discard, self.n_iter * self.thin + self.discard)
         ax.set_ylim(self.prior.max() - 100, self.prior.max())
         axes.append(ax)
 
@@ -305,9 +325,9 @@ class Plotter:
             return taus[window]
 
         if self.n_iter < 1000:
-            warn("The chain is too short to compute the autocorrelation time!")
+            warn("The chain is too short (< 1000) to compute the autocorrelation time!")
 
-        N = np.geomspace(100, self.n_iter, 10).astype(int)
+        N = np.geomspace(self.min_autocorr_time, self.n_iter, 10).astype(int)
         axes = []
         for i in range(self.n_param):
             chain = self.chain[:, :, i].T
@@ -316,16 +336,16 @@ class Plotter:
                 tau[j] = autocorr_new(chain[:, :n])
 
             ax = fig.add_subplot(n_rows, n_cols, i + 1)
-            ax.plot(N, tau, label="Sample estimation", **plot_kwargs)
-            ax.plot(N, N / 50, "k--", label="N / 50")
+            ax.plot(N * self.thin, tau, label="Sample estimation", **plot_kwargs)
+            ax.plot(N * self.thin, N * self.thin / 50, "k--", label="N / 50")
             ax.set_xscale("log")
             ax.set_yscale("log")
             ax.set_ylabel(f"Auto correlation of {self.param_names[i]}")
             axes.append(ax)
 
         # Set xlabels of the last two axes
-        axes[-1].set_xlabel("Number of iterations")
-        axes[-2].set_xlabel("Number of iterations")
+        axes[-1].set_xlabel("Number of iterations after burn-in")
+        axes[-2].set_xlabel("Number of iterations after burn-in")
 
         # Set legend
         handles, labels = axes[-1].get_legend_handles_labels()
