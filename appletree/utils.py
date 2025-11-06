@@ -131,7 +131,7 @@ def _get_abspath(file_name):
     Raise FileNotFoundError when not found in any subfolder
 
     """
-    for sub_dir in ("maps", "data", "parameters", "instructs"):
+    for sub_dir in ["maps", "data", "parameters", "instructs", "/stor0/mkoba/private_nt_aux_files/apt_files"]:
         p = os.path.join(_package_path(sub_dir), file_name)
         if os.path.exists(p):
             return p

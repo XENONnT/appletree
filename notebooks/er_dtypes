@@ -1,0 +1,103 @@
+strict digraph {
+	cs1 [fillcolor=white href="#cs1" style=filled]
+	cs1 -> s1_area
+	s1_area [fillcolor=white href="#s1-area" style=filled]
+	s1_area -> num_s1_pe
+	num_s1_pe [fillcolor=white href="#num-s1-pe" style=filled]
+	num_s1_pe -> s1_n_hits
+	s1_n_hits [fillcolor=white href="#s1-n-hits" style=filled]
+	s1_n_hits -> num_s1_phd
+	num_s1_phd [fillcolor=white href="#num-s1-phd" style=filled]
+	num_s1_phd -> num_photon
+	num_photon [fillcolor=white href="#num-photon" style=filled]
+	num_photon -> num_quanta
+	num_quanta [fillcolor=white href="#num-quanta" style=filled]
+	num_quanta -> energy
+	energy [fillcolor=white href="#energy" style=filled]
+	energy -> batch_size
+	batch_size [fillcolor=white href="#batch-size" style=filled]
+	num_ion [fillcolor=white href="#num-ion" style=filled]
+	num_ion -> num_quanta
+	recomb [fillcolor=white href="#recomb" style=filled]
+	recomb -> recomb_mean
+	recomb_mean [fillcolor=white href="#recomb-mean" style=filled]
+	recomb_mean -> energy
+	recomb_std [fillcolor=white href="#recomb-std" style=filled]
+	recomb_std -> energy
+	recomb -> recomb_std
+	num_photon -> num_ion
+	num_photon -> recomb
+	s1_lce [fillcolor=white href="#s1-lce" style=filled]
+	s1_lce -> x
+	x [fillcolor=white href="#x" style=filled]
+	x -> batch_size
+	batch_size [fillcolor=white href="#batch-size" style=filled]
+	y [fillcolor=white href="#y" style=filled]
+	y -> batch_size
+	batch_size [fillcolor=white href="#batch-size" style=filled]
+	z [fillcolor=white href="#z" style=filled]
+	z -> batch_size
+	batch_size [fillcolor=white href="#batch-size" style=filled]
+	s1_lce -> y
+	s1_lce -> z
+	num_s1_phd -> s1_lce
+	s1_correction [fillcolor=white href="#s1-correction" style=filled]
+	s1_correction -> rec_x
+	rec_x [fillcolor=white href="#rec-x" style=filled]
+	rec_x -> x
+	num_electron_drifted [fillcolor=white href="#num-electron-drifted" style=filled]
+	num_electron_drifted -> num_electron
+	num_electron [fillcolor=white href="#num-electron" style=filled]
+	num_electron -> num_quanta
+	num_electron -> num_ion
+	num_electron -> recomb
+	drift_survive_prob [fillcolor=white href="#drift-survive-prob" style=filled]
+	drift_survive_prob -> z
+	num_electron_drifted -> drift_survive_prob
+	rec_x -> y
+	rec_x -> z
+	rec_x -> num_electron_drifted
+	rec_y [fillcolor=white href="#rec-y" style=filled]
+	rec_y -> x
+	rec_y -> y
+	rec_y -> z
+	rec_y -> num_electron_drifted
+	rec_z [fillcolor=white href="#rec-z" style=filled]
+	rec_z -> x
+	rec_z -> y
+	rec_z -> z
+	rec_z -> num_electron_drifted
+	s1_correction -> rec_y
+	s1_correction -> rec_z
+	cs1 -> s1_correction
+	cs2 [fillcolor=white href="#cs2" style=filled]
+	cs2 -> s2_area
+	s2_area [fillcolor=white href="#s2-area" style=filled]
+	s2_area -> num_s2_pe
+	num_s2_pe [fillcolor=white href="#num-s2-pe" style=filled]
+	num_s2_pe -> num_electron_drifted
+	s2_lce [fillcolor=white href="#s2-lce" style=filled]
+	s2_lce -> x
+	s2_lce -> y
+	num_s2_pe -> s2_lce
+	num_s2_pe -> x
+	num_s2_pe -> y
+	s2_correction [fillcolor=white href="#s2-correction" style=filled]
+	s2_correction -> rec_x
+	s2_correction -> rec_y
+	cs2 -> s2_correction
+	cs2 -> drift_survive_prob
+	eff [fillcolor=white href="#eff" style=filled]
+	eff -> acc_s2_threshold
+	acc_s2_threshold [fillcolor=white href="#acc-s2-threshold" style=filled]
+	acc_s2_threshold -> s2_area
+	acc_s1_recon_eff [fillcolor=white href="#acc-s1-recon-eff" style=filled]
+	acc_s1_recon_eff -> num_s1_phd
+	cut_acc_s1 [fillcolor=white href="#cut-acc-s1" style=filled]
+	cut_acc_s1 -> s1_area
+	cut_acc_s2 [fillcolor=white href="#cut-acc-s2" style=filled]
+	cut_acc_s2 -> s2_area
+	eff -> acc_s1_recon_eff
+	eff -> cut_acc_s1
+	eff -> cut_acc_s2
+}

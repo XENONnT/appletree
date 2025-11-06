@@ -1,0 +1,49 @@
+{
+    "configs": {
+        "s1_correction":     "_s1_correction.json",
+        "s2_correction":     "_s2_correction.json",
+        "elife":             "_elife.json",
+        "posrec_reso":       "_posrec_reso.json",
+        "s1_eff_3f":  [
+            "_3fold_recon_eff.json",
+            "_3fold_recon_eff.json",
+            "_3fold_recon_eff.json"],
+        "s1_cut_acc": [
+            "_s1_cut_acc.json",
+            "_s1_cut_acc.json",
+            "_s1_cut_acc.json"],
+        "s2_cut_acc": [
+            "_s2_cut_acc.json",
+            "_s2_cut_acc.json",
+            "_s2_cut_acc.json"],
+        "s1_bias_3f":        "_s1_bias.json",
+        "s1_smear_3f":       "_s1_smearing.json",
+        "s2_bias":           "_s2_bias.json",
+        "s2_smear":          "_s2_smearing.json"
+    },
+
+    "likelihoods": {
+        "rn220_llh": {
+            "components": {
+                "rn220_er": "ERBand",
+                "rn220_ac": {
+                    "component_cls": "AC",
+                    "file_name": "AC_Rn220.pkl"
+                }
+            },
+            "copy_parameters": {
+                "rn220_er_rate": "er_rate",
+                "rn220_ac_rate": "ac_rate"
+            },
+
+            "data_file_name": "data_Rn220.csv",
+            "bins_type": "equiprob",
+            "bins_on": ["cs1", "cs2"],
+            "bins": [15, 15],
+            "x_clip": [0, 100],
+            "y_clip": [2e2, 1e4]
+        }
+    },
+
+    "par_config": "er.json"
+}

@@ -7,7 +7,7 @@ class ContextRn220(Context):
 
     def __init__(self):
         """Initialization."""
-        config = get_file_path("rn220.json")
+        config = get_file_path("sr1_rn220.json")
         super().__init__(config)
 
 
@@ -17,4 +17,13 @@ class ContextRn220Ar37(Context):
     def __init__(self):
         """Initialization."""
         config = get_file_path("rn220_ar37.json")
+        super().__init__(config)
+
+
+class ContextRn220Extend(Context):
+    """A specified context for ER response by Rn220 fit, extended to 300pe."""
+
+    def __init__(self):
+        """Initialization."""
+        config = get_file_path("idm_sr1_rn220.json")
         super().__init__(config)

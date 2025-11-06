@@ -1,0 +1,50 @@
+{
+    "configs": {
+        "s1_correction":     "s1_correction_sr1.json",
+        "s2_correction":     "s2_correction_sr1.json",
+        "elife":             "elife_bkg_sr1.json",
+        "posrec_reso":       "posrec_reso_sr0.json",
+        "s1_eff_3f":  ["3fold_recon_eff_n_hits_median_sr0.json", 
+		"3fold_recon_eff_n_hits_lower_sr0.json",
+	       	"3fold_recon_eff_n_hits_upper_sr0.json"],
+        "s1_cut_acc": ["s1_cut_acc_median_rn220_sr1.json", 
+		"s1_cut_acc_lower_rn220_sr1.json", 
+		"s1_cut_acc_upper_rn220_sr1.json"],
+        "s2_cut_acc": ["s2_cut_acc_median_rn220_sr1.json", 
+		"s2_cut_acc_lower_rn220_sr1.json", 
+		"s2_cut_acc_upper_rn220_sr1.json"],
+        "s1_bias_3f":        "3fold_s1_bias_rn220_sr1.json",
+        "s1_smear_3f":       "3fold_s1_smearing_rn220_sr1.json",
+        "s2_bias":           "s2_bias_rn220_sr1.json",
+        "s2_smear":          "s2_smearing_rn220_sr1.json",
+        "s1_lce":            "s1_correction_sr1.json",
+        "s2_lce":            "s2_correction_sr1.json",
+        "anti_correlation_eff": "anti_correlation_eff_rn220_sr1.json"
+    },
+
+    "likelihoods": {
+        "rn220_llh": {
+            "components": {
+                "rn220_er": "ERBand",
+                "rn220_ac": {
+                    "component_cls": "AC",
+                    "file_name": "ac_template_rn220_sr1.csv"
+                }
+            },
+            "copy_parameters": {
+                "rn220_er_rate": "er_n_events_roi",
+                "rn220_ac_rate": "ac_n_events_roi"
+            },
+
+            "data_file_name": "data_rn220_sr1.csv",
+            "bins_type": "equiprob",
+            "bins_on": ["cs1", "cs2"],
+            "bins": [30, 30],
+            "x_clip": [0, 100],
+            "y_clip": [1e2, 1e4]
+	}
+
+    },
+
+    "par_config": "for_sim_param_er_sr1.json"
+}

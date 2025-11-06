@@ -9,3 +9,6 @@ from .ac import *
 
 from . import yields
 from .yields import *
+
+from aptext import components
+from aptext.components import *

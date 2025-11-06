@@ -1,0 +1,74 @@
+{
+    "configs": {
+        "s1_correction":     "s1_correction_sr1.json",
+        "s2_correction":     "s2_correction_sr1.json",
+        "elife":             "elife_bkg_sr1.json",
+        "posrec_reso":       "posrec_reso_sr0.json",
+        "s1_eff_n_hits_3f":  ["3fold_recon_eff_n_hits_median_sr0.json", 
+		"3fold_recon_eff_n_hits_lower_sr0.json",
+	       	"3fold_recon_eff_n_hits_upper_sr0.json"],
+        "s1_cut_acc": ["s1_cut_acc_median_rn220_sr1.json", 
+		"s1_cut_acc_lower_rn220_sr1.json", 
+		"s1_cut_acc_upper_rn220_sr1.json"],
+        "s2_cut_acc": ["s2_cut_acc_median_rn220_sr1.json", 
+		"s2_cut_acc_lower_rn220_sr1.json", 
+		"s2_cut_acc_upper_rn220_sr1.json"],
+        "s1_bias_3f":        "3fold_s1_bias_rn220_sr1.json",
+        "s1_smear_3f":       "3fold_s1_smearing_rn220_sr1.json",
+        "s2_bias":           "s2_bias_rn220_sr1.json",
+        "s2_smear":          "s2_smearing_rn220_sr1.json",
+        "s1_lce":            "s1_correction_sr1.json",
+        "gas_gain_relative": "_gas_gain_relative.json",
+        "s2_lce":            "s2_correction_sr1.json",
+        "anti_correlation_eff": "anti_correlation_eff_rn220_sr1.json"
+    },
+
+    "likelihoods": {
+        "rn220_llh": {
+            "components": {
+                "rn220_er": "ERBand",
+                "rn220_ac": {
+                    "component_cls": "AC",
+                    "file_name": "ac_template_rn220_sr1.csv"
+                }
+            },
+            "copy_parameters": {
+                "rn220_er_rate": "er_rate",
+                "rn220_ac_rate": "ac_rate"
+            },
+
+            "data_file_name": "data_rn220_sr1.csv",
+            "bins_type": "equiprob",
+            "bins_on": ["cs1", "cs2"],
+            "bins": [10, 9],
+            "x_clip": [0, 100],
+            "y_clip": [1e2, 1e4],
+            "parameter_alias": {
+                "s1_cut_acc_sigma_rn220": "s1_cut_acc_sigma",
+                "s2_cut_acc_sigma_rn220": "s2_cut_acc_sigma"
+            }
+        },
+
+        "ar37_llh": {
+            "components": {
+                "ar37_er": "ERPeak"
+            },
+            "copy_parameters": {
+                "ar37_er_rate": "er_rate"
+            },
+
+            "data_file_name": "data_Ar37.csv",
+            "bins_type": "equiprob",
+            "bins_on": ["cs1", "cs2"],
+            "bins": [20, 20],
+            "x_clip": [0, 50],
+            "y_clip": [1250, 2200],
+            "parameter_alias": {
+                "s1_cut_acc_sigma_ar37": "s1_cut_acc_sigma",
+                "s2_cut_acc_sigma_ar37": "s2_cut_acc_sigma"
+            }
+        }
+    },
+
+    "par_config": "param_er_rn220_ar37_sr1.json"
+}
