@@ -31,3 +31,18 @@ class ERPeak(ComponentSim):
         self.register_all(apt.plugins.detector)
         self.register_all(apt.plugins.reconstruction)
         self.register_all(apt.plugins.efficiency)
+
+
+class DECPeaks(ComponentSim):
+    norm_type = "on_pdf"
+    add_eps_to_hist = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.register(apt.plugins.common.MonoEnergySpectra)
+        self.register(apt.plugins.common.PositionSpectra)
+        self.register_all(apt.plugins.dec_composite)
+        self.register_all(apt.plugins.detector)
+        self.register_all(apt.plugins.reconstruction)
+        self.register_all(apt.plugins.efficiency)
