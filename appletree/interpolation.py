@@ -109,7 +109,7 @@ def map_interpolator_regular_binning_1d(pos, ref_pos_lowers, ref_pos_uppers, ref
     """
     assert len(pos.shape) == 1, "pos must have 1 columns"
 
-    ref_pos = jnp.linspace(ref_pos_lowers, ref_pos_uppers, len(ref_val))
+    ref_pos = jnp.linspace(ref_pos_lowers[0], ref_pos_uppers[0], len(ref_val))
     val = curve_interpolator(pos, ref_pos, ref_val)
 
     return val

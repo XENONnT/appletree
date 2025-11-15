@@ -85,7 +85,7 @@ class Plugin:
             mesg += ".simulate should be 'parameters'."
             raise ValueError(mesg)
         for i, depend in enumerate(self.depends_on, start=3):
-            if arguments[i] != depend:
+            if not arguments[i] in depend:
                 mesg = f"{i}th argument of {self.__class__.__name__}"
                 mesg += f".simulate should be '{depend}'. "
                 mesg += f"Plugin {self.__class__.__name__} is insane, check dependency!"
