@@ -349,11 +349,22 @@ class Likelihood:
 
         """
         key, model_hist = self._simulate_model_hist(key, batch_size, parameters)
+
+        # More stable if we first check zeros in model_hist
+        # If zeros exist, return -inf directly
+        if np.any(model_hist <= 0):
+            warn(
+                "Zero or negative bin(s) in model histogram encountered! "
+                "Consider increasing batch_size or placing more stringent bounds "
+                "on parameters to avoid this issue."
+            )
+            return key, -float("inf")
+    
         # Poisson likelihood
         llh = np.sum(self.data_hist * np.log(model_hist) - model_hist)
         llh = float(llh)
         if np.isnan(llh):
-            llh = -np.inf
+            raise ValueError("NaN log likelihood encountered!")
         return key, llh
 
     @need_replacing_alias
