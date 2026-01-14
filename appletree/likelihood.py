@@ -359,7 +359,7 @@ class Likelihood:
                 "on parameters to avoid this issue."
             )
             return key, -float("inf")
-    
+
         # Poisson likelihood
         llh = np.sum(self.data_hist * np.log(model_hist) - model_hist)
         llh = float(llh)
