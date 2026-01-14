@@ -256,6 +256,7 @@ def get_platform() -> str:
 
     # Fallback for extremely old JAX versions:
     from jax.lib import xla_bridge
+
     return xla_bridge.get_backend().platform
 
 
