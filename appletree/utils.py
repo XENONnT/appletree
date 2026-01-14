@@ -5,8 +5,7 @@ import hashlib
 from time import time
 from importlib.resources import files as _files
 
-from jax.lib import xla_bridge
-import jax.extend
+import jax
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
@@ -250,9 +249,14 @@ def timeit(indent=""):
 
 
 @export
-def get_platform():
-    """Show the platform we are using, either cpu ot gpu."""
-    return jax.extend.backend.get_backend()
+def get_platform() -> str:
+    """Show the platform we are using, e.g. 'cpu', 'gpu', or 'tpu'."""
+    if hasattr(jax, "default_backend"):
+        return jax.default_backend()
+
+    # Fallback for extremely old JAX versions:
+    from jax.lib import xla_bridge
+    return xla_bridge.get_backend().platform
 
 
 @export
