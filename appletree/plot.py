@@ -395,6 +395,9 @@ class Plotter:
         avg_acceptance_fraction = np.mean(acceptance_fraction, axis=1)
         
         # Calculate moving average acceptance fraction
+        if window_length >= n_iter:
+            warn("Window length is greater than or equal to the number of iterations. Setting window length to n_iter - 1.")
+            window_length = n_iter - 1
         moving_avg_acceptance_fraction = np.zeros(n_iter - window_length)
         for i in range(window_length, n_iter):
             window_accepted = np.sum(accepted[i - window_length:i, :], axis=0)
