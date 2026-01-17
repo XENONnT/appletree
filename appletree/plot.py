@@ -372,7 +372,8 @@ class Plotter:
 
         Args:
             fig: the figure to plot on. If None, a new figure will be created.
-            window_length: the window length for the moving average, in number of iterations. Default is 100.
+            window_length: the window length for the moving average, 
+                           in number of iterations. Default is 100.
             plot_kwargs: the keyword arguments passed to plt.plot().
         Returns:
             fig: the figure.
@@ -397,7 +398,8 @@ class Plotter:
         # Calculate moving average acceptance fraction
         if window_length >= n_iter:
             warn(
-                "Window length is greater than or equal to the number of iterations. Setting window length to n_iter - 1."
+                "Window length is greater than or equal to the number of iterations. "
+                "Setting window length to n_iter - 1."
             )
             window_length = n_iter - 1
         moving_avg_acceptance_fraction = np.zeros(n_iter - window_length)
