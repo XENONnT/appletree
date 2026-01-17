@@ -87,7 +87,7 @@ class Plotter:
         fig, axes = self.plot_autocorr()
         if save:
             save_fig(fig, "autocorr", fmt)
-        
+
         fig, axes = self.plot_acceptance_fraction()
         if save:
             save_fig(fig, "acceptance_fraction", fmt)
@@ -362,7 +362,7 @@ class Plotter:
 
         plt.tight_layout()
         return fig, axes
-    
+
     def plot_acceptance_fraction(self, fig=None, window_length=100, **plot_kwargs):
         """Plot the acceptance fraction of the chain.
         This function plots two figures: one for the average acceptance fraction over all walkers
@@ -393,17 +393,19 @@ class Plotter:
             accepted[i - 1, :] = np.any(self.chain[i, :, :] != self.chain[i - 1, :, :], axis=1)
         acceptance_fraction = np.cumsum(accepted, axis=0) / np.arange(1, n_iter).reshape(-1, 1)
         avg_acceptance_fraction = np.mean(acceptance_fraction, axis=1)
-        
+
         # Calculate moving average acceptance fraction
         if window_length >= n_iter:
-            warn("Window length is greater than or equal to the number of iterations. Setting window length to n_iter - 1.")
+            warn(
+                "Window length is greater than or equal to the number of iterations. Setting window length to n_iter - 1."
+            )
             window_length = n_iter - 1
         moving_avg_acceptance_fraction = np.zeros(n_iter - window_length)
         for i in range(window_length, n_iter):
-            window_accepted = np.sum(accepted[i - window_length:i, :], axis=0)
+            window_accepted = np.sum(accepted[i - window_length : i, :], axis=0)
             moving_avg_per_walker = window_accepted / window_length
             moving_avg_acceptance_fraction[i - window_length] = np.mean(moving_avg_per_walker)
-        
+
         # Plot average acceptance fraction
         ax = axes[0]
         ax.plot(
