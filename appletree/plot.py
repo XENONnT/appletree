@@ -372,7 +372,7 @@ class Plotter:
 
         Args:
             fig: the figure to plot on. If None, a new figure will be created.
-            window_length: the window length for the moving average, 
+            window_length: the window length for the moving average,
                            in number of iterations. Default is 100.
             plot_kwargs: the keyword arguments passed to plt.plot().
         Returns:
