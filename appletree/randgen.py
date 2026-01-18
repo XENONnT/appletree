@@ -215,98 +215,98 @@ def bernoulli(key, p, shape=()):
     return key, rvs.astype(INT)
 
 
-if hasattr(random, "binomial"):
+# if hasattr(random, "binomial"):
 
-    @export
-    @partial(jit, static_argnums=(3,))
-    def binomial(key, p, n, shape=()):
-        """Binomial random sampler.
+#     @export
+#     @partial(jit, static_argnums=(3,))
+#     def binomial(key, p, n, shape=()):
+#         """Binomial random sampler.
 
-        Args:
-            key: seed for random generator.
-            p: <jnp.array>-like probability in binomial distribution.
-            n: <jnp.array>-like count in binomial distribution.
-            shape: output shape.
-                If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
-            always_use_normal: If true, then Norm(np, sqrt(npq)) is always used.
-                Otherwise if n * p < 5, use the inversion method instead.
+#         Args:
+#             key: seed for random generator.
+#             p: <jnp.array>-like probability in binomial distribution.
+#             n: <jnp.array>-like count in binomial distribution.
+#             shape: output shape.
+#                 If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
+#             always_use_normal: If true, then Norm(np, sqrt(npq)) is always used.
+#                 Otherwise if n * p < 5, use the inversion method instead.
 
-        Returns:
-            an updated seed, random variables.
+#         Returns:
+#             an updated seed, random variables.
 
-        """
+#         """
 
-        key, seed = random.split(key)
+#         key, seed = random.split(key)
 
-        shape = shape or jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n))
-        p = jnp.broadcast_to(p, shape).astype(FLOAT)
-        n = jnp.broadcast_to(n, shape).astype(INT)
+#         shape = shape or jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n))
+#         p = jnp.broadcast_to(p, shape).astype(FLOAT)
+#         n = jnp.broadcast_to(n, shape).astype(INT)
 
-        rvs = random.binomial(seed, n, p, shape=shape)
-        return key, rvs.astype(INT)
+#         rvs = random.binomial(seed, n, p, shape=shape)
+#         return key, rvs.astype(INT)
 
+# else:
+warn("random.binomial is not available, using numpyro's _binomial_dispatch instead.")
+if os.environ.get("DO_NOT_USE_APPROX_IN_BINOM") is None:
+    ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
+    print("Using Normal as an approximation of Binomial")
 else:
-    warn("random.binomial is not available, using numpyro's _binomial_dispatch instead.")
-    if os.environ.get("DO_NOT_USE_APPROX_IN_BINOM") is None:
-        ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
-        print("Using Normal as an approximation of Binomial")
+    ALWAYS_USE_NORMAL_APPROX_IN_BINOM = False
+    print("Using accurate Binomial, not Normal approximation")
+
+@export
+@partial(jit, static_argnums=(3, 4))
+def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_BINOM):
+    """Binomial random sampler.
+
+    Args:
+        key: seed for random generator.
+        p: <jnp.array>-like probability in binomial distribution.
+        n: <jnp.array>-like count in binomial distribution.
+        shape: output shape.
+            If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
+        always_use_normal: If true, then Norm(np, sqrt(npq)) is always used.
+            Otherwise if n * p < 5, use the inversion method instead.
+
+    Returns:
+        an updated seed, random variables.
+
+    """
+
+    def _binomial_normal_approx_dispatch(seed, p, n):
+        q = 1.0 - p
+        mean = n * p
+        std = jnp.sqrt(n * p * q)
+        rvs = jnp.clip(random.normal(seed) * std + mean, a_min=0.0, a_max=n)
+        return rvs.round().astype(INT)
+
+    def _binomial_dispatch(seed, p, n):
+        use_normal_approx = n * p >= 5.0
+        return lax.cond(
+            use_normal_approx,
+            (seed, p, n),
+            lambda x: _binomial_normal_approx_dispatch(*x),
+            (seed, p, n),
+            lambda x: _binomial_dispatch_numpyro(*x),
+        )
+
+    key, seed = random.split(key)
+
+    shape = shape or lax.broadcast_shapes(jnp.shape(p), jnp.shape(n))
+    p = jnp.reshape(jnp.broadcast_to(p, shape), -1)
+    n = jnp.reshape(jnp.broadcast_to(n, shape), -1)
+    seed = random.split(seed, jnp.size(p))
+
+    if always_use_normal:
+        dispatch = _binomial_normal_approx_dispatch
     else:
-        ALWAYS_USE_NORMAL_APPROX_IN_BINOM = False
-        print("Using accurate Binomial, not Normal approximation")
+        dispatch = _binomial_dispatch
 
-    @export
-    @partial(jit, static_argnums=(3, 4))
-    def binomial(key, p, n, shape=(), always_use_normal=ALWAYS_USE_NORMAL_APPROX_IN_BINOM):
-        """Binomial random sampler.
-
-        Args:
-            key: seed for random generator.
-            p: <jnp.array>-like probability in binomial distribution.
-            n: <jnp.array>-like count in binomial distribution.
-            shape: output shape.
-                If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
-            always_use_normal: If true, then Norm(np, sqrt(npq)) is always used.
-                Otherwise if n * p < 5, use the inversion method instead.
-
-        Returns:
-            an updated seed, random variables.
-
-        """
-
-        def _binomial_normal_approx_dispatch(seed, p, n):
-            q = 1.0 - p
-            mean = n * p
-            std = jnp.sqrt(n * p * q)
-            rvs = jnp.clip(random.normal(seed) * std + mean, a_min=0.0, a_max=n)
-            return rvs.round().astype(INT)
-
-        def _binomial_dispatch(seed, p, n):
-            use_normal_approx = n * p >= 5.0
-            return lax.cond(
-                use_normal_approx,
-                (seed, p, n),
-                lambda x: _binomial_normal_approx_dispatch(*x),
-                (seed, p, n),
-                lambda x: _binomial_dispatch_numpyro(*x),
-            )
-
-        key, seed = random.split(key)
-
-        shape = shape or lax.broadcast_shapes(jnp.shape(p), jnp.shape(n))
-        p = jnp.reshape(jnp.broadcast_to(p, shape), -1)
-        n = jnp.reshape(jnp.broadcast_to(n, shape), -1)
-        seed = random.split(seed, jnp.size(p))
-
-        if always_use_normal:
-            dispatch = _binomial_normal_approx_dispatch
-        else:
-            dispatch = _binomial_dispatch
-
-        if jax.default_backend() == "cpu":
-            ret = lax.map(lambda x: dispatch(*x), (seed, p, n))
-        else:
-            ret = vmap(lambda *x: dispatch(*x))(seed, p, n)
-        return key, jnp.reshape(ret, shape)
+    if jax.default_backend() == "cpu":
+        ret = lax.map(lambda x: dispatch(*x), (seed, p, n))
+    else:
+        ret = vmap(lambda *x: dispatch(*x))(seed, p, n)
+    return key, jnp.reshape(ret, shape)
 
 
 @export
