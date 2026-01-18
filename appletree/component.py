@@ -133,7 +133,7 @@ class Component:
         ]
         return key, results_pile
 
-    @jit(static_argnums=(0,))
+    @partial(jit, static_argnums=(0,))
     def implement_binning(self, mc, eff):
         """Apply binning to MC data.
 
@@ -159,7 +159,7 @@ class Component:
             hist = jnp.clip(hist, 1e-10 + jnp.mean(eff), jnp.inf)
         return hist
 
-    @jit(static_argnums=(0,3))
+    @partial(jit, static_argnums=(0,3))
     def get_normalization(self, hist, parameters, batch_size):
         """Return the normalization factor of the histogram."""
         if self.norm_type == "on_pdf":
@@ -440,7 +440,7 @@ class ComponentSim(Component):
         self._compile()
         self.simulate = _cached_functions[self.llh_name][self.func_name]
 
-    @jit(static_argnums=(0,2))
+    @partial(jit, static_argnums=(0,2))
     def simulate_hist(self, key, batch_size, parameters):
         """Simulate and return histogram.
 
