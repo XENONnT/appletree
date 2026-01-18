@@ -6,6 +6,7 @@ from typing import Tuple, List, Dict, Optional, Union, Set
 import numpy as np
 import pandas as pd
 from jax import numpy as jnp
+from jax import jit
 from strax import deterministic_hash
 
 from appletree import utils
@@ -132,6 +133,7 @@ class Component:
         ]
         return key, results_pile
 
+    @jit(static_argnums=(0,))
     def implement_binning(self, mc, eff):
         """Apply binning to MC data.
 
@@ -157,7 +159,8 @@ class Component:
             hist = jnp.clip(hist, 1e-10 + jnp.mean(eff), jnp.inf)
         return hist
 
-    def get_normalization(self, hist, parameters, batch_size=None):
+    @jit(static_argnums=(0,3))
+    def get_normalization(self, hist, parameters, batch_size):
         """Return the normalization factor of the histogram."""
         if self.norm_type == "on_pdf":
             normalization_factor = 1 / jnp.sum(hist) * parameters[self.rate_name]
@@ -437,6 +440,7 @@ class ComponentSim(Component):
         self._compile()
         self.simulate = _cached_functions[self.llh_name][self.func_name]
 
+    @jit(static_argnums=(0,2))
     def simulate_hist(self, key, batch_size, parameters):
         """Simulate and return histogram.
 
