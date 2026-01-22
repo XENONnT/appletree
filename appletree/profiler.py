@@ -86,8 +86,7 @@ def profile_component(
     """
     if not hasattr(component, "worksheet") or component.worksheet is None:
         raise RuntimeError(
-            f"Component {component.name} has no worksheet. "
-            "Make sure deduce() has been called."
+            f"Component {component.name} has no worksheet. " "Make sure deduce() has been called."
         )
 
     results = []
