@@ -43,6 +43,25 @@ def test_profile_context(rn220_context):
             assert r["std_time_ms"] >= 0
 
 
+def test_profile_context_verbose(rn220_context, capsys):
+    """Test profile_context with verbose=True."""
+    results = apt.profile_context(
+        rn220_context,
+        batch_size=int(1e3),
+        n_warmup=1,
+        n_runs=2,
+        verbose=True,
+    )
+
+    captured = capsys.readouterr()
+    # Check verbose output
+    assert "APPLETREE PLUGIN PROFILER" in captured.out
+    assert "LIKELIHOOD" in captured.out
+    assert "SUMMARY" in captured.out
+    assert "Top 5 slowest plugins" in captured.out
+    assert "Grand total" in captured.out
+
+
 def test_profile_component(rn220_context):
     """Test profile_component function."""
     parameters = rn220_context.par_manager.get_all_parameter()
@@ -65,6 +84,26 @@ def test_profile_component(rn220_context):
         assert r["mean_time_ms"] >= 0
 
 
+def test_profile_component_verbose(rn220_context, capsys):
+    """Test profile_component with verbose=True."""
+    parameters = rn220_context.par_manager.get_all_parameter()
+    component = rn220_context.likelihoods["rn220_llh"].components["rn220_er"]
+
+    results = apt.profile_component(
+        component,
+        parameters,
+        batch_size=int(1e3),
+        n_warmup=1,
+        n_runs=2,
+        verbose=True,
+    )
+
+    captured = capsys.readouterr()
+    assert "Profiling component" in captured.out
+    assert "Batch size" in captured.out
+    assert "TOTAL" in captured.out
+
+
 def test_profile_full_simulation(rn220_context):
     """Test profile_full_simulation function."""
     results = apt.profile_full_simulation(
@@ -82,6 +121,20 @@ def test_profile_full_simulation(rn220_context):
         assert "mean_time_ms" in timing
         assert "std_time_ms" in timing
         assert timing["mean_time_ms"] >= 0
+
+
+def test_profile_full_simulation_verbose(rn220_context, capsys):
+    """Test profile_full_simulation with verbose=True."""
+    results = apt.profile_full_simulation(
+        rn220_context,
+        batch_size=int(1e3),
+        n_warmup=1,
+        n_runs=2,
+        verbose=True,
+    )
+
+    captured = capsys.readouterr()
+    assert "full pipeline" in captured.out
 
 
 def test_compare_plugin_vs_full(rn220_context, capsys):
@@ -114,3 +167,26 @@ def test_print_functions(rn220_context, capsys):
     captured = capsys.readouterr()
     assert "Generated code for component" in captured.out
     assert "@partial(jit" in captured.out
+
+
+def test_print_functions_no_worksheet(capsys):
+    """Test print functions when component has no worksheet."""
+    _cached_functions.clear()
+
+    # Create a component without calling deduce()
+    component = apt.components.ERBand(
+        name="test_component",
+        llh_name="test_llh",
+    )
+
+    # Test print_worksheet with no worksheet
+    apt.profiler.print_worksheet(component)
+    captured = capsys.readouterr()
+    assert "Component has no worksheet" in captured.out
+
+    # Test print_component_code with no code
+    apt.profiler.print_component_code(component)
+    captured = capsys.readouterr()
+    assert "Component has no generated code" in captured.out
+
+
