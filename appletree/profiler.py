@@ -94,12 +94,12 @@ def profile_component(
     data_store: Dict[str, Any] = {"batch_size": batch_size}
 
     if verbose:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Profiling component: {component.name}")
         print(f"Likelihood: {component.llh_name}")
         print(f"Batch size: {batch_size:,}")
         print(f"Warmup runs: {n_warmup}, Timed runs: {n_runs}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"\n{'Plugin':<35} {'Time (ms)':<15} {'Std (ms)':<12} {'Provides'}")
         print("-" * 80)
 
@@ -182,9 +182,9 @@ def profile_context(
 
     for llh_name, likelihood in context.likelihoods.items():
         if verbose:
-            print(f"\n{'#'*70}")
+            print(f"\n{'#' * 70}")
             print(f"# LIKELIHOOD: {llh_name}")
-            print(f"{'#'*70}")
+            print(f"{'#' * 70}")
 
         for comp_name, component in likelihood.components.items():
             if not isinstance(component, ComponentSim):
