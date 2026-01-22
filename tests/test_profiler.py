@@ -45,7 +45,7 @@ def test_profile_context(rn220_context):
 
 def test_profile_context_verbose(rn220_context, capsys):
     """Test profile_context with verbose=True."""
-    results = apt.profile_context(
+    apt.profile_context(
         rn220_context,
         batch_size=int(1e3),
         n_warmup=1,
@@ -89,7 +89,7 @@ def test_profile_component_verbose(rn220_context, capsys):
     parameters = rn220_context.par_manager.get_all_parameter()
     component = rn220_context.likelihoods["rn220_llh"].components["rn220_er"]
 
-    results = apt.profile_component(
+    apt.profile_component(
         component,
         parameters,
         batch_size=int(1e3),
@@ -125,7 +125,7 @@ def test_profile_full_simulation(rn220_context):
 
 def test_profile_full_simulation_verbose(rn220_context, capsys):
     """Test profile_full_simulation with verbose=True."""
-    results = apt.profile_full_simulation(
+    apt.profile_full_simulation(
         rn220_context,
         batch_size=int(1e3),
         n_warmup=1,
