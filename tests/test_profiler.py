@@ -188,5 +188,3 @@ def test_print_functions_no_worksheet(capsys):
     apt.profiler.print_component_code(component)
     captured = capsys.readouterr()
     assert "Component has no generated code" in captured.out
-
-
