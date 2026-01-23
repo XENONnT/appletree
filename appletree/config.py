@@ -331,7 +331,7 @@ class Map(Config):
         return pos
 
     def log_pos(self, pos):
-        return jnp.log10(jnp.clip(pos, a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX))
+        return jnp.log10(jnp.clip(pos, FLOAT_POS_MIN, FLOAT_POS_MAX))
 
     def pdf_to_cdf(self, x, pdf):
         """Convert pdf map to cdf map."""
