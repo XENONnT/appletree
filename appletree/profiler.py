@@ -186,20 +186,19 @@ def profile_context(
             print(f"# LIKELIHOOD: {llh_name}")
             print(f"{'#' * 70}")
 
+        parameters_component = likelihood.replace_alias(parameters)
         for comp_name, component in likelihood.components.items():
             if not isinstance(component, ComponentSim):
                 if verbose:
                     print(f"\nSkipping {comp_name} (not a simulation component)")
                 continue
 
-            if not hasattr(component, "worksheet") or component.worksheet is None:
-                if verbose:
-                    print(f"\nDeducing workflow for {comp_name}...")
-                component.deduce()
+            # When the context is created, the components should already have a worksheet
+            assert hasattr(component, "worksheet") and component.worksheet is not None
 
             results = profile_component(
                 component,
-                parameters,
+                parameters_component,
                 batch_size=batch_size,
                 n_warmup=n_warmup,
                 n_runs=n_runs,
@@ -210,16 +209,18 @@ def profile_context(
             all_results[key] = results
 
     if verbose:
-        _print_summary(all_results)
+        print_profile_summary(all_results)
 
     return all_results
 
 
-def _print_summary(all_results: Dict[str, List[Dict[str, Any]]]):
+@export
+def print_profile_summary(all_results: Dict[str, List[Dict[str, Any]]], top_n: int = 5):
     """Print summary of profiling results.
 
     Args:
         all_results: Dictionary of profiling results from profile_context.
+        top_n: Number of top slowest plugins to display.
 
     """
     print("\n" + "=" * 70)
@@ -243,9 +244,9 @@ def _print_summary(all_results: Dict[str, List[Dict[str, Any]]]):
 
     all_plugins.sort(key=lambda x: x[1], reverse=True)
 
-    print("\nTop 5 slowest plugins:")
+    print(f"\nTop {top_n} slowest plugins:")
     print("-" * 50)
-    for i, (plugin, time_ms, comp) in enumerate(all_plugins[:5], 1):
+    for i, (plugin, time_ms, comp) in enumerate(all_plugins[:top_n], 1):
         print(f"{i}. {plugin}: {time_ms:.3f} ms ({comp})")
 
 
@@ -279,19 +280,21 @@ def profile_full_simulation(
     results = {}
 
     for llh_name, likelihood in context.likelihoods.items():
+        parameters_component = likelihood.replace_alias(parameters)
         for comp_name, component in likelihood.components.items():
             if not isinstance(component, ComponentSim):
+                if verbose:
+                    print(f"\nSkipping {comp_name} (not a simulation component)")
                 continue
 
-            if not hasattr(component, "simulate") or component.simulate is None:
-                component.deduce()
-                component.compile()
+            # When the context is created, the components should already have a simulate method
+            assert hasattr(component, "simulate") and component.simulate is not None
 
             key = randgen.get_key()
 
             # Warmup
             for _ in range(n_warmup):
-                key, result = component.simulate(key, batch_size, parameters)
+                key, result = component.simulate(key, batch_size, parameters_component)
                 for r in result:
                     r.block_until_ready()
 
@@ -299,7 +302,7 @@ def profile_full_simulation(
             times = []
             for _ in range(n_runs):
                 start = time.perf_counter()
-                key, result = component.simulate(key, batch_size, parameters)
+                key, result = component.simulate(key, batch_size, parameters_component)
                 for r in result:
                     r.block_until_ready()
                 end = time.perf_counter()
