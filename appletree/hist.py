@@ -24,7 +24,7 @@ def make_hist_irreg_bin_1d(sample, bins, weights, method='compare_all'):
         sample: array with shape N.
         bins: array with shape M.
         weights: array with shape (N,).
-        method: str passed to `jnp.searchsorted`. Can be 'scan', 'scan_unrolled', 
+        method: str passed to `jnp.searchsorted`. Can be 'scan', 'scan_unrolled',
                 'sort', or 'compare_all'. See jax documentation for details.
 
     """
@@ -47,7 +47,7 @@ def make_hist_irreg_bin_2d(sample, bins_x, bins_y, weights, method='compare_all'
         bins_x: array with shape (M1, ).
         bins_y: array with shape (M1-1, M2).
         weights: array with shape (N,).
-        method: str passed to `jnp.searchsorted`. Can be 'scan', 'scan_unrolled', 
+        method: str passed to `jnp.searchsorted`. Can be 'scan', 'scan_unrolled',
                 'sort', or 'compare_all'. See jax documentation for details.
 
     """

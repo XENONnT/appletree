@@ -257,13 +257,15 @@ class Map(Config):
             setattr(self, "preprocess", self.log_pos)
         else:
             setattr(self, "preprocess", self.linear_pos)
+        self._preprocessed_coordinate_system = self.preprocess(self.coordinate_system)
+        self._preprocessed_map = self.preprocess(self.map)
         setattr(self, "apply", self.map_point)
 
     def map_point(self, pos):
         val = self.interpolator(
             self.preprocess(pos),
-            self.preprocess(self.coordinate_system),
-            self.preprocess(self.map),
+            self._preprocessed_coordinate_system,
+            self._preprocessed_map,
         )
         return val
 
@@ -316,14 +318,17 @@ class Map(Config):
             setattr(self, "preprocess", self.log_pos)
         else:
             setattr(self, "preprocess", self.linear_pos)
+        self._preprocessed_coordinate_lowers = self.preprocess(self.coordinate_lowers)
+        self._preprocessed_coordinate_uppers = self.preprocess(self.coordinate_uppers)
+        self._preprocessed_map = self.preprocess(self.map)
         setattr(self, "apply", self.map_regbin)
 
     def map_regbin(self, pos):
         val = self.interpolator(
             self.preprocess(pos),
-            self.preprocess(self.coordinate_lowers),
-            self.preprocess(self.coordinate_uppers),
-            self.map,
+            self._preprocessed_coordinate_lowers,
+            self._preprocessed_coordinate_uppers,
+            self._preprocessed_map,
         )
         return val
 

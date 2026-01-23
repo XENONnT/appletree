@@ -5,7 +5,6 @@ import hashlib
 from time import time
 from importlib.resources import files as _files
 
-from jax.lib import xla_bridge
 import jax.extend
 import numpy as np
 import pandas as pd
