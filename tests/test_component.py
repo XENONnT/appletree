@@ -96,6 +96,18 @@ def test_sim_component():
     )
     er.compile()
     er.lineage_hash
-    er.simulate_hist(key, batch_size, parameters)
+    key, h = er.simulate_hist(key, batch_size, parameters)
     with pytest.raises(RuntimeError):
         key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)
+
+    # test efield dependence
+    er.set_config({"efield_position_dependence": True})
+    _cached_functions.clear()
+    er.deduce(
+        data_names=("cs1", "cs2"),
+        func_name="er_sim",
+        force_no_eff=True,
+    )
+    er.compile()
+    er.lineage_hash
+    key, h = er.simulate_hist(key, batch_size, parameters)
