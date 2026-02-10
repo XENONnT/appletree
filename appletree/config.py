@@ -232,6 +232,19 @@ class Map(Config):
         self.coordinate_system = jnp.asarray(data["coordinate_system"], dtype=float)
         self.map = jnp.asarray(data["map"], dtype=float)
 
+        # Check whether map is a placeholder map, i.e., all values are the same
+        # If so, try to accelerate
+        if jnp.all(self.map.min() == self.map.max()):
+            warn(f"Map {self.name} is a placeholder map, all values are the same.")
+            # setattr(self, "interpolator", lambda pos, ref_pos, ref_val: self.map[0])
+            # If 1D map, return a constant array with the same shape as pos
+            # If 2D or 3D map, return a constant array with shape pos.shape[0]
+            if len(self.map.shape) == 1:
+                setattr(self, "apply", lambda pos: jnp.ones_like(pos) * self.map.min())
+            else:
+                setattr(self, "apply", lambda pos: jnp.ones((pos.shape[0],), dtype=self.map.dtype) * self.map.min())
+            return
+
         if self.method == "IDW":
             setattr(self, "interpolator", interpolation.curve_interpolator)
         elif self.method == "NN":
@@ -284,6 +297,15 @@ class Map(Config):
         self.coordinate_lowers = jnp.asarray(data["coordinate_lowers"], dtype=float)
         self.coordinate_uppers = jnp.asarray(data["coordinate_uppers"], dtype=float)
         self.map = jnp.asarray(data["map"], dtype=float)
+
+        # Check whether map is a placeholder map, i.e., all values are the same
+        if jnp.all(self.map.min() == self.map.max()):
+            warn(f"Map {self.name} is a placeholder map, all values are the same.")
+            if len(self.map.shape) == 1:
+                setattr(self, "apply", lambda pos: jnp.ones_like(pos) * self.map.min())
+            else:
+                setattr(self, "apply", lambda pos: jnp.ones((pos.shape[0],), dtype=self.map.dtype) * self.map.min())
+            return
 
         if len(self.coordinate_lowers) == 1:
             setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_1d)

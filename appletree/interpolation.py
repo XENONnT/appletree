@@ -74,7 +74,7 @@ def curve_interpolator(pos, ref_pos, ref_val):
     """
     assert len(pos.shape) == 1, "pos must have 1 columns"
 
-    right = jnp.searchsorted(ref_pos, pos)
+    right = jnp.searchsorted(ref_pos, pos, method="compare_all")
     left = right - 1
 
     right = jnp.clip(right, 0, len(ref_pos) - 1)
@@ -271,10 +271,14 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
 
 @jit
 def find_nearest_indices(x, y):
-    x = x[:, jnp.newaxis]
-    differences = jnp.abs(x - y)
-    indices = jnp.argmin(differences, axis=1)
-    return indices
+    idx = jnp.searchsorted(y, x, side="left", method="compare_all")
+    idx = jnp.clip(idx, 1, y.shape[0] - 1)
+    left = y[idx - 1]
+    right = y[idx]
+    left_diff = jnp.abs(x - left)
+    right_diff = jnp.abs(x - right)
+    idx = jnp.where(left_diff <= right_diff, idx - 1, idx)
+    return idx
 
 
 @export
@@ -332,11 +336,11 @@ def map_interpolator_regular_binning_nearest_neighbor_2d(
 
     n0, n1 = ref_val.shape
 
-    bins0 = jnp.linspace(ref_pos_lowers[0], ref_pos_uppers[0], n0)
-    ind0 = find_nearest_indices(pos[:, 0], bins0)
+    bin_size_0 = (ref_pos_uppers[0] - ref_pos_lowers[0]) / (n0 - 1)
+    bin_size_1 = (ref_pos_uppers[1] - ref_pos_lowers[1]) / (n1 - 1)
 
-    bins1 = jnp.linspace(ref_pos_lowers[1], ref_pos_uppers[1], n1)
-    ind1 = find_nearest_indices(pos[:, 1], bins1)
+    ind0 = jnp.round((pos[:, 0] - ref_pos_lowers[0]) / bin_size_0).astype(int)
+    ind1 = jnp.round((pos[:, 1] - ref_pos_lowers[1]) / bin_size_1).astype(int)
 
     val = ref_val[ind0, ind1]
     return val
@@ -361,14 +365,13 @@ def map_interpolator_regular_binning_nearest_neighbor_3d(
 
     n0, n1, n2 = ref_val.shape
 
-    bins0 = jnp.linspace(ref_pos_lowers[0], ref_pos_uppers[0], n0)
-    ind0 = find_nearest_indices(pos[:, 0], bins0)
+    bin_size_0 = (ref_pos_uppers[0] - ref_pos_lowers[0]) / (n0 - 1)
+    bin_size_1 = (ref_pos_uppers[1] - ref_pos_lowers[1]) / (n1 - 1)
+    bin_size_2 = (ref_pos_uppers[2] - ref_pos_lowers[2]) / (n2 - 1)
 
-    bins1 = jnp.linspace(ref_pos_lowers[1], ref_pos_uppers[1], n1)
-    ind1 = find_nearest_indices(pos[:, 1], bins1)
-
-    bins2 = jnp.linspace(ref_pos_lowers[2], ref_pos_uppers[2], n2)
-    ind2 = find_nearest_indices(pos[:, 2], bins2)
+    ind0 = jnp.round((pos[:, 0] - ref_pos_lowers[0]) / bin_size_0).astype(int)
+    ind1 = jnp.round((pos[:, 1] - ref_pos_lowers[1]) / bin_size_1).astype(int)
+    ind2 = jnp.round((pos[:, 2] - ref_pos_lowers[2]) / bin_size_2).astype(int)
 
     val = ref_val[ind0, ind1, ind2]
     return val
