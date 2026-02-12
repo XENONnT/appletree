@@ -160,7 +160,7 @@ class Context:
                 warn(warning)
         return n_events
 
-    def log_posterior(self, parameters, batch_size=1_000_000):
+    def log_posterior(self, parameters, batch_size=1_000_000, repeat_times=1):
         """Get log likelihood of given parameters.
 
         Args:
@@ -169,19 +169,32 @@ class Context:
 
         """
         self.par_manager.set_parameter(parameters)
-
-        key = randgen.get_key()
-        log_posterior = 0
-        for likelihood in self.likelihoods.values():
-            key, log_likelihood_i = likelihood.get_log_likelihood(
-                key,
-                batch_size,
-                self.par_manager.get_all_parameter(),
-            )
-            log_posterior += log_likelihood_i
-
         log_prior = self.par_manager.log_prior
-        log_posterior += log_prior
+        if not np.isfinite(log_prior):
+            # Bypass simulation if prior is invalid
+            return -np.inf, log_prior
+
+        def _log_posterior_once(batch_size):
+            key = randgen.get_key()
+            log_posterior = 0
+            for likelihood in self.likelihoods.values():
+                key, log_likelihood_i = likelihood.get_log_likelihood(
+                    key,
+                    batch_size,
+                    self.par_manager.get_all_parameter(),
+                )
+                log_posterior += log_likelihood_i
+
+            log_posterior += log_prior
+            return log_posterior
+        
+        if repeat_times > 1:
+            log_posteriors = []
+            for _ in range(repeat_times):
+                log_posteriors.append(_log_posterior_once(batch_size))
+            log_posterior = np.mean(log_posteriors)
+        else:
+            log_posterior = _log_posterior_once(batch_size)
 
         return log_posterior, log_prior
 
@@ -200,7 +213,7 @@ class Context:
             print(f"With h5 backend {self.backend_h5}")
 
     def pre_fitting(
-        self, nwalkers=100, read_only=True, reset=False, batch_size=1_000_000, moves=None
+        self, nwalkers=100, read_only=True, reset=False, batch_size=1_000_000, moves=None, repeat_times=1
     ):
         """Prepare for fitting, initialize backend and sampler."""
         self._set_backend(nwalkers, read_only=read_only, reset=reset)
@@ -212,10 +225,10 @@ class Context:
             blobs_dtype=np.float32,
             parameter_names=self.par_manager.parameter_fit,
             moves=moves,
-            kwargs={"batch_size": batch_size},
+            kwargs={"batch_size": batch_size, "repeat_times": repeat_times},
         )
 
-    def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000, moves=None):
+    def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000, moves=None, repeat_times=1):
         """Fitting posterior distribution of needed parameters.
 
         Args:
@@ -231,7 +244,7 @@ class Context:
             p0.append(self.par_manager.parameter_fit_array)
 
         self.pre_fitting(
-            nwalkers=nwalkers, read_only=False, reset=True, batch_size=batch_size, moves=moves
+            nwalkers=nwalkers, read_only=False, reset=True, batch_size=batch_size, moves=moves, repeat_times=repeat_times
         )
 
         result = self.sampler.run_mcmc(
@@ -244,7 +257,7 @@ class Context:
         self._dump_meta(batch_size=batch_size)
         return result
 
-    def continue_fitting(self, context=None, iteration=500, batch_size=1_000_000, moves=None):
+    def continue_fitting(self, context=None, iteration=500, batch_size=1_000_000, moves=None, repeat_times=1):
         """Continue a fitting of another context.
 
         Args:
@@ -265,7 +278,7 @@ class Context:
 
         # Init sampler for current context
         self.pre_fitting(
-            nwalkers=nwalkers, read_only=False, reset=False, batch_size=batch_size, moves=moves
+            nwalkers=nwalkers, read_only=False, reset=False, batch_size=batch_size, moves=moves, repeat_times=repeat_times
         )
 
         result = self.sampler.run_mcmc(
