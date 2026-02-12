@@ -15,6 +15,16 @@ from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
+# Threshold for hybrid binomial: use exact Bernoulli sum for n <= threshold,
+# Cornish-Fisher corrected normal approximation for n > threshold
+HYBRID_BERNOULLI_THRESHOLD = 128
+
+# Environment variable to enable hybrid binomial sampling
+# Set APPLETREE_USE_HYBRID=1 to use Bernoulli sum (small n) + Cornish-Fisher (large n)
+USE_HYBRID = os.environ.get("APPLETREE_USE_HYBRID", "0") == "1"
+if USE_HYBRID:
+    print(f"Using HYBRID binomial sampling (threshold={HYBRID_BERNOULLI_THRESHOLD})")
+
 if jax.config.x64_enabled:
     INT = np.int64
     FLOAT = np.float64
@@ -215,7 +225,129 @@ def bernoulli(key, p, shape=()):
     return key, rvs.astype(INT)
 
 
-if hasattr(random, "binomial"):
+@export
+@partial(jit, static_argnums=(3, 4))
+def binomial_hybrid(key, p, n, shape=(), threshold=HYBRID_BERNOULLI_THRESHOLD):
+    """Hybrid binomial random sampler: Bernoulli sum + Cornish-Fisher expansion.
+
+    For small n (n <= threshold): uses exact Bernoulli sum (no approximation error).
+    For large n (n > threshold): uses Cornish-Fisher corrected normal approximation.
+
+    This hybrid approach is faster than exact binomial while maintaining exact accuracy
+    for small n where the normal approximation is least accurate.
+
+    Args:
+        key: seed for random generator.
+        p: <jnp.array>-like probability in binomial distribution.
+        n: <jnp.array>-like count in binomial distribution.
+        shape: output shape.
+            If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
+        threshold: use Bernoulli sum for n <= threshold, CF for n > threshold.
+
+    Returns:
+        an updated seed, random variables.
+
+    """
+    key, key_cf, key_bernoulli = random.split(key, 3)
+
+    # Determine output shape
+    shape = shape or jnp.broadcast_shapes(jnp.shape(n), jnp.shape(p))
+
+    # Broadcast inputs to output shape
+    p = jnp.broadcast_to(p, shape).astype(FLOAT)
+    n = jnp.broadcast_to(n, shape).astype(FLOAT)
+
+    # ===== Cornish-Fisher path (for n > threshold) =====
+    # Symmetry reduction: use p0 = min(p, 1-p) to reduce skewness
+    flip = p > 0.5
+    p0 = jnp.where(flip, 1.0 - p, p)
+
+    # Compute moments
+    q0 = 1.0 - p0
+    mu = n * p0
+    var = n * p0 * q0
+    sigma = jnp.sqrt(var + 1e-12)
+    var_safe = var + 1e-12
+
+    # Skewness and excess kurtosis
+    gamma1 = (q0 - p0) / (sigma + 1e-12)
+    gamma2 = (1.0 - 6.0 * p0 * q0) / var_safe
+
+    # Sample standard normal
+    z = random.normal(key_cf, shape=shape, dtype=FLOAT)
+
+    # Second-order Cornish-Fisher expansion
+    z2 = z * z
+    z3 = z2 * z
+    gamma1_sq = gamma1 * gamma1
+
+    z_cf = (
+        z
+        + (gamma1 / 6.0) * (z2 - 1.0)
+        + (gamma2 / 24.0) * (z3 - 3.0 * z)
+        - (gamma1_sq / 36.0) * (2.0 * z3 - 5.0 * z)
+    )
+
+    # Transform to binomial scale
+    x_cf = mu + sigma * z_cf
+    x_cf = jnp.round(x_cf)
+    x_cf = jnp.clip(x_cf, 0.0, n)
+
+    # Flip back if we used symmetry reduction
+    x_cf = jnp.where(flip, n - x_cf, x_cf)
+
+    # ===== Bernoulli sum path (for n <= threshold, exact) =====
+    # Optimized: transposed layout (N, threshold) for better GPU memory coalescing
+    n_flat = n.ravel()
+    p_flat = p.ravel()
+    num_elements = n_flat.shape[0]
+
+    # Generate uniform random numbers for Bernoulli trials
+    uniforms = random.uniform(key_bernoulli, (num_elements, threshold), dtype=FLOAT)
+
+    # Create mask for valid trials: only count trials where trial_idx < n
+    trial_idx = jnp.arange(threshold, dtype=FLOAT)[None, :]
+    mask = trial_idx < n_flat[:, None]
+
+    # Bernoulli trials: uniform < p gives success
+    successes = (uniforms < p_flat[:, None]) & mask
+    x_bernoulli = jnp.sum(successes, axis=1).reshape(shape)
+
+    # ===== Combine paths based on n =====
+    x = jnp.where(n <= threshold, x_bernoulli, x_cf)
+
+    # Handle edge cases exactly
+    x = jnp.where(p <= 0.0, 0.0, x)
+    x = jnp.where(p >= 1.0, n, x)
+    x = jnp.where(n <= 0.0, 0.0, x)
+
+    return key, x.astype(INT)
+
+
+if USE_HYBRID:
+    # Use hybrid binomial (Bernoulli sum for small n, Cornish-Fisher for large n)
+    @export
+    @partial(jit, static_argnums=(3,))
+    def binomial(key, p, n, shape=()):
+        """Binomial random sampler (hybrid approximation).
+
+        Uses exact Bernoulli sum for small n (n <= threshold).
+        Uses Cornish-Fisher corrected normal approximation for large n.
+
+        Args:
+            key: seed for random generator.
+            p: <jnp.array>-like probability in binomial distribution.
+            n: <jnp.array>-like count in binomial distribution.
+            shape: output shape.
+                If not given, output has shape jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n)).
+
+        Returns:
+            an updated seed, random variables.
+
+        """
+        return binomial_hybrid(key, p, n, shape)
+
+elif hasattr(random, "binomial"):
 
     @export
     @partial(jit, static_argnums=(3,))
