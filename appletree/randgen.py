@@ -281,10 +281,12 @@ def binomial_hybrid(key, p, n, shape=(), threshold=HYBRID_BERNOULLI_THRESHOLD):
     z3 = z2 * z
     gamma1_sq = gamma1 * gamma1
 
-    z_cf = (z
-            + (gamma1 / 6.0) * (z2 - 1.0)
-            + (gamma2 / 24.0) * (z3 - 3.0 * z)
-            - (gamma1_sq / 36.0) * (2.0 * z3 - 5.0 * z))
+    z_cf = (
+        z
+        + (gamma1 / 6.0) * (z2 - 1.0)
+        + (gamma2 / 24.0) * (z3 - 3.0 * z)
+        - (gamma1_sq / 36.0) * (2.0 * z3 - 5.0 * z)
+    )
 
     # Transform to binomial scale
     x_cf = mu + sigma * z_cf
