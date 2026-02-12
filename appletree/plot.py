@@ -88,6 +88,10 @@ class Plotter:
         if save:
             save_fig(fig, "autocorr", fmt)
 
+        fig, axes = self.plot_acceptance_fraction()
+        if save:
+            save_fig(fig, "acceptance_fraction", fmt)
+
     @staticmethod
     def _norm_pdf(x, mean, std):
         return np.exp(-((x - mean) ** 2) / std**2 / 2) / np.sqrt(2 * np.pi) / std
@@ -355,6 +359,90 @@ class Plotter:
             labels=labels,
             bbox_to_anchor=(0.5, 1.0),
         )
+
+        plt.tight_layout()
+        return fig, axes
+
+    def plot_acceptance_fraction(self, fig=None, window_length=100, **plot_kwargs):
+        """Plot the acceptance fraction of the chain.
+        This function plots two figures: one for the average acceptance fraction over all walkers
+        as a function of iterations, and another for the acceptance fraction of each walker.
+
+        A "healthy" region of 0.2 to 0.5 is highlighted in both plots.
+
+        Args:
+            fig: the figure to plot on. If None, a new figure will be created.
+            window_length: the window length for the moving average,
+                           in number of iterations. Default is 100.
+            plot_kwargs: the keyword arguments passed to plt.plot().
+        Returns:
+            fig: the figure.
+            ax: the axis of the figure.
+
+        """
+        if fig is None:
+            fig, axes = plt.subplots(2, 1, figsize=(10, 8))
+        else:
+            axes = fig.get_axes()
+        plot_kwargs.setdefault("lw", 2)
+
+        # Definition of the acceptance: whether the step is the same as the previous step
+        # We use self.chain to compute the acceptance fraction
+        n_iter, n_walker, n_param = self.chain.shape
+        accepted = np.zeros((n_iter - 1, n_walker), dtype=bool)
+        for i in range(1, n_iter):
+            accepted[i - 1, :] = np.any(self.chain[i, :, :] != self.chain[i - 1, :, :], axis=1)
+        acceptance_fraction = np.cumsum(accepted, axis=0) / np.arange(1, n_iter).reshape(-1, 1)
+        avg_acceptance_fraction = np.mean(acceptance_fraction, axis=1)
+
+        # Calculate moving average acceptance fraction
+        if window_length >= n_iter:
+            warn(
+                "Window length is greater than or equal to the number of iterations. "
+                "Setting window length to n_iter - 1."
+            )
+            window_length = n_iter - 1
+        moving_avg_acceptance_fraction = np.zeros(n_iter - window_length)
+        for i in range(window_length, n_iter):
+            window_accepted = np.sum(accepted[i - window_length : i, :], axis=0)
+            moving_avg_per_walker = window_accepted / window_length
+            moving_avg_acceptance_fraction[i - window_length] = np.mean(moving_avg_per_walker)
+
+        # Plot average acceptance fraction
+        ax = axes[0]
+        ax.plot(
+            np.arange(1, n_iter) * self.thin + self.discard,
+            avg_acceptance_fraction,
+            label="cumulative",
+            **plot_kwargs,
+        )
+        ax.plot(
+            np.arange(window_length, n_iter) * self.thin + self.discard,
+            moving_avg_acceptance_fraction,
+            label="moving average",
+            **plot_kwargs,
+        )
+        ax.axhspan(0.2, 0.5, color="grey", alpha=0.3, label="Healthy region (0.2 - 0.5)")
+        ax.set_ylabel("Average Acceptance Fraction")
+        ax.set_xlim(self.discard, self.n_iter * self.thin + self.discard)
+        ax.set_ylim(0, 1)
+        ax.set_xlabel("Number of iterations")
+        ax.legend()
+
+        # Plot the mean acceptance fraction over all iterations, as a function of each walker
+        ax = axes[1]
+        mean_acceptance_fraction_per_walker = np.mean(acceptance_fraction, axis=0)
+        ax.plot(
+            np.arange(n_walker),
+            mean_acceptance_fraction_per_walker,
+            **plot_kwargs,
+        )
+        ax.axhspan(0.2, 0.5, color="grey", alpha=0.3, label="Healthy region (0.2 - 0.5)")
+        ax.set_ylabel("Mean Acceptance Fraction per Walker")
+        ax.set_xlim(0, n_walker - 1)
+        ax.set_ylim(0, 1)
+        ax.set_xlabel("Walker Index")
+        ax.legend()
 
         plt.tight_layout()
         return fig, axes
