@@ -1,3 +1,17 @@
+v0.5.5 / 2026-02-12
+-------------------
+* Check the shape of input of interpolation by @dachengx in https://github.com/XENONnT/appletree/pull/201
+* Use numbered version of `docformatter` by @dachengx in https://github.com/XENONnT/appletree/pull/203
+* Load data from the local downloaded path assigned by `MongoDownloader` by @dachengx in https://github.com/XENONnT/appletree/pull/202
+* Equal probability binning on integer sample by @dachengx in https://github.com/XENONnT/appletree/pull/205
+* Be able to set `moves` by @dachengx in https://github.com/XENONnT/appletree/pull/206
+* Plot actual time series evaluation before applying chain reduction `thin` by @dachengx in https://github.com/XENONnT/appletree/pull/207
+* Acceptance plot by @mhliu0001 in https://github.com/XENONnT/appletree/pull/210
+* Add pandas version requirement by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/212
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.5.4...v0.5.5
+
+
 v0.5.4 / 2025-02-03
 -------------------
 * Use `importlib.resources.files` and support python 3.11 by @dachengx in https://github.com/XENONnT/appletree/pull/199
