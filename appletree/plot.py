@@ -651,8 +651,8 @@ def _plot_sigma_map_1d_point(config):
 
     color = plt.rcParams["axes.prop_cycle"].by_key()["color"][0]
     ax.plot(x_med, y_med, color=color)
-    ax.plot(x_low, y_low, color=color)
-    ax.plot(x_up, y_up, color=color)
+    ax.plot(x_low, y_low, color=color, alpha=0.3)
+    ax.plot(x_up, y_up, color=color, alpha=0.3)
     # Interpolate onto a fine common grid for smooth fill_between
     x_all = np.concatenate([x_med, x_low, x_up])
     x_fine = np.linspace(x_all.min(), x_all.max(), 500)
@@ -676,8 +676,8 @@ def _plot_sigma_map_1d_regbin(config, med_data, low_data,
 
     color = plt.rcParams["axes.prop_cycle"].by_key()["color"][0]
     ax.plot(centers, med_data, color=color)
-    ax.plot(centers, low_data, color=color)
-    ax.plot(centers, up_data, color=color)
+    ax.plot(centers, low_data, color=color, alpha=0.3)
+    ax.plot(centers, up_data, color=color, alpha=0.3)
     ax.fill_between(centers, low_data, up_data, color=color, alpha=0.3)
     if is_log:
         ax.set_xscale("log")
