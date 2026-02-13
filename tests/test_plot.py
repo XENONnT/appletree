@@ -1,7 +1,9 @@
 import appletree as apt
 from appletree import Plotter
 from appletree.plot import (
-    plot_maps, _collect_maps, _collapse_regbin_map,
+    plot_maps,
+    _collect_maps,
+    _collapse_regbin_map,
 )
 from appletree.share import _cached_configs, _cached_functions
 from appletree.utils import load_json
@@ -99,7 +101,10 @@ def test_collapse_regbin_map():
 
     # Collapse z axis
     result, names, lowers, uppers = _collapse_regbin_map(
-        map_data, coord_name, coord_lowers, coord_uppers,
+        map_data,
+        coord_name,
+        coord_lowers,
+        coord_uppers,
         collapse={"z": None},
     )
     assert result.shape == (2, 3)
@@ -107,7 +112,10 @@ def test_collapse_regbin_map():
 
     # Collapse with range
     result, names, lowers, uppers = _collapse_regbin_map(
-        map_data, coord_name, coord_lowers, coord_uppers,
+        map_data,
+        coord_name,
+        coord_lowers,
+        coord_uppers,
         collapse={"z": (0.5, 1.5)},
     )
     assert result.shape == (2, 3)
@@ -115,7 +123,10 @@ def test_collapse_regbin_map():
 
     # Collapse two axes
     result, names, lowers, uppers = _collapse_regbin_map(
-        map_data, coord_name, coord_lowers, coord_uppers,
+        map_data,
+        coord_name,
+        coord_lowers,
+        coord_uppers,
         collapse={"y": None, "z": None},
     )
     assert result.shape == (2,)
@@ -123,7 +134,10 @@ def test_collapse_regbin_map():
 
     # No collapse
     result, names, lowers, uppers = _collapse_regbin_map(
-        map_data, coord_name, coord_lowers, coord_uppers,
+        map_data,
+        coord_name,
+        coord_lowers,
+        coord_uppers,
         collapse=None,
     )
     assert result.shape == (2, 3, 4)
