@@ -103,138 +103,127 @@ class Likelihood:
         """Get component in likelihood."""
         return self.components[keys]
 
+    def _resolve_bin_edges(self, bin_spec, clip_range, config, warn_key):
+        """Resolve a single axis bin specification into bin edges.
+
+        Args:
+            bin_spec: int (number of bins) or array-like (explicit edges).
+            clip_range: tuple of (lo, hi) for linspace when bin_spec is int.
+            config: the full config dict.
+            warn_key: config key (e.g. "x_clip") to check for spurious warning.
+
+        """
+        if isinstance(bin_spec, int):
+            return np.linspace(*clip_range, bin_spec + 1)
+        else:
+            edges = np.array(bin_spec)
+            if warn_key in config:
+                warn(
+                    f"{warn_key} is ignored when bins_type is "
+                    f"{self._bins_type} and bins is not int"
+                )
+            return edges
+
+    def _resolve_explicit_bins(self, config):
+        """Resolve explicit bin specs (meshgrid or irreg) into a tuple of arrays."""
+        if self._dim == 1:
+            bins = self._resolve_bin_edges(
+                self._bins[0], config["clip"], config, "x_clip",
+            )
+            return (bins,)
+        else:
+            x_bins = self._resolve_bin_edges(
+                self._bins[0], config["x_clip"], config, "x_clip",
+            )
+            y_bins = self._resolve_bin_edges(
+                self._bins[1], config["y_clip"], config, "y_clip",
+            )
+            return (x_bins, y_bins)
+
+    def _make_data_hist(self, use_meshgrid=False):
+        """Create the data histogram from self.data and self._bins."""
+        weights = np.ones(len(self.data))
+        if use_meshgrid:
+            self.data_hist = make_hist_mesh_grid(
+                self.data, bins=self._bins, weights=weights,
+            )
+        elif self._dim == 1:
+            self.data_hist = make_hist_irreg_bin_1d(
+                self.data[:, 0], bins=self._bins[0], weights=weights,
+            )
+        else:
+            self.data_hist = make_hist_irreg_bin_2d(
+                self.data,
+                bins_x=self._bins[0], bins_y=self._bins[1],
+                weights=weights,
+            )
+
+    def _validate_irreg_bins_2d(self):
+        """Validate irregular 2D bins: x-bins length and y-bins uniformity."""
+        if len(self._bins[0]) != len(self._bins[1]) + 1:
+            raise ValueError(
+                f"The x-binning should 1 longer than y-binning, "
+                f"please check the binning in {self.name}!"
+            )
+        if not all(len(b) == len(self._bins[1][0]) for b in self._bins[1]):
+            raise ValueError(
+                f"All y-binning should have the same length, "
+                f"please check the binning in {self.name}!"
+            )
+
     def set_binning(self, config):
         """Set binning of likelihood."""
-        if self._dim == 1 or self._dim == 2:
-            pass
-        else:
-            raise ValueError(f"Currently only support 1D and 2D, but got {self._dim}D!")
-        if self._bins_type == "meshgrid":
-            warning = "The usage of meshgrid binning is highly discouraged."
-            warn(warning)
-            self.component_bins_type = "meshgrid"
-            if self._dim == 1:
-                if isinstance(self._bins[0], int):
-                    bins = np.linspace(*config["clip"], self._bins[0] + 1)
-                else:
-                    bins = np.array(self._bins[0])
-                    if "x_clip" in config:
-                        warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
-                        warn(warning)
-                self._bins = (bins,)
-            elif self._dim == 2:
-                if isinstance(self._bins[0], int):
-                    x_bins = np.linspace(*config["x_clip"], self._bins[0] + 1)
-                else:
-                    x_bins = np.array(self._bins[0])
-                    if "x_clip" in config:
-                        warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
-                        warn(warning)
-                if isinstance(self._bins[1], int):
-                    y_bins = np.linspace(*config["y_clip"], self._bins[1] + 1)
-                else:
-                    y_bins = np.array(self._bins[1])
-                    if "y_clip" in config:
-                        warning = "y_clip is ignored when bins_type is meshgrid and bins is not int"
-                        warn(warning)
-                self._bins = (x_bins, y_bins)
-            self.data_hist = make_hist_mesh_grid(
-                self.data,
-                bins=self._bins,
-                weights=np.ones(len(self.data)),
+        if self._dim not in (1, 2):
+            raise ValueError(
+                f"Currently only support 1D and 2D, but got {self._dim}D!"
             )
+
+        if self._bins_type == "meshgrid":
+            warn("The usage of meshgrid binning is highly discouraged.")
+            self.component_bins_type = "meshgrid"
+            self._bins = self._resolve_explicit_bins(config)
+            self._make_data_hist(use_meshgrid=True)
+
         elif self._bins_type == "equiprob":
-            if not all([isinstance(b, int) for b in self._bins]):
-                raise RuntimeError("bins can only be int if bins_type is equiprob")
+            if not all(isinstance(b, int) for b in self._bins):
+                raise RuntimeError(
+                    "bins can only be int if bins_type is equiprob"
+                )
             if self._dim == 1:
-                self._bins = get_equiprob_bins_1d(
-                    self.data[:, 0],
-                    self._bins[0],
+                self._bins = (get_equiprob_bins_1d(
+                    self.data[:, 0], self._bins[0],
                     clip=config["clip"],
                     integer=config.get("integer", False),
                     left=config.get("left", True),
                     which_np=np,
-                )
-                self._bins = (self._bins,)
-                self.data_hist = make_hist_irreg_bin_1d(
-                    self.data[:, 0],
-                    bins=self._bins[0],
-                    weights=np.ones(len(self.data)),
-                )
-            elif self._dim == 2:
+                ),)
+            else:
                 self._bins = get_equiprob_bins_2d(
-                    self.data,
-                    self._bins,
-                    x_clip=config["x_clip"],
-                    y_clip=config["y_clip"],
+                    self.data, self._bins,
+                    x_clip=config["x_clip"], y_clip=config["y_clip"],
                     integer=config.get("integer", [False, False]),
                     left=config.get("left", True),
                     which_np=np,
                 )
-                self.data_hist = make_hist_irreg_bin_2d(
-                    self.data,
-                    bins_x=self._bins[0],
-                    bins_y=self._bins[1],
-                    weights=np.ones(len(self.data)),
-                )
             self.component_bins_type = "irreg"
+            self._make_data_hist()
+
         elif self._bins_type == "irreg":
             self._bins = [np.array(b) for b in self._bins]
-            if self._dim == 1:
-                if isinstance(self._bins[0], int):
-                    bins = np.linspace(*config["clip"], self._bins[0] + 1)
-                else:
-                    bins = np.array(self._bins[0])
-                    if "x_clip" in config:
-                        warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
-                        warn(warning)
-                self._bins = (bins,)
-            elif self._dim == 2:
-                if isinstance(self._bins[0], int):
-                    x_bins = np.linspace(*config["x_clip"], self._bins[0] + 1)
-                else:
-                    x_bins = np.array(self._bins[0])
-                    if "x_clip" in config:
-                        warning = "x_clip is ignored when bins_type is meshgrid and bins is not int"
-                        warn(warning)
-                if isinstance(self._bins[1], int):
-                    y_bins = np.linspace(*config["y_clip"], self._bins[1] + 1)
-                else:
-                    y_bins = np.array(self._bins[1])
-                    if "y_clip" in config:
-                        warning = "y_clip is ignored when bins_type is meshgrid and bins is not int"
-                        warn(warning)
-                self._bins = (x_bins, y_bins)
+            self._bins = self._resolve_explicit_bins(config)
             self.component_bins_type = "irreg"
             if self._dim == 2:
-                mask = len(self._bins[0]) != len(self._bins[1]) + 1
-                if mask:
-                    raise ValueError(
-                        f"The x-binning should 1 longer than y-binning, "
-                        f"please check the binning in {self.name}!"
-                    )
-                mask = not all(len(b) == len(self._bins[1][0]) for b in self._bins[1])
-                if mask:
-                    raise ValueError(
-                        f"All y-binning should have the same length, "
-                        f"please check the binning in {self.name}!"
-                    )
-            if self._dim == 1:
-                self.data_hist = make_hist_irreg_bin_1d(
-                    self.data[:, 0],
-                    bins=self._bins[0],
-                    weights=np.ones(len(self.data)),
-                )
-            elif self._dim == 2:
-                self.data_hist = make_hist_irreg_bin_2d(
-                    self.data,
-                    bins_x=self._bins[0],
-                    bins_y=self._bins[1],
-                    weights=np.ones(len(self.data)),
-                )
+                self._validate_irreg_bins_2d()
+            self._make_data_hist()
+
         else:
-            raise ValueError("'bins_type' should either be meshgrid, equiprob or irreg")
-        assert isinstance(self._bins, tuple), "bins should be tuple after setting binning!"
+            raise ValueError(
+                "'bins_type' should either be meshgrid, equiprob or irreg"
+            )
+
+        assert isinstance(self._bins, tuple), (
+            "bins should be tuple after setting binning!"
+        )
 
     def register_component(
         self, component_cls: Type[Component], component_name: str, file_name: Optional[str] = None
@@ -369,6 +358,28 @@ class Likelihood:
         _, model_hist = self._simulate_model_hist(key, batch_size, parameters)
         return model_hist.sum()
 
+    def _print_components(self, indent: str = " " * 4, short: bool = True):
+        """Print component details shared by Likelihood and LikelihoodLit."""
+        for i, component_name in enumerate(self.components):
+            component = self[component_name]
+            need = component.needed_parameters
+
+            print(f"{indent}COMPONENT {i}: {component_name}")
+            if isinstance(component, ComponentSim):
+                print(f"{indent * 2}type: simulation")
+                print(f"{indent * 2}rate_par: {component.rate_name}")
+                print(f"{indent * 2}pars: {need}")
+                if not short:
+                    print(f"{indent * 2}worksheet: {component.worksheet}")
+            elif isinstance(component, ComponentFixed):
+                print(f"{indent * 2}type: fixed")
+                print(f"{indent * 2}file_name: {component._file_name}")
+                print(f"{indent * 2}rate_par: {component.rate_name}")
+                print(f"{indent * 2}pars: {need}")
+                if not short:
+                    print(f"{indent * 2}from_file: {component._file_name}")
+            print()
+
     def print_likelihood_summary(self, indent: str = " " * 4, short: bool = True):
         """Print likelihood summary: components, bins, file names.
 
@@ -391,28 +402,7 @@ class Likelihood:
         print("\n" + "-" * 40)
 
         print("MODEL\n")
-        for i, component_name in enumerate(self.components):
-            name = component_name
-            component = self[component_name]
-            need = component.needed_parameters
-
-            print(f"{indent}COMPONENT {i}: {name}")
-            if isinstance(component, ComponentSim):
-                print(f"{indent * 2}type: simulation")
-                print(f"{indent * 2}rate_par: {component.rate_name}")
-                print(f"{indent * 2}pars: {need}")
-                if not short:
-                    print(f"{indent * 2}worksheet: {component.worksheet}")
-            elif isinstance(component, ComponentFixed):
-                print(f"{indent * 2}type: fixed")
-                print(f"{indent * 2}file_name: {component._file_name}")
-                print(f"{indent * 2}rate_par: {component.rate_name}")
-                print(f"{indent * 2}pars: {need}")
-                if not short:
-                    print(f"{indent * 2}from_file: {component._file_name}")
-            else:
-                pass
-            print()
+        self._print_components(indent, short)
 
         print("-" * 40)
 
@@ -563,28 +553,7 @@ class LikelihoodLit(Likelihood):
         print("\n" + "-" * 40)
 
         print("MODEL\n")
-        for i, component_name in enumerate(self.components):
-            name = component_name
-            component = self[component_name]
-            need = component.needed_parameters
-
-            print(f"{indent}COMPONENT {i}: {name}")
-            if isinstance(component, ComponentSim):
-                print(f"{indent * 2}type: simulation")
-                print(f"{indent * 2}rate_par: {component.rate_name}")
-                print(f"{indent * 2}pars: {need}")
-                if not short:
-                    print(f"{indent * 2}worksheet: {component.worksheet}")
-            elif isinstance(component, ComponentFixed):
-                print(f"{indent * 2}type: fixed")
-                print(f"{indent * 2}file_name: {component._file_name}")
-                print(f"{indent * 2}rate_par: {component.rate_name}")
-                print(f"{indent * 2}pars: {need}")
-                if not short:
-                    print(f"{indent * 2}from_file: {component._file_name}")
-            else:
-                pass
-            print()
+        self._print_components(indent, short)
 
         print("-" * 40)
 
