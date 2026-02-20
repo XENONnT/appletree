@@ -184,7 +184,7 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
     bin_sizes = bin_sizes[jnp.newaxis, :]
 
     ind1 = jnp.floor((pos - ref_pos_lowers) / bin_sizes)
-    ind1 = jnp.clip(ind1, a_min=0, a_max=num_bins - 1)
+    ind1 = jnp.clip(ind1, 0, num_bins - 1)
     ind1 = jnp.asarray(ind1, dtype=int)
     ind2 = ind1.at[:, 0].add(1)
     ind3 = ind1.at[:, 1].add(1)

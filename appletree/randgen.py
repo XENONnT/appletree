@@ -7,7 +7,6 @@ import jax
 from jax import numpy as jnp
 import numpy as np
 from jax import random, lax, jit, vmap
-from numpyro.distributions.util import _binomial_dispatch as _binomial_dispatch_numpyro
 from scipy.interpolate import interp1d
 
 from appletree.utils import exporter
@@ -152,7 +151,7 @@ def truncate_normal(key, mean, std, vmin=None, vmax=None, shape=()):
 
     """
     key, rvs = normal(key, mean, std, shape=shape)
-    rvs = jnp.clip(rvs, a_min=vmin, a_max=vmax)
+    rvs = jnp.clip(rvs, vmin, vmax)
     return key, rvs.astype(FLOAT)
 
 
@@ -246,6 +245,8 @@ if hasattr(random, "binomial"):
         return key, rvs.astype(INT)
 
 else:
+    from numpyro.distributions.util import _binomial_dispatch as _binomial_dispatch_numpyro
+
     warn("random.binomial is not available, using numpyro's _binomial_dispatch instead.")
     if os.environ.get("DO_NOT_USE_APPROX_IN_BINOM") is None:
         ALWAYS_USE_NORMAL_APPROX_IN_BINOM = True
@@ -277,7 +278,7 @@ else:
             q = 1.0 - p
             mean = n * p
             std = jnp.sqrt(n * p * q)
-            rvs = jnp.clip(random.normal(seed) * std + mean, a_min=0.0, a_max=n)
+            rvs = jnp.clip(random.normal(seed) * std + mean, 0.0, n)
             return rvs.round().astype(INT)
 
         def _binomial_dispatch(seed, p, n):
