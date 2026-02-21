@@ -181,6 +181,12 @@ class Map(Config):
 
     """
 
+    _POINT_INTERPOLATORS = {
+        "IDW": interpolation.curve_interpolator,
+        "NN": interpolation.map_interpolator_nearest_neighbor_1d,
+        "LERP": interpolation.map_interpolator_linear_1d,
+    }
+
     _REGBIN_INTERPOLATORS = {
         (2, "IDW"): interpolation.map_interpolator_regular_binning_2d,
         (2, "NN"): interpolation.map_interpolator_regular_binning_nearest_neighbor_2d,
@@ -236,14 +242,9 @@ class Map(Config):
         self.coordinate_system = jnp.asarray(data["coordinate_system"], dtype=float)
         self.map = jnp.asarray(data["map"], dtype=float)
 
-        _point_interpolators = {
-            "IDW": interpolation.curve_interpolator,
-            "NN": interpolation.map_interpolator_nearest_neighbor_1d,
-            "LERP": interpolation.map_interpolator_linear_1d,
-        }
-        if self.method not in _point_interpolators:
+        if self.method not in self._POINT_INTERPOLATORS:
             raise ValueError(f"Unknown method {self.method} for point interpolation.")
-        self.interpolator = _point_interpolators[self.method]
+        self.interpolator = self._POINT_INTERPOLATORS[self.method]
         self._set_preprocessor(self.coordinate_system)
         self.apply = self.map_point
 
