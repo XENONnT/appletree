@@ -297,10 +297,7 @@ class Map(Config):
         try:
             return self._REGBIN_INTERPOLATORS[key]
         except KeyError:
-            raise ValueError(
-                f"Unknown method {self.method} "
-                f"for {ndim}D regular binning."
-            )
+            raise ValueError(f"Unknown method {self.method} " f"for {ndim}D regular binning.")
 
     def map_regbin(self, pos):
         val = self.interpolator(
@@ -373,8 +370,7 @@ class SigmaMap(Config):
             return configs[index]
         if not isinstance(configs, str):
             raise ValueError(
-                f"If {self.name}'s {label} is not a list, "
-                "then it should be a string."
+                f"If {self.name}'s {label} is not a list, " "then it should be a string."
             )
         return configs
 
@@ -386,7 +382,8 @@ class SigmaMap(Config):
             _cached_configs[map_name] = dict()
         if isinstance(_cached_configs[map_name], dict):
             existing = _cached_configs[map_name].get(
-                self.llh_name, value,
+                self.llh_name,
+                value,
             )
             if existing != value:
                 raise ValueError(
@@ -402,19 +399,16 @@ class SigmaMap(Config):
         _configs_default = self.get_default()
 
         if isinstance(_configs, list) and len(_configs) > 4:
-            raise ValueError(
-                f"You give too much information in {self.name}'s configs."
-            )
+            raise ValueError(f"You give too much information in {self.name}'s configs.")
         if isinstance(_configs_default, list) and len(_configs_default) > 4:
-            raise ValueError(
-                f"You give too much information in "
-                f"{self.name}'s default configs."
-            )
+            raise ValueError(f"You give too much information in " f"{self.name}'s default configs.")
 
         sigmas = ["median", "lower", "upper"]
         for i, sigma in enumerate(sigmas):
             default = self._resolve_sigma_value(
-                _configs_default, i, "default configuration",
+                _configs_default,
+                i,
+                "default configuration",
             )
             m = Map(
                 method=self.method,
@@ -425,7 +419,9 @@ class SigmaMap(Config):
 
             if self.llh_name is not None:
                 value = self._resolve_sigma_value(
-                    _configs, i, "configuration",
+                    _configs,
+                    i,
+                    "configuration",
                 )
                 self._update_sigma_cache(m.name, value)
 
@@ -440,10 +436,7 @@ class SigmaMap(Config):
                 f"the parameter {required_parameter}."
             )
         else:
-            print(
-                f"{self.llh_name}'s map {self.name} is static "
-                f"and not using any parameter."
-            )
+            print(f"{self.llh_name}'s map {self.name} is static " f"and not using any parameter.")
 
     def get_configs(self, llh_name=None):
         """Get configs of SigmaMap."""
