@@ -78,7 +78,7 @@ class Likelihood:
             self._dim = len(self._bins_on)
             assert isinstance(
                 self._bins, list
-            ), "bins should be list if not 1D fitting, but got {self._bins}!"
+            ), f"bins should be list if not 1D fitting, but got {self._bins}!"
         else:
             raise ValueError(
                 f"bins_on should be either str or list of str, but got {self._bins_on}."
@@ -463,7 +463,7 @@ class LikelihoodLit(Likelihood):
         self.logpdf_args = {k: np.array(v) for k, v in zip(*logpdf_args)}
 
         self.variable_type = config["variable_type"]
-        self.warning = "Currently only support one dimensional inference"
+        self.warning = "Currently only support two dimensional inference"
         self._sanity_check()
 
         if self.variable_type == "twohalfnorm":
