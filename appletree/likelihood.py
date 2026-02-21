@@ -128,15 +128,24 @@ class Likelihood:
         """Resolve explicit bin specs (meshgrid or irreg) into a tuple of arrays."""
         if self._dim == 1:
             bins = self._resolve_bin_edges(
-                self._bins[0], config["clip"], config, "x_clip",
+                self._bins[0],
+                config["clip"],
+                config,
+                "x_clip",
             )
             return (bins,)
         else:
             x_bins = self._resolve_bin_edges(
-                self._bins[0], config["x_clip"], config, "x_clip",
+                self._bins[0],
+                config["x_clip"],
+                config,
+                "x_clip",
             )
             y_bins = self._resolve_bin_edges(
-                self._bins[1], config["y_clip"], config, "y_clip",
+                self._bins[1],
+                config["y_clip"],
+                config,
+                "y_clip",
             )
             return (x_bins, y_bins)
 
@@ -145,16 +154,21 @@ class Likelihood:
         weights = np.ones(len(self.data))
         if use_meshgrid:
             self.data_hist = make_hist_mesh_grid(
-                self.data, bins=self._bins, weights=weights,
+                self.data,
+                bins=self._bins,
+                weights=weights,
             )
         elif self._dim == 1:
             self.data_hist = make_hist_irreg_bin_1d(
-                self.data[:, 0], bins=self._bins[0], weights=weights,
+                self.data[:, 0],
+                bins=self._bins[0],
+                weights=weights,
             )
         else:
             self.data_hist = make_hist_irreg_bin_2d(
                 self.data,
-                bins_x=self._bins[0], bins_y=self._bins[1],
+                bins_x=self._bins[0],
+                bins_y=self._bins[1],
                 weights=weights,
             )
 
@@ -174,9 +188,7 @@ class Likelihood:
     def set_binning(self, config):
         """Set binning of likelihood."""
         if self._dim not in (1, 2):
-            raise ValueError(
-                f"Currently only support 1D and 2D, but got {self._dim}D!"
-            )
+            raise ValueError(f"Currently only support 1D and 2D, but got {self._dim}D!")
 
         if self._bins_type == "meshgrid":
             warn("The usage of meshgrid binning is highly discouraged.")
@@ -186,21 +198,24 @@ class Likelihood:
 
         elif self._bins_type == "equiprob":
             if not all(isinstance(b, int) for b in self._bins):
-                raise RuntimeError(
-                    "bins can only be int if bins_type is equiprob"
-                )
+                raise RuntimeError("bins can only be int if bins_type is equiprob")
             if self._dim == 1:
-                self._bins = (get_equiprob_bins_1d(
-                    self.data[:, 0], self._bins[0],
-                    clip=config["clip"],
-                    integer=config.get("integer", False),
-                    left=config.get("left", True),
-                    which_np=np,
-                ),)
+                self._bins = (
+                    get_equiprob_bins_1d(
+                        self.data[:, 0],
+                        self._bins[0],
+                        clip=config["clip"],
+                        integer=config.get("integer", False),
+                        left=config.get("left", True),
+                        which_np=np,
+                    ),
+                )
             else:
                 self._bins = get_equiprob_bins_2d(
-                    self.data, self._bins,
-                    x_clip=config["x_clip"], y_clip=config["y_clip"],
+                    self.data,
+                    self._bins,
+                    x_clip=config["x_clip"],
+                    y_clip=config["y_clip"],
                     integer=config.get("integer", [False, False]),
                     left=config.get("left", True),
                     which_np=np,
@@ -217,13 +232,9 @@ class Likelihood:
             self._make_data_hist()
 
         else:
-            raise ValueError(
-                "'bins_type' should either be meshgrid, equiprob or irreg"
-            )
+            raise ValueError("'bins_type' should either be meshgrid, equiprob or irreg")
 
-        assert isinstance(self._bins, tuple), (
-            "bins should be tuple after setting binning!"
-        )
+        assert isinstance(self._bins, tuple), "bins should be tuple after setting binning!"
 
     def register_component(
         self, component_cls: Type[Component], component_name: str, file_name: Optional[str] = None

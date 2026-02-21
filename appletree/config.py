@@ -180,6 +180,7 @@ class Map(Config):
     When using log-binning, we will first convert the positions to log space.
 
     """
+
     _REGBIN_INTERPOLATORS = {
         (2, "IDW"): interpolation.map_interpolator_regular_binning_2d,
         (2, "NN"): interpolation.map_interpolator_regular_binning_nearest_neighbor_2d,
@@ -194,7 +195,8 @@ class Map(Config):
     def build(self, llh_name: Optional[str] = None):
         """Cache the map to jnp.array."""
         self.file_path = self._resolve_cached_config(
-            llh_name, transform=get_file_path,
+            llh_name,
+            transform=get_file_path,
         )
 
         # try to find the path first
@@ -240,9 +242,7 @@ class Map(Config):
             "LERP": interpolation.map_interpolator_linear_1d,
         }
         if self.method not in _point_interpolators:
-            raise ValueError(
-                f"Unknown method {self.method} for point interpolation."
-            )
+            raise ValueError(f"Unknown method {self.method} for point interpolation.")
         self.interpolator = _point_interpolators[self.method]
         self._set_preprocessor(self.coordinate_system)
         self.apply = self.map_point
@@ -296,9 +296,7 @@ class Map(Config):
         try:
             return self._REGBIN_INTERPOLATORS[key]
         except KeyError:
-            raise ValueError(
-                f"Unknown method {self.method} for {ndim}D regular binning."
-            )
+            raise ValueError(f"Unknown method {self.method} for {ndim}D regular binning.")
 
     def map_regbin(self, pos):
         val = self.interpolator(
