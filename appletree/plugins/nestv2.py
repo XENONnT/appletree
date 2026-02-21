@@ -39,7 +39,7 @@ class MonoEnergiesSpectra(Plugin):
             shape=(batch_size, self.energy_twohalfnorm.set_volume),
             **self.energy_twohalfnorm.value
         )
-        energy = jnp.clip(energy, a_min=0.0, a_max=jnp.inf)
+        energy = jnp.clip(energy, 0.0, jnp.inf)
         energy_center = jnp.broadcast_to(
             self.energy_twohalfnorm.value["mu"], jnp.shape(energy)
         ).astype(float)
