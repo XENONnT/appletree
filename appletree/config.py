@@ -109,6 +109,37 @@ class Config:
         """Build configuration, set attributes to Config instance."""
         raise NotImplementedError
 
+    def _resolve_cached_config(self, llh_name, transform=None):
+        """Look up config in cache, apply transform, resolve per-likelihood dict.
+
+        Args:
+            llh_name: name of the likelihood component.
+            transform: optional callable applied to the default value
+                before caching (e.g. get_file_path for Map configs).
+
+        Returns:
+            The resolved scalar (or per-likelihood) config value.
+
+        """
+        if self.name in _cached_configs:
+            value = _cached_configs[self.name]
+        else:
+            value = self.get_default()
+            if transform is not None:
+                value = transform(value)
+            _cached_configs[self.name] = value
+
+        if isinstance(value, dict):
+            try:
+                return value[llh_name]
+            except KeyError:
+                raise ValueError(
+                    f"You specified {self.name} as a dictionary. "
+                    f"The key of it should be the name of one "
+                    f"of the likelihood, but it is {llh_name}."
+                )
+        return value
+
     def required_parameter(self, llh_name=None):
         return None
 
@@ -129,25 +160,7 @@ class Constant(Config):
 
     def build(self, llh_name: Optional[str] = None):
         """Set value of Constant."""
-        if self.name in _cached_configs:
-            value = _cached_configs[self.name]
-        else:
-            value = self.get_default()
-            # Update values to sharing dictionary
-            _cached_configs[self.name] = value
-
-        if isinstance(value, dict):
-            try:
-                self.value = value[llh_name]
-            except KeyError:
-                mesg = (
-                    f"You specified {self.name} as a dictionary. "
-                    f"The key of it should be the name of one "
-                    f"of the likelihood, but it is {llh_name}."
-                )
-                raise ValueError(mesg)
-        else:
-            self.value = value
+        self.value = self._resolve_cached_config(llh_name)
 
     @property
     def lineage(self):
@@ -167,6 +180,12 @@ class Map(Config):
     When using log-binning, we will first convert the positions to log space.
 
     """
+    _REGBIN_INTERPOLATORS = {
+        (2, "IDW"): interpolation.map_interpolator_regular_binning_2d,
+        (2, "NN"): interpolation.map_interpolator_regular_binning_nearest_neighbor_2d,
+        (3, "IDW"): interpolation.map_interpolator_regular_binning_3d,
+        (3, "NN"): interpolation.map_interpolator_regular_binning_nearest_neighbor_3d,
+    }
 
     def __init__(self, method="IDW", **kwargs):
         super().__init__(**kwargs)
@@ -174,26 +193,9 @@ class Map(Config):
 
     def build(self, llh_name: Optional[str] = None):
         """Cache the map to jnp.array."""
-
-        if self.name in _cached_configs:
-            file_path = _cached_configs[self.name]
-        else:
-            file_path = get_file_path(self.get_default())
-            # Update values to sharing dictionary
-            _cached_configs[self.name] = file_path
-
-        if isinstance(file_path, dict):
-            try:
-                self.file_path = file_path[llh_name]
-            except KeyError:
-                mesg = (
-                    f"You specified {self.name} as a dictionary. "
-                    f"The key of it should be the name of one "
-                    f"of the likelihood, but it is {llh_name}."
-                )
-                raise ValueError(mesg)
-        else:
-            self.file_path = file_path
+        self.file_path = self._resolve_cached_config(
+            llh_name, transform=get_file_path,
+        )
 
         # try to find the path first
         _file_path = get_file_path(self.file_path)
@@ -232,32 +234,18 @@ class Map(Config):
         self.coordinate_system = jnp.asarray(data["coordinate_system"], dtype=float)
         self.map = jnp.asarray(data["map"], dtype=float)
 
-        if self.method == "IDW":
-            setattr(self, "interpolator", interpolation.curve_interpolator)
-        elif self.method == "NN":
-            setattr(
-                self,
-                "interpolator",
-                interpolation.map_interpolator_nearest_neighbor_1d,
+        _point_interpolators = {
+            "IDW": interpolation.curve_interpolator,
+            "NN": interpolation.map_interpolator_nearest_neighbor_1d,
+            "LERP": interpolation.map_interpolator_linear_1d,
+        }
+        if self.method not in _point_interpolators:
+            raise ValueError(
+                f"Unknown method {self.method} for point interpolation."
             )
-        elif self.method == "LERP":
-            setattr(
-                self,
-                "interpolator",
-                interpolation.map_interpolator_linear_1d,
-            )
-        else:
-            raise ValueError(f"Unknown method {self.method} for 1D regular binning.")
-        if self.coordinate_type == "log_point":
-            if jnp.any(self.coordinate_system <= 0):
-                raise ValueError(
-                    f"Find non-positive coordinate system in map {self.file_path}, "
-                    f"which is specified as {self.coordinate_type}"
-                )
-            setattr(self, "preprocess", self.log_pos)
-        else:
-            setattr(self, "preprocess", self.linear_pos)
-        setattr(self, "apply", self.map_point)
+        self.interpolator = _point_interpolators[self.method]
+        self._set_preprocessor(self.coordinate_system)
+        self.apply = self.map_point
 
     def map_point(self, pos):
         val = self.interpolator(
@@ -283,40 +271,34 @@ class Map(Config):
         self.coordinate_uppers = jnp.asarray(data["coordinate_uppers"], dtype=float)
         self.map = jnp.asarray(data["map"], dtype=float)
 
-        if len(self.coordinate_lowers) == 1:
-            setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_1d)
-        elif len(self.coordinate_lowers) == 2:
-            if self.method == "IDW":
-                setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_2d)
-            elif self.method == "NN":
-                setattr(
-                    self,
-                    "interpolator",
-                    interpolation.map_interpolator_regular_binning_nearest_neighbor_2d,
-                )
-            else:
-                raise ValueError(f"Unknown method {self.method} for 2D regular binning.")
-        elif len(self.coordinate_lowers) == 3:
-            if self.method == "IDW":
-                setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_3d)
-            elif self.method == "NN":
-                setattr(
-                    self,
-                    "interpolator",
-                    interpolation.map_interpolator_regular_binning_nearest_neighbor_3d,
-                )
-            else:
-                raise ValueError(f"Unknown method {self.method} for 3D regular binning.")
-        if self.coordinate_type == "log_regbin":
-            if jnp.any(self.coordinate_lowers <= 0) or jnp.any(self.coordinate_uppers <= 0):
+        ndim = len(self.coordinate_lowers)
+        self.interpolator = self._get_regbin_interpolator(ndim)
+        self._set_preprocessor(self.coordinate_lowers, self.coordinate_uppers)
+        self.apply = self.map_regbin
+
+    def _set_preprocessor(self, *coord_arrays):
+        """Validate log coordinates and set self.preprocess."""
+        if "log" in self.coordinate_type:
+            if any(jnp.any(a <= 0) for a in coord_arrays):
                 raise ValueError(
                     f"Find non-positive coordinate system in map {self.file_path}, "
                     f"which is specified as {self.coordinate_type}"
                 )
-            setattr(self, "preprocess", self.log_pos)
+            self.preprocess = self.log_pos
         else:
-            setattr(self, "preprocess", self.linear_pos)
-        setattr(self, "apply", self.map_regbin)
+            self.preprocess = self.linear_pos
+
+    def _get_regbin_interpolator(self, ndim):
+        """Return the regular-binning interpolator for the given dimensionality."""
+        if ndim == 1:
+            return interpolation.map_interpolator_regular_binning_1d
+        key = (ndim, self.method)
+        try:
+            return self._REGBIN_INTERPOLATORS[key]
+        except KeyError:
+            raise ValueError(
+                f"Unknown method {self.method} for {ndim}D regular binning."
+            )
 
     def map_regbin(self, pos):
         val = self.interpolator(
@@ -526,26 +508,8 @@ class ConstantSet(Config):
     """
 
     def build(self, llh_name: Optional[str] = None):
-        """Set value of Constant."""
-        if self.name in _cached_configs:
-            value = _cached_configs[self.name]
-        else:
-            value = self.get_default()
-            # Update values to sharing dictionary
-            _cached_configs[self.name] = value
-
-        if isinstance(value, dict):
-            try:
-                self.value = value[llh_name]
-            except KeyError:
-                mesg = (
-                    f"You specified {self.name} as a dictionary. "
-                    f"The key of it should be the name of one "
-                    f"of the likelihood, but it is {llh_name}."
-                )
-                raise ValueError(mesg)
-        else:
-            self.value = value
+        """Set value of ConstantSet."""
+        self.value = self._resolve_cached_config(llh_name)
 
         self._sanity_check()
         self.set_volume = len(self.value[1][0])
