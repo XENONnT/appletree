@@ -353,6 +353,10 @@ class SigmaMap(Config):
 
     """
 
+    median: Map
+    lower: Map
+    upper: Map
+
     def __init__(self, method="IDW", **kwargs):
         super().__init__(**kwargs)
         self.method = method
