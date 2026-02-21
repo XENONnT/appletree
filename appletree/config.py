@@ -405,7 +405,7 @@ class SigmaMap(Config):
         if isinstance(_configs, list) and len(_configs) > 4:
             raise ValueError(f"You give too much information in {self.name}'s configs.")
         if isinstance(_configs_default, list) and len(_configs_default) > 4:
-            raise ValueError(f"You give too much information in " f"{self.name}'s default configs.")
+            raise ValueError(f"You give too much information in {self.name}'s default configs.")
 
         sigmas = ["median", "lower", "upper"]
         for i, sigma in enumerate(sigmas):
