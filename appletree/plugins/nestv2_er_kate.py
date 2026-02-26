@@ -1,4 +1,3 @@
-import jax
 from jax import numpy as jnp
 from jax import scipy as jsp
 from jax import jit
@@ -6,16 +5,14 @@ from functools import partial
 
 from appletree import randgen
 from appletree.plugin import Plugin
-from appletree.config import takes_config, Constant, ConstantSet
+from appletree.config import takes_config, Constant
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
 # These scripts are copied from
-# https://github.com/NESTCollaboration/nest/releases/tag/v2.3.7
-# and https://github.com/NESTCollaboration/nest/blob/v2.3.7/src/NEST.cpp#L715-L794
+# https://github.com/NESTCollaboration/nest/releases/tag/v2.4.0
 # Priors of the distribution is copied from https://arxiv.org/abs/2211.10726
-# and https://drive.google.com/file/d/1urVT3htFjIC1pQKyaCcFonvWLt74Kgvn/view
 # All variables begins with '_' are expectation values, such as `_Nph`, `_Ne`.
 
 
@@ -44,7 +41,6 @@ class QyER(Plugin):
         "m2",
         "m3",
         "m4",
-        "m6",
         "m7",
         "m8",
         "m9",
@@ -54,18 +50,18 @@ class QyER(Plugin):
         "liquid_xe_density",
     )
 
-    # NB! My parameters differ from previous version (and I'm not sure which is the best one_
+    # keeping the original approach
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, energy, nex_ni_ratio):
-        DENSITY = parameters["liquid_xe_density"]  # 2.8619
+        DENSITY = 2.8619
         m1 = (
             30.66
             + (parameters["m1"] - 30.66)
             / (1.0 + (parameters["field"] / 73.855) ** 2.0318) ** 0.41883
         )
         m2 = parameters["m2"]
-        m3 = jnp.log10(parameters["field"]) * parameters["m3"] + 0.52561312
-        m4 = parameters["m4"] + (2.82528809 - parameters["m4"]) / (
+        m3 = jnp.log10(parameters["field"]) * 0.13946236 + parameters["m3"]
+        m4 = 1.82217496 + (parameters["m4"] - 1.82217496) / (
             1.0 + (parameters["field"] / 144.65029656) ** -2.80532006
         )
         m5 = 1.0 / parameters["w"] / (1.0 + nex_ni_ratio) - m1
@@ -74,15 +70,16 @@ class QyER(Plugin):
         )
         m8 = parameters["m8"]
         m9 = parameters["m9"]
-        m10 = parameters["m10"] + (0.1166087199 - parameters["m10"]) / (
+        m10 = 0.0508273937 + (parameters["m10"] - 0.0508273937) / (
             1.0 + (parameters["field"] / 139.260460) ** -0.65763592
         )
 
-        charge_yield_beta = jnp.ones(shape=jnp.shape(energy)) * m1
-        charge_yield_beta += (m2 - m1) / (1 + (energy / m3) ** m4) ** m9
-        charge_yield_beta += jnp.ones(shape=jnp.shape(energy)) * m5
-        charge_yield_beta += -m5 / (1 + (energy / m7) ** m8) ** m10
+        charge_yield = jnp.ones(shape=jnp.shape(energy)) * m1
+        charge_yield += (m2 - m1) / (1 + (energy / m3) ** m4) ** m9
+        charge_yield += jnp.ones(shape=jnp.shape(energy)) * m5
+        charge_yield += -m5 / (1 + (energy / m7) ** m8) ** m10
         charge_yield_beta = jnp.clip(charge_yield_beta, 0, jnp.inf)
+        
         ######nearly useless correction, just for similarity with NEST
         coeff_TI = jnp.power(1.0 / DENSITY, 0.3)
         coeff_Ni = jnp.power(1.0 / DENSITY, 1.4)
