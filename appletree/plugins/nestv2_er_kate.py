@@ -79,7 +79,7 @@ class QyER(Plugin):
         charge_yield += jnp.ones(shape=jnp.shape(energy)) * m5
         charge_yield += -m5 / (1 + (energy / m7) ** m8) ** m10
         charge_yield_beta = jnp.clip(charge_yield_beta, 0, jnp.inf)
-        
+
         ######nearly useless correction, just for similarity with NEST
         coeff_TI = jnp.power(1.0 / DENSITY, 0.3)
         coeff_Ni = jnp.power(1.0 / DENSITY, 1.4)
