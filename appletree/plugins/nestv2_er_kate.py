@@ -25,9 +25,9 @@ class ExcitonIonRatioER(Plugin):
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, energy):
         # The ratio is a constant for liquid xenon
-        nex_ni_ratio = (
-            0.067366 + 0.039693 * parameters["liquid_xe_density"]
-        ) * jsp.special.erf(energy * 0.05)
+        nex_ni_ratio = (0.067366 + 0.039693 * parameters["liquid_xe_density"]) * jsp.special.erf(
+            energy * 0.05
+        )
         alf = 1.0 / (1.0 + nex_ni_ratio)
         return key, nex_ni_ratio, alf
 
@@ -131,11 +131,8 @@ class QyER(Plugin):
         weightB = 1.0 - weightG
         charge_yield_corr = weightG * charge_yield_gamma + weightB * charge_yield_beta
         """
-        """
-        09.02.2026: additional skewness
-        charge_yield = (charge_yield_beta*parameters['add_1']/(parameters['add_2']+jnp.exp(parameters['add_3']*energy)))
-        return key, charge_yield_beta
-        """
+        """09.02.2026: additional skewness charge_yield = (charge_yield_beta*parameters['add_1']/(pa
+        rameters['add_2']+jnp.exp(parameters['add_3']*energy))) return key, charge_yield_beta."""
         return key, charge_yield_beta
 
 
@@ -206,10 +203,7 @@ class FanoFactor(Plugin):
         fano_nq += (
             (1.0 - sign)
             / 2.0
-            * (
-                fano_nq_const
-                + abs_delta_f * jnp.sqrt((_Nph + _Ne) * parameters["field"])
-            )
+            * (fano_nq_const + abs_delta_f * jnp.sqrt((_Nph + _Ne) * parameters["field"]))
         )
 
         return key, fano_nq
@@ -281,14 +275,13 @@ class OmegaER(Plugin):
             * (1.0 + jsp.special.erf(0.0 * (log_nq - 4.40) / (0.85 * sqrt2))),
         )
         omega = jnp.maximum(omega, 0.0)
-
         """
         mode = cntr + jnp.sqrt(2.0 / jnp.pi) * skew * wide / jnp.sqrt(1.0 + skew ** 2)
         norm = 1.0 / (jnp.exp(-0.5 * (mode - cntr) ** 2.0 / wide ** 2.0) *
                       (1. + jsp.special.erf(skew * (mode - cntr) /
                                             (wide * 2 ** 0.5))))
         omega = norm * A * (
-                jnp.exp(-0.5 * (elecFrac - cntr) ** 2.0 / wide ** 2) * 
+                jnp.exp(-0.5 * (elecFrac - cntr) ** 2.0 / wide ** 2) *
                 (1.0 + jsp.special.erf((skew * (elecFrac - cntr)) / (wide * 2 ** 0.5))))
 
         """
@@ -305,10 +298,18 @@ class TruePhotonElectronER(Plugin):
 
     @partial(jit, static_argnums=(0,))
     def simulate(
-        self, key, parameters, recombProb, Variance, Ni, Nq, energy,
+        self,
+        key,
+        parameters,
+        recombProb,
+        Variance,
+        Ni,
+        Nq,
+        energy,
     ):
-        """
-        skewness = 1/(1+jnp.exp((energy-parameters["alpha_skewness"])/parameters["beta_skewness"]))
+        """Skewness = 1/(1+jnp.exp((energy-
+        parameters["alpha_skewness"])/parameters["beta_skewness"]))
+
         delta = skewness / jnp.sqrt(1.0 + skewness * skewness)
         widthCorrection = jnp.sqrt(1.0 - (2.0 / jnp.pi) * (skewness * skewness) / (1.0 + skewness * skewness))
         omega = jnp.sqrt(Variance) / widthCorrection
@@ -319,13 +320,10 @@ class TruePhotonElectronER(Plugin):
         z0 = jax.random.normal(k0)
         z1 = jax.random.normal(k1)
         num_electron = xi + omega * (delta * jnp.abs(z0) + jnp.sqrt(1.0 - delta * delta) * z1)
+
         """
-        key, num_electron = randgen.normal(
-            key, (1 - recombProb) * Ni, jnp.sqrt(Variance)
-        )
-        num_electron = jnp.clip(
-            num_electron.round().astype(int), 0, Ni
-        )  # 16.02.2026 jnp.inf ->Ni
+        key, num_electron = randgen.normal(key, (1 - recombProb) * Ni, jnp.sqrt(Variance))
+        num_electron = jnp.clip(num_electron.round().astype(int), 0, Ni)  # 16.02.2026 jnp.inf ->Ni
         # num_electron = jnp.clip(num_electron.round().astype(int), 0, Nq)
         num_photon = jnp.clip(Nq - num_electron, 0, jnp.inf)
         return key, num_photon, num_electron
