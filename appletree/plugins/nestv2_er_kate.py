@@ -325,23 +325,6 @@ class TruePhotonElectronER(Plugin):
         return key, num_photon, num_electron
 
 
-class MonoEnergiesClipEff(Plugin):
-    """For mono-energy-like yields constrain, we need to filter out the energies out of range.
-
-    The method is set their weights to 0.
-
-    """
-
-    depends_on = ["energy_center"]
-    provides = ["eff"]
-
-    @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, energy_center):
-        mask = energy_center >= self.clip_lower_energy.value
-        mask &= energy_center <= self.clip_upper_energy.value
-        eff = jnp.where(mask, 1.0, 0.0)
-        return key, eff
-
 
 @export
 class BandEnergiesClipEff(Plugin):
@@ -358,3 +341,4 @@ class BandEnergiesClipEff(Plugin):
     def simulate(self, key, parameters, energy):
         eff = jnp.ones(len(energy))
         return key, eff
+
