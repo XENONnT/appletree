@@ -325,7 +325,6 @@ class TruePhotonElectronER(Plugin):
         return key, num_photon, num_electron
 
 
-
 @export
 class BandEnergiesClipEff(Plugin):
     """For band-like yields constrain, we only need a placeholder here.
@@ -341,4 +340,3 @@ class BandEnergiesClipEff(Plugin):
     def simulate(self, key, parameters, energy):
         eff = jnp.ones(len(energy))
         return key, eff
-
