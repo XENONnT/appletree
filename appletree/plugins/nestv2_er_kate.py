@@ -90,49 +90,49 @@ class QyER(Plugin):
             * jnp.power(DENSITY, -1.7)
         )
 
-        # let's try to add some gamma + weight
-        """
-        m01 = 33.951 + (3.3284 - 33.951) / (
-            1.0 + jnp.power(parameters["field"] / 165.34, 0.72665)
-        )
-        m02 = 1000 / (1000 * parameters["w"])
-        m03 = 2
-        m04 = 2
-        m05 = 23.156 + (10.737 - 23.156) / (
-            1.0 + jnp.power(parameters["field"] / 34.195, 0.87459)
-        )
-        densCorr = 38.5775255152306  # no density corrections for now
-        m06 = 0;#parameters["m6"]
-        m07 = 66.825 + (829.25 - 66.825) / (
-            1.0 + jnp.power(parameters["field"] / densCorr, 0.83344)
-        )
-        m08 = 2.0
-        charge_yield_gamma = (
-            m01
-            + (m02 - m01) / (1.0 + jnp.power(energy / m03, m04))
-            + m05
-            + (m06 - m05) / (1.0 + jnp.power(energy / m07, m08))
-        )
-        # weight
-        EnergyParams = [0.23, 0.77, 2.95, -1.44]
-        FieldParams = [421.15, 3.27]
-        weightG = EnergyParams[0] + EnergyParams[1] * jsp.special.erf(
-            EnergyParams[2] * (jnp.log(energy) + EnergyParams[3])
-        ) * (
-            1.0
-            - (
-                1.0
-                / (
-                    1.0
-                    + jnp.power(parameters["field"] / FieldParams[0], FieldParams[1])
-                )
-            )
-        )
-        weightB = 1.0 - weightG
-        charge_yield_corr = weightG * charge_yield_gamma + weightB * charge_yield_beta
-        """
-        """09.02.2026: additional skewness charge_yield = (charge_yield_beta*parameters['add_1']/(pa
-        rameters['add_2']+jnp.exp(parameters['add_3']*energy))) return key, charge_yield_beta."""
+        # Alternative approach: let's try to add some gamma + weight
+        # m01 = 33.951 + (3.3284 - 33.951) / (
+        #     1.0 + jnp.power(parameters["field"] / 165.34, 0.72665)
+        # )
+        # m02 = 1000 / (1000 * parameters["w"])
+        # m03 = 2
+        # m04 = 2
+        # m05 = 23.156 + (10.737 - 23.156) / (
+        #     1.0 + jnp.power(parameters["field"] / 34.195, 0.87459)
+        # )
+        # densCorr = 38.5775255152306  # no density corrections for now
+        # m06 = 0  # parameters["m6"]
+        # m07 = 66.825 + (829.25 - 66.825) / (
+        #     1.0 + jnp.power(parameters["field"] / densCorr, 0.83344)
+        # )
+        # m08 = 2.0
+        # charge_yield_gamma = (
+        #     m01
+        #     + (m02 - m01) / (1.0 + jnp.power(energy / m03, m04))
+        #     + m05
+        #     + (m06 - m05) / (1.0 + jnp.power(energy / m07, m08))
+        # )
+        # # weight
+        # EnergyParams = [0.23, 0.77, 2.95, -1.44]
+        # FieldParams = [421.15, 3.27]
+        # weightG = EnergyParams[0] + EnergyParams[1] * jsp.special.erf(
+        #     EnergyParams[2] * (jnp.log(energy) + EnergyParams[3])
+        # ) * (
+        #     1.0
+        #     - (
+        #         1.0
+        #         / (
+        #             1.0
+        #             + jnp.power(parameters["field"] / FieldParams[0], FieldParams[1])
+        #         )
+        #     )
+        # )
+        # weightB = 1.0 - weightG
+        # charge_yield_corr = weightG * charge_yield_gamma + weightB * charge_yield_beta
+        #
+        # 09.02.2026: additional skewness
+        # charge_yield = (charge_yield_beta * parameters['add_1'] /
+        #                 (parameters['add_2'] + jnp.exp(parameters['add_3'] * energy)))
         return key, charge_yield_beta
 
 
@@ -140,7 +140,7 @@ class QyER(Plugin):
 class LyER(Plugin):
     depends_on = ["charge_yield"]
     provides = ["light_yield"]
-    parameters = "w"
+    parameters = ("w",)
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, charge_yield):
@@ -149,7 +149,6 @@ class LyER(Plugin):
         return key, light_yield
 
 
-# Same as in nestv2.py, commented out to avoid redundant code.
 @export
 class MeanNphNe(Plugin):
     depends_on = ["light_yield", "charge_yield", "energy"]
@@ -207,13 +206,6 @@ class FanoFactor(Plugin):
         )
 
         return key, fano_nq
-
-
-# @partial(jit, static_argnums=(0,))
-# def simulate(self, key, parameters, _Nph, _Ne):
-#     fano_nq = jnp.ones(len(_Nph))
-
-#    return key, fano_nq
 
 
 @export
@@ -275,16 +267,14 @@ class OmegaER(Plugin):
             * (1.0 + jsp.special.erf(0.0 * (log_nq - 4.40) / (0.85 * sqrt2))),
         )
         omega = jnp.maximum(omega, 0.0)
-        """
-        mode = cntr + jnp.sqrt(2.0 / jnp.pi) * skew * wide / jnp.sqrt(1.0 + skew ** 2)
-        norm = 1.0 / (jnp.exp(-0.5 * (mode - cntr) ** 2.0 / wide ** 2.0) *
-                      (1. + jsp.special.erf(skew * (mode - cntr) /
-                                            (wide * 2 ** 0.5))))
-        omega = norm * A * (
-                jnp.exp(-0.5 * (elecFrac - cntr) ** 2.0 / wide ** 2) *
-                (1.0 + jsp.special.erf((skew * (elecFrac - cntr)) / (wide * 2 ** 0.5))))
-
-        """
+        # Alternative omega calculation:
+        # mode = cntr + jnp.sqrt(2.0 / jnp.pi) * skew * wide / jnp.sqrt(1.0 + skew ** 2)
+        # norm = 1.0 / (jnp.exp(-0.5 * (mode - cntr) ** 2.0 / wide ** 2.0) *
+        #               (1. + jsp.special.erf(skew * (mode - cntr) /
+        #                                     (wide * 2 ** 0.5))))
+        # omega = norm * A * (
+        #         jnp.exp(-0.5 * (elecFrac - cntr) ** 2.0 / wide ** 2) *
+        #         (1.0 + jsp.special.erf((skew * (elecFrac - cntr)) / (wide * 2 ** 0.5))))
         Variance = recombProb * (1.0 - recombProb) * Ni + omega * omega * Ni * Ni
         return key, omega, Variance
 
@@ -293,7 +283,8 @@ class OmegaER(Plugin):
 class TruePhotonElectronER(Plugin):
     depends_on = ["recombProb", "Variance", "Ni", "Nq", "energy"]
     provides = ["num_photon", "num_electron"]
-    parameters = "field"
+    parameters = ("field",)
+    # Alternative parameters with skewness:
     # parameters = ("field", "alpha_skewness", "beta_skewness")
 
     @partial(jit, static_argnums=(0,))
@@ -307,21 +298,22 @@ class TruePhotonElectronER(Plugin):
         Nq,
         energy,
     ):
-        """Skewness = 1/(1+jnp.exp((energy-
-        parameters["alpha_skewness"])/parameters["beta_skewness"]))
-
-        delta = skewness / jnp.sqrt(1.0 + skewness * skewness)
-        widthCorrection = jnp.sqrt(1.0 - (2.0 / jnp.pi) * (skewness * skewness) / (1.0 + skewness * skewness))
-        omega = jnp.sqrt(Variance) / widthCorrection
-        muCorrection = omega * delta * jnp.sqrt(2.0 / jnp.pi)
-        target_mean = (1.0 - recombProb) * Ni
-        xi = target_mean - muCorrection
-        key, k0, k1 = jax.random.split(key, 3)
-        z0 = jax.random.normal(k0)
-        z1 = jax.random.normal(k1)
-        num_electron = xi + omega * (delta * jnp.abs(z0) + jnp.sqrt(1.0 - delta * delta) * z1)
-
-        """
+        # Alternative approach with skewed normal distribution:
+        # Skewness = 1 / (1 + jnp.exp((energy -
+        #             parameters["alpha_skewness"]) / parameters["beta_skewness"]))
+        # delta = skewness / jnp.sqrt(1.0 + skewness * skewness)
+        # widthCorrection = jnp.sqrt(
+        #     1.0 - (2.0 / jnp.pi) * (skewness * skewness) / (1.0 + skewness * skewness)
+        # )
+        # omega = jnp.sqrt(Variance) / widthCorrection
+        # muCorrection = omega * delta * jnp.sqrt(2.0 / jnp.pi)
+        # target_mean = (1.0 - recombProb) * Ni
+        # xi = target_mean - muCorrection
+        # key, k0, k1 = jax.random.split(key, 3)
+        # z0 = jax.random.normal(k0)
+        # z1 = jax.random.normal(k1)
+        # num_electron = xi + omega * (delta * jnp.abs(z0) +
+        #                              jnp.sqrt(1.0 - delta * delta) * z1)
         key, num_electron = randgen.normal(key, (1 - recombProb) * Ni, jnp.sqrt(Variance))
         num_electron = jnp.clip(num_electron.round().astype(int), 0, Ni)  # 16.02.2026 jnp.inf ->Ni
         # num_electron = jnp.clip(num_electron.round().astype(int), 0, Nq)
