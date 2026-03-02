@@ -5,14 +5,15 @@ from functools import partial
 
 from appletree import randgen
 from appletree.plugin import Plugin
-from appletree.config import takes_config, Constant
 from appletree.utils import exporter
 
 export, __all__ = exporter(export_self=False)
 
 # These scripts are copied from
 # https://github.com/NESTCollaboration/nest/releases/tag/v2.4.0
-# and https://github.com/NESTCollaboration/nest/blob/v2.4.0/src/NEST.cpp#L1103-L1186
+# Priors of the distribution is copied from https://arxiv.org/abs/2211.10726
+# and https://drive.google.com/file/d/1urVT3htFjIC1pQKyaCcFonvWLt74Kgvn/view
+# All variables begins with '_' are expectation values, such as `_Nph`, `_Ne`.
 
 
 @export
@@ -35,11 +36,23 @@ class ExcitonIonRatioER(Plugin):
 class QyER(Plugin):
     depends_on = ["energy", "nex_ni_ratio"]
     provides = ["charge_yield"]
-    parameters = ("m1", "m2", "m3", "m4", "m7", "m8", "m9", "m10", "w", "field")
+    parameters = (
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "m7",
+        "m8",
+        "m9",
+        "m10",
+        "w",
+        "field",
+        "liquid_xe_density",
+    )
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, energy, nex_ni_ratio):
-        DENSITY = 2.8619
+        DENSITY = parameters["liquid_xe_density"]  # 2.8619
         m1 = (
             30.66
             + (parameters["m1"] - 30.66)
@@ -60,25 +73,67 @@ class QyER(Plugin):
             1.0 + (parameters["field"] / 139.260460) ** -0.65763592
         )
 
-        charge_yield = jnp.ones(shape=jnp.shape(energy)) * m1
-        charge_yield += (m2 - m1) / (1 + (energy / m3) ** m4) ** m9
-        charge_yield += jnp.ones(shape=jnp.shape(energy)) * m5
-        charge_yield += -m5 / (1 + (energy / m7) ** m8) ** m10
+        charge_yield_beta = jnp.ones(shape=jnp.shape(energy)) * m1
+        charge_yield_beta += (m2 - m1) / (1 + (energy / m3) ** m4) ** m9
+        charge_yield_beta += jnp.ones(shape=jnp.shape(energy)) * m5
+        charge_yield_beta += -m5 / (1 + (energy / m7) ** m8) ** m10
+        charge_yield_beta = jnp.clip(charge_yield_beta, 0, jnp.inf)
 
         coeff_TI = jnp.power(1.0 / DENSITY, 0.3)
         coeff_Ni = jnp.power(1.0 / DENSITY, 1.4)
         coeff_OL = jnp.power(1.0 / DENSITY, -1.7) / jnp.log(
             1.0 + coeff_TI * coeff_Ni * jnp.power(DENSITY, 1.7)
         )
-
-        charge_yield = charge_yield * (
+        charge_yield_beta = charge_yield_beta * (
             coeff_OL
             * jnp.log(1.0 + coeff_TI * coeff_Ni * jnp.power(DENSITY, 1.7))
             * jnp.power(DENSITY, -1.7)
         )
-        charge_yield = jnp.clip(charge_yield, 0, jnp.inf)
 
-        return key, charge_yield
+        # Alternative approach: let's try to add some gamma + weight
+        # m01 = 33.951 + (3.3284 - 33.951) / (
+        #     1.0 + jnp.power(parameters["field"] / 165.34, 0.72665)
+        # )
+        # m02 = 1000 / (1000 * parameters["w"])
+        # m03 = 2
+        # m04 = 2
+        # m05 = 23.156 + (10.737 - 23.156) / (
+        #     1.0 + jnp.power(parameters["field"] / 34.195, 0.87459)
+        # )
+        # densCorr = 38.5775255152306  # no density corrections for now
+        # m06 = 0  # parameters["m6"]
+        # m07 = 66.825 + (829.25 - 66.825) / (
+        #     1.0 + jnp.power(parameters["field"] / densCorr, 0.83344)
+        # )
+        # m08 = 2.0
+        # charge_yield_gamma = (
+        #     m01
+        #     + (m02 - m01) / (1.0 + jnp.power(energy / m03, m04))
+        #     + m05
+        #     + (m06 - m05) / (1.0 + jnp.power(energy / m07, m08))
+        # )
+        # # weight
+        # EnergyParams = [0.23, 0.77, 2.95, -1.44]
+        # FieldParams = [421.15, 3.27]
+        # weightG = EnergyParams[0] + EnergyParams[1] * jsp.special.erf(
+        #     EnergyParams[2] * (jnp.log(energy) + EnergyParams[3])
+        # ) * (
+        #     1.0
+        #     - (
+        #         1.0
+        #         / (
+        #             1.0
+        #             + jnp.power(parameters["field"] / FieldParams[0], FieldParams[1])
+        #         )
+        #     )
+        # )
+        # weightB = 1.0 - weightG
+        # charge_yield_corr = weightG * charge_yield_gamma + weightB * charge_yield_beta
+        #
+        # 09.02.2026: additional skewness
+        # charge_yield = (charge_yield_beta * parameters['add_1'] /
+        #                 (parameters['add_2'] + jnp.exp(parameters['add_3'] * energy)))
+        return key, charge_yield_beta
 
 
 @export
@@ -90,11 +145,10 @@ class LyER(Plugin):
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, charge_yield):
         light_yield = 1.0 / parameters["w"] - charge_yield
-        light_yield = jnp.clip(light_yield, 0, jnp.inf)
+        light_yield = jnp.maximum(light_yield, 0.0)
         return key, light_yield
 
 
-# Same as in nestv2.py, commented out to avoid redundant code.
 @export
 class MeanNphNe(Plugin):
     depends_on = ["light_yield", "charge_yield", "energy"]
@@ -116,6 +170,7 @@ class MeanExcitonIonER(Plugin):
     def simulate(self, key, parameters, nex_ni_ratio, _Nph, _Ne):
         elecFrac = _Ne / (_Nph + _Ne)
         recombProb = 1.0 - (nex_ni_ratio + 1.0) * elecFrac
+        recombProb = jnp.maximum(recombProb, 0.0)
         return key, elecFrac, recombProb
 
 
@@ -125,7 +180,7 @@ class FanoFactor(Plugin):
     provides = [
         "fano_nq",
     ]
-    parameters = ("delta_f", "field", "liquid_xe_density")
+    parameters = ("field", "delta_f", "liquid_xe_density")
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, _Nph, _Ne):
@@ -165,42 +220,61 @@ class TrueExcitonIonER(Plugin):
         Nq = Nq.round().astype(int)
         key, Ni = randgen.binomial(key, alf, Nq)
         Nex = Nq - Ni
+        Nex = jnp.clip(Nex.round().astype(int), 0, Nq)
+        Ni = jnp.clip(Ni.round().astype(int), 0, Nq)
         return key, Ni, Nex, Nq
 
 
 @export
 class OmegaER(Plugin):
-    depends_on = ["elecFrac", "recombProb", "Ni"]
+    # depends_on = ["elecFrac", "recombProb", "Ni"]
+    depends_on = ["elecFrac", "recombProb", "Ni", "_Ne", "_Nph"]
     provides = ["omega", "Variance"]
     parameters = ("A_er", "xi_er", "omega_er", "alpha3_er", "field")
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, elecFrac, recombProb, Ni):
-        A = (
+    def simulate(self, key, parameters, elecFrac, recombProb, Ni, _Ne, _Nph):
+        # was A in previous version, be advised
+        ampl = (
             0.086036
             + (parameters["A_er"] - 0.086036)
             / (1.0 + (parameters["field"] / 295.2) ** 251.6) ** 0.0069114
         )
+        sqrt2 = jnp.sqrt(2.0)
 
         # Skewd normal normalization
         skew = parameters["alpha3_er"]
         wide = parameters["omega_er"]
         cntr = parameters["xi_er"]
+        mode = cntr + jnp.sqrt(2.0 / jnp.pi) * skew * wide / jnp.sqrt(1.0 + skew * skew)
 
-        mode = cntr + jnp.sqrt(2.0 / jnp.pi) * skew * wide / jnp.sqrt(1.0 + skew**2)
         norm = 1.0 / (
-            jnp.exp(-0.5 * (mode - cntr) ** 2.0 / wide**2.0)
-            * (1.0 + jsp.special.erf(skew * (mode - cntr) / (wide * 2**0.5)))
-        )
-        omega = (
+            jnp.exp(-0.5 * (mode - cntr) ** 2 / (wide * wide))
+            * (1.0 + jsp.special.erf(skew * (mode - cntr) / (wide * sqrt2)))
+        )  # makes sure omega never exceeds ampl
+        log_nq = jnp.log10(_Nph + _Ne)
+        omega = jnp.where(
+            cntr < 1.0,
             norm
-            * A
-            * (
-                jnp.exp(-0.5 * (elecFrac - cntr) ** 2.0 / wide**2)
-                * (1.0 + jsp.special.erf((skew * (elecFrac - cntr)) / (wide * 2**0.5)))
-            )
+            * ampl
+            * jnp.exp(-0.5 * (elecFrac - cntr) ** 2 / (wide * wide))
+            * (1.0 + jsp.special.erf(skew * (elecFrac - cntr) / (wide * sqrt2))),
+            ampl
+            * jnp.exp(-0.5 * (log_nq - cntr) ** 2 / (wide * wide))
+            * (1.0 + jsp.special.erf(skew * (log_nq - cntr) / (wide * sqrt2)))
+            + 0.072
+            * jnp.exp(-0.5 * (log_nq - 4.40) ** 2 / (0.85 * 0.85))
+            * (1.0 + jsp.special.erf(0.0 * (log_nq - 4.40) / (0.85 * sqrt2))),
         )
-
+        omega = jnp.maximum(omega, 0.0)
+        # Alternative omega calculation:
+        # mode = cntr + jnp.sqrt(2.0 / jnp.pi) * skew * wide / jnp.sqrt(1.0 + skew ** 2)
+        # norm = 1.0 / (jnp.exp(-0.5 * (mode - cntr) ** 2.0 / wide ** 2.0) *
+        #               (1. + jsp.special.erf(skew * (mode - cntr) /
+        #                                     (wide * 2 ** 0.5))))
+        # omega = norm * A * (
+        #         jnp.exp(-0.5 * (elecFrac - cntr) ** 2.0 / wide ** 2) *
+        #         (1.0 + jsp.special.erf((skew * (elecFrac - cntr)) / (wide * 2 ** 0.5))))
         Variance = recombProb * (1.0 - recombProb) * Ni + omega * omega * Ni * Ni
         return key, omega, Variance
 
@@ -209,6 +283,9 @@ class OmegaER(Plugin):
 class TruePhotonElectronER(Plugin):
     depends_on = ["recombProb", "Variance", "Ni", "Nq", "energy"]
     provides = ["num_photon", "num_electron"]
+    parameters = ("field",)
+    # Alternative parameters with skewness:
+    # parameters = ("field", "alpha_skewness", "beta_skewness")
 
     @partial(jit, static_argnums=(0,))
     def simulate(
@@ -221,43 +298,27 @@ class TruePhotonElectronER(Plugin):
         Nq,
         energy,
     ):
-        key, num_electron = randgen.normal(key, (1.0 - recombProb) * Ni, jnp.sqrt(Variance))
-        num_electron = jnp.clip(num_electron.round().astype(int), 0, jnp.inf)
+        # Alternative approach with skewed normal distribution:
+        # Skewness = 1 / (1 + jnp.exp((energy -
+        #             parameters["alpha_skewness"]) / parameters["beta_skewness"]))
+        # delta = skewness / jnp.sqrt(1.0 + skewness * skewness)
+        # widthCorrection = jnp.sqrt(
+        #     1.0 - (2.0 / jnp.pi) * (skewness * skewness) / (1.0 + skewness * skewness)
+        # )
+        # omega = jnp.sqrt(Variance) / widthCorrection
+        # muCorrection = omega * delta * jnp.sqrt(2.0 / jnp.pi)
+        # target_mean = (1.0 - recombProb) * Ni
+        # xi = target_mean - muCorrection
+        # key, k0, k1 = jax.random.split(key, 3)
+        # z0 = jax.random.normal(k0)
+        # z1 = jax.random.normal(k1)
+        # num_electron = xi + omega * (delta * jnp.abs(z0) +
+        #                              jnp.sqrt(1.0 - delta * delta) * z1)
+        key, num_electron = randgen.normal(key, (1 - recombProb) * Ni, jnp.sqrt(Variance))
+        num_electron = jnp.clip(num_electron.round().astype(int), 0, Ni)  # 16.02.2026 jnp.inf ->Ni
+        # num_electron = jnp.clip(num_electron.round().astype(int), 0, Nq)
         num_photon = jnp.clip(Nq - num_electron, 0, jnp.inf)
         return key, num_photon, num_electron
-
-
-@export
-@takes_config(
-    Constant(
-        name="clip_lower_energy",
-        type=float,
-        default=0.5,
-        help="Smallest energy considered in inference",
-    ),
-    Constant(
-        name="clip_upper_energy",
-        type=float,
-        default=50,
-        help="Largest energy considered in inference",
-    ),
-)
-class MonoEnergiesClipEff(Plugin):
-    """For mono-energy-like yields constrain, we need to filter out the energies out of range.
-
-    The method is set their weights to 0.
-
-    """
-
-    depends_on = ["energy_center"]
-    provides = ["eff"]
-
-    @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, energy_center):
-        mask = energy_center >= self.clip_lower_energy.value
-        mask &= energy_center <= self.clip_upper_energy.value
-        eff = jnp.where(mask, 1.0, 0.0)
-        return key, eff
 
 
 @export
