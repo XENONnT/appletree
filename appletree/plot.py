@@ -764,6 +764,7 @@ def _plot_config(config, map_collapse):
     """Dispatch a config to the appropriate plotting function.
 
     Returns a list of (fig, ax) tuples, or None.
+
     """
     if isinstance(config, SigmaMap):
         return _plot_sigma_map(config, map_collapse)
