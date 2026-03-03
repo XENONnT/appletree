@@ -493,11 +493,15 @@ def _collect_maps(context):
 def _regbin_edges_centers(lower, upper, n_bins, is_log):
     """Compute bin edges and centers for a regbin axis.
 
+    ``lower`` and ``upper`` are the positions of the first and last grid
+    nodes (i.e. bin centers), matching the convention used by the
+    interpolation code (``jnp.linspace(lower, upper, n_bins)``).
+
     Args:
-        lower: lower bound of the axis.
-        upper: upper bound of the axis.
-        n_bins: number of bins.
-        is_log: if True, bins are uniform in log10 space.
+        lower: coordinate of the first grid node.
+        upper: coordinate of the last grid node.
+        n_bins: number of grid nodes (bins).
+        is_log: if True, nodes are uniform in log10 space.
 
     Returns:
         (edges, centers) as numpy arrays in the original coordinate
@@ -505,15 +509,31 @@ def _regbin_edges_centers(lower, upper, n_bins, is_log):
 
     """
     if is_log:
-        edges = np.logspace(
-            np.log10(lower),
-            np.log10(upper),
-            n_bins + 1,
-        )
-        centers = np.sqrt(edges[:-1] * edges[1:])
+        log_centers = np.linspace(np.log10(lower), np.log10(upper), n_bins)
+        centers = 10**log_centers
+        if n_bins > 1:
+            half = (log_centers[1] - log_centers[0]) / 2
+            log_edges = np.concatenate([
+                [log_centers[0] - half],
+                (log_centers[:-1] + log_centers[1:]) / 2,
+                [log_centers[-1] + half],
+            ])
+        else:
+            half = 0.5
+            log_edges = np.array([log_centers[0] - half, log_centers[0] + half])
+        edges = 10**log_edges
     else:
-        edges = np.linspace(lower, upper, n_bins + 1)
-        centers = (edges[:-1] + edges[1:]) / 2
+        centers = np.linspace(lower, upper, n_bins)
+        if n_bins > 1:
+            half = (centers[1] - centers[0]) / 2
+            edges = np.concatenate([
+                [centers[0] - half],
+                (centers[:-1] + centers[1:]) / 2,
+                [centers[-1] + half],
+            ])
+        else:
+            half = 0.5
+            edges = np.array([centers[0] - half, centers[0] + half])
     return edges, centers
 
 
@@ -621,21 +641,28 @@ def _plot_map_1d_regbin(config, map_data, coord_name, coord_lower, coord_upper, 
 def _plot_map_2d_regbin(config, map_data, coord_names, coord_lowers, coord_uppers, is_log=False):
     """Plot a 2D regbin Map with imshow."""
     fig, ax = plt.subplots()
+    n0, n1 = map_data.shape
+    edges0, _ = _regbin_edges_centers(
+        coord_lowers[0], coord_uppers[0], n0, is_log,
+    )
+    edges1, _ = _regbin_edges_centers(
+        coord_lowers[1], coord_uppers[1], n1, is_log,
+    )
     if is_log:
         extent = [
-            np.log10(coord_lowers[0]),
-            np.log10(coord_uppers[0]),
-            np.log10(coord_lowers[1]),
-            np.log10(coord_uppers[1]),
+            np.log10(edges0[0]),
+            np.log10(edges0[-1]),
+            np.log10(edges1[0]),
+            np.log10(edges1[-1]),
         ]
         xlabel = f"log10({coord_names[0]})"
         ylabel = f"log10({coord_names[1]})"
     else:
         extent = [
-            coord_lowers[0],
-            coord_uppers[0],
-            coord_lowers[1],
-            coord_uppers[1],
+            edges0[0],
+            edges0[-1],
+            edges1[0],
+            edges1[-1],
         ]
         xlabel = coord_names[0]
         ylabel = coord_names[1]
