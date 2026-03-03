@@ -513,11 +513,13 @@ def _regbin_edges_centers(lower, upper, n_bins, is_log):
         centers = 10**log_centers
         if n_bins > 1:
             half = (log_centers[1] - log_centers[0]) / 2
-            log_edges = np.concatenate([
-                [log_centers[0] - half],
-                (log_centers[:-1] + log_centers[1:]) / 2,
-                [log_centers[-1] + half],
-            ])
+            log_edges = np.concatenate(
+                [
+                    [log_centers[0] - half],
+                    (log_centers[:-1] + log_centers[1:]) / 2,
+                    [log_centers[-1] + half],
+                ]
+            )
         else:
             half = 0.5
             log_edges = np.array([log_centers[0] - half, log_centers[0] + half])
@@ -526,11 +528,13 @@ def _regbin_edges_centers(lower, upper, n_bins, is_log):
         centers = np.linspace(lower, upper, n_bins)
         if n_bins > 1:
             half = (centers[1] - centers[0]) / 2
-            edges = np.concatenate([
-                [centers[0] - half],
-                (centers[:-1] + centers[1:]) / 2,
-                [centers[-1] + half],
-            ])
+            edges = np.concatenate(
+                [
+                    [centers[0] - half],
+                    (centers[:-1] + centers[1:]) / 2,
+                    [centers[-1] + half],
+                ]
+            )
         else:
             half = 0.5
             edges = np.array([centers[0] - half, centers[0] + half])
@@ -643,10 +647,16 @@ def _plot_map_2d_regbin(config, map_data, coord_names, coord_lowers, coord_upper
     fig, ax = plt.subplots()
     n0, n1 = map_data.shape
     edges0, _ = _regbin_edges_centers(
-        coord_lowers[0], coord_uppers[0], n0, is_log,
+        coord_lowers[0],
+        coord_uppers[0],
+        n0,
+        is_log,
     )
     edges1, _ = _regbin_edges_centers(
-        coord_lowers[1], coord_uppers[1], n1, is_log,
+        coord_lowers[1],
+        coord_uppers[1],
+        n1,
+        is_log,
     )
     if is_log:
         extent = [

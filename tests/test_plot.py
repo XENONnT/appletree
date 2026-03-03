@@ -238,14 +238,20 @@ def test_plot_helpers():
 def test_plot_routing():
     """Test _plot_regular_map and _plot_sigma_map routing and edge cases."""
     # Unknown coordinate type returns None
-    assert _plot_regular_map(
-        SimpleNamespace(coordinate_type="unknown"),
-        None,
-    ) is None
-    assert _plot_sigma_map(
-        SimpleNamespace(median=SimpleNamespace(coordinate_type="unknown")),
-        None,
-    ) is None
+    assert (
+        _plot_regular_map(
+            SimpleNamespace(coordinate_type="unknown"),
+            None,
+        )
+        is None
+    )
+    assert (
+        _plot_sigma_map(
+            SimpleNamespace(median=SimpleNamespace(coordinate_type="unknown")),
+            None,
+        )
+        is None
+    )
 
     # Collapse to 0D returns None
     regbin_2d = SimpleNamespace(
