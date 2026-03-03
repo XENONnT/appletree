@@ -279,10 +279,14 @@ def test_plot_routing():
     sigma_2d = _make_mock_sigma(["x", "y"], [0.0, 0.0], [3.0, 3.0], (3, 3))
     assert _plot_sigma_map(sigma_2d, {"x": None, "y": None}) is None
 
-    # SigmaMap routing for 1D and 2D regbin
+    # SigmaMap routing for 1D regbin returns a single-element list
     sigma_1d = _make_mock_sigma(["x"], [0.0], [3.0], (3,))
-    fig, _ = _plot_sigma_map(sigma_1d, None)
-    assert fig is not None
+    result = _plot_sigma_map(sigma_1d, None)
+    assert len(result) == 1
+    assert result[0][0] is not None
 
-    fig, _ = _plot_sigma_map(sigma_2d, None)
-    assert fig is not None
+    # SigmaMap routing for 2D regbin returns three figures
+    result = _plot_sigma_map(sigma_2d, None)
+    assert len(result) == 3
+    for fig, _ in result:
+        assert fig is not None

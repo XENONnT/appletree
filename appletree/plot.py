@@ -645,8 +645,13 @@ def _plot_map_1d_regbin(config, map_data, coord_name, coord_lower, coord_upper, 
     return fig, ax
 
 
-def _plot_map_2d_regbin(config, map_data, coord_names, coord_lowers, coord_uppers, is_log=False):
+def _plot_map_2d_regbin(
+    config, map_data, coord_names, coord_lowers, coord_uppers,
+    is_log=False, label=None,
+):
     """Plot a 2D regbin Map with imshow."""
+    if label is None:
+        label = config.name
     fig, ax = plt.subplots()
     n0, n1 = map_data.shape
     edges0, _ = _regbin_edges_centers(
@@ -687,7 +692,7 @@ def _plot_map_2d_regbin(config, map_data, coord_names, coord_lowers, coord_upper
     )
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    fig.colorbar(im, ax=ax, label=config.name)
+    fig.colorbar(im, ax=ax, label=label)
     return fig, ax
 
 
@@ -790,13 +795,19 @@ def plot_maps(context, collapse=None, save=False, save_path=".", fmt="png"):
                     break
 
         if isinstance(config, SigmaMap):
-            fig_ax = _plot_sigma_map(config, map_collapse)
+            result = _plot_sigma_map(config, map_collapse)
+            if result is None:
+                continue
+            fig_ax_list = result
         elif isinstance(config, Map):
             fig_ax = _plot_regular_map(config, map_collapse)
+            if fig_ax is None:
+                continue
+            fig_ax_list = [fig_ax]
         else:
             continue
 
-        if fig_ax is not None:
+        for fig_ax in fig_ax_list:
             figures.append(fig_ax)
             if save:
                 fig = fig_ax[0]
@@ -873,12 +884,15 @@ def _plot_regular_map(config, collapse):
 
 
 def _plot_sigma_map(config, collapse):
-    """Route a SigmaMap to the appropriate plotting function."""
+    """Route a SigmaMap to the appropriate plotting function.
+
+    Returns a list of (fig, ax) tuples, or None.
+    """
     median = config.median
     coord_type = median.coordinate_type
 
     if coord_type in ("point", "log_point"):
-        return _plot_sigma_map_1d_point(config)
+        return [_plot_sigma_map_1d_point(config)]
 
     elif coord_type in ("regbin", "log_regbin"):
         is_log = coord_type == "log_regbin"
@@ -917,25 +931,37 @@ def _plot_sigma_map(config, collapse):
         ndim_after = len(coord_lowers)
 
         if ndim_after == 1:
-            return _plot_sigma_map_1d_regbin(
-                config,
-                med_data,
-                low_data,
-                up_data,
-                coord_name[0],
-                coord_lowers[0],
-                coord_uppers[0],
-                is_log=is_log,
-            )
+            return [
+                _plot_sigma_map_1d_regbin(
+                    config,
+                    med_data,
+                    low_data,
+                    up_data,
+                    coord_name[0],
+                    coord_lowers[0],
+                    coord_uppers[0],
+                    is_log=is_log,
+                )
+            ]
         elif ndim_after == 2:
-            return _plot_map_2d_regbin(
-                config,
-                med_data,
-                coord_name,
-                coord_lowers,
-                coord_uppers,
-                is_log=is_log,
-            )
+            results = []
+            for data, suffix in [
+                (low_data, "lower"),
+                (med_data, "median"),
+                (up_data, "upper"),
+            ]:
+                results.append(
+                    _plot_map_2d_regbin(
+                        config,
+                        data,
+                        coord_name,
+                        coord_lowers,
+                        coord_uppers,
+                        is_log=is_log,
+                        label=f"{config.name} ({suffix})",
+                    )
+                )
+            return results
         elif ndim_after == 0:
             warn(f"SigmaMap '{config.name}' collapsed to 0D " f"(scalar). Skipping plot.")
             return None
