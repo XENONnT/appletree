@@ -751,6 +751,40 @@ def _plot_sigma_map_1d_regbin(
     return fig, ax
 
 
+def _lookup_collapse(collapse, names):
+    """Find the collapse spec for a config given its alias names."""
+    if collapse is not None:
+        for name in names:
+            if name in collapse:
+                return collapse[name]
+    return None
+
+
+def _plot_config(config, map_collapse):
+    """Dispatch a config to the appropriate plotting function.
+
+    Returns a list of (fig, ax) tuples, or None.
+    """
+    if isinstance(config, SigmaMap):
+        return _plot_sigma_map(config, map_collapse)
+    elif isinstance(config, Map):
+        result = _plot_regular_map(config, map_collapse)
+        if result is not None:
+            return [result]
+    return None
+
+
+def _save_figure(fig, config, save_path, fmt):
+    """Save a figure to disk in each requested format."""
+    if isinstance(config, SigmaMap):
+        file_path = config.median.file_path
+    else:
+        file_path = config.file_path
+    stem = os.path.splitext(os.path.basename(file_path))[0]
+    for f in fmt:
+        fig.savefig(os.path.join(save_path, f"{stem}.{f}"))
+
+
 def plot_maps(context, collapse=None, save=False, save_path=".", fmt="png"):
     """Plot all maps and sigma maps used in a context's simulation.
 
@@ -796,42 +830,14 @@ def plot_maps(context, collapse=None, save=False, save_path=".", fmt="png"):
         fmt = [fmt]
 
     for config, names in collected.values():
-        map_collapse = None
-        if collapse is not None:
-            for name in names:
-                if name in collapse:
-                    map_collapse = collapse[name]
-                    break
-
-        if isinstance(config, SigmaMap):
-            result = _plot_sigma_map(config, map_collapse)
-            if result is None:
-                continue
-            fig_ax_list = result
-        elif isinstance(config, Map):
-            fig_ax = _plot_regular_map(config, map_collapse)
-            if fig_ax is None:
-                continue
-            fig_ax_list = [fig_ax]
-        else:
+        map_collapse = _lookup_collapse(collapse, names)
+        fig_ax_list = _plot_config(config, map_collapse)
+        if fig_ax_list is None:
             continue
-
         for fig_ax in fig_ax_list:
             figures.append(fig_ax)
             if save:
-                fig = fig_ax[0]
-                if isinstance(config, SigmaMap):
-                    stem = os.path.splitext(
-                        os.path.basename(config.median.file_path),
-                    )[0]
-                else:
-                    stem = os.path.splitext(
-                        os.path.basename(config.file_path),
-                    )[0]
-                for f in fmt:
-                    fig.savefig(
-                        os.path.join(save_path, f"{stem}.{f}"),
-                    )
+                _save_figure(fig_ax[0], config, save_path, fmt)
 
     return figures
 
