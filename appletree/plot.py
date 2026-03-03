@@ -782,6 +782,10 @@ def plot_maps(context, collapse=None, save=False, save_path=".", fmt="png"):
     Returns:
         list of (fig, axes) tuples, one per unique map.
 
+    Note:
+        The returned figures are not closed. Call ``plt.close(fig)``
+        on each figure when you are done with it to free memory.
+
     """
     collected = _collect_maps(context)
     figures = []
