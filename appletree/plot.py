@@ -454,8 +454,9 @@ class Plotter:
 def _collect_maps(context):
     """Collect all Map and SigmaMap configs from a context.
 
-    Deduplicates by resolved file path. Returns a dict mapping a deduplication key to the config
-    object.
+    Deduplicates by resolved file path. Returns a dict mapping a
+    deduplication key to ``(config, names)`` where *names* is the set
+    of all config names that share the same underlying file(s).
 
     """
     collected = {}
@@ -485,7 +486,9 @@ def _collect_maps(context):
                         continue
 
                     if key not in collected:
-                        collected[key] = config
+                        collected[key] = (config, {config.name})
+                    else:
+                        collected[key][1].add(config.name)
 
     return collected
 
@@ -778,10 +781,13 @@ def plot_maps(context, collapse=None, save=False, save_path=".", fmt="png"):
     if isinstance(fmt, str):
         fmt = [fmt]
 
-    for config in collected.values():
+    for config, names in collected.values():
         map_collapse = None
         if collapse is not None:
-            map_collapse = collapse.get(config.name)
+            for name in names:
+                if name in collapse:
+                    map_collapse = collapse[name]
+                    break
 
         if isinstance(config, SigmaMap):
             fig_ax = _plot_sigma_map(config, map_collapse)

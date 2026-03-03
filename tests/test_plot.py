@@ -98,6 +98,12 @@ def test_collect_maps_deduplication():
     collected = _collect_maps(context)
     assert len(collected) > 0
 
+    # Each entry is (config, names); names should be non-empty
+    for config, names in collected.values():
+        assert isinstance(names, set)
+        assert len(names) >= 1
+        assert config.name in names
+
     # Count total map configs across all plugins (with duplicates)
     total = 0
     for likelihood in context.likelihoods.values():
@@ -114,6 +120,12 @@ def test_collect_maps_deduplication():
     # The combined context shares maps across likelihoods,
     # so the deduplicated count must be strictly less.
     assert len(collected) < total
+
+    # Deduplicated entries with multiple names prove alias tracking works
+    all_names = [names for _, names in collected.values()]
+    assert any(len(n) > 1 for n in all_names), (
+        "Expected at least one map shared under multiple config names"
+    )
 
 
 def test_collapse_regbin_map():
