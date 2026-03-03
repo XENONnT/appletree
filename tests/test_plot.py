@@ -123,9 +123,9 @@ def test_collect_maps_deduplication():
 
     # Deduplicated entries with multiple names prove alias tracking works
     all_names = [names for _, names in collected.values()]
-    assert any(len(n) > 1 for n in all_names), (
-        "Expected at least one map shared under multiple config names"
-    )
+    assert any(
+        len(n) > 1 for n in all_names
+    ), "Expected at least one map shared under multiple config names"
 
 
 def test_collapse_regbin_map():
