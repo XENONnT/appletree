@@ -646,8 +646,13 @@ def _plot_map_1d_regbin(config, map_data, coord_name, coord_lower, coord_upper, 
 
 
 def _plot_map_2d_regbin(
-    config, map_data, coord_names, coord_lowers, coord_uppers,
-    is_log=False, label=None,
+    config,
+    map_data,
+    coord_names,
+    coord_lowers,
+    coord_uppers,
+    is_log=False,
+    label=None,
 ):
     """Plot a 2D regbin Map with imshow."""
     if label is None:
@@ -887,6 +892,7 @@ def _plot_sigma_map(config, collapse):
     """Route a SigmaMap to the appropriate plotting function.
 
     Returns a list of (fig, ax) tuples, or None.
+
     """
     median = config.median
     coord_type = median.coordinate_type
