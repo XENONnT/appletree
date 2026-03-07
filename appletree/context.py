@@ -169,6 +169,10 @@ class Context:
 
         """
         self.par_manager.set_parameter(parameters)
+        log_prior = self.par_manager.log_prior
+        if not np.isfinite(log_prior):
+            # Bypass simulation if prior is invalid
+            return -np.inf, log_prior
 
         key = randgen.get_key()
         log_posterior = 0
@@ -180,7 +184,6 @@ class Context:
             )
             log_posterior += log_likelihood_i
 
-        log_prior = self.par_manager.log_prior
         log_posterior += log_prior
 
         return log_posterior, log_prior
