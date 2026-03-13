@@ -23,9 +23,9 @@
             "s1_cut_acc_upper_ambe_flat.json"
         ],
         "s2_cut_acc": [
-            "s2_cut_acc_median_ambe_fitted.json",
-            "s2_cut_acc_lower_ambe_fitted.json",
-            "s2_cut_acc_upper_ambe_fitted.json"
+            "/home/puehlengt/applefiles/files/cut_acceptance/s2_cut_acc_median_ambe_fitted.json",
+            "/home/puehlengt/applefiles/files/cut_acceptance/s2_cut_acc_lower_ambe_fitted.json",
+            "/home/puehlengt/applefiles/files/cut_acceptance/s2_cut_acc_upper_ambe_fitted.json"
         ],
         "g4": [
             "g4_ambe_sr1.npy",
