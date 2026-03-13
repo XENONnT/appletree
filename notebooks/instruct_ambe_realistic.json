@@ -1,0 +1,71 @@
+{
+    "backend_h5": "backend_name.h5",
+    "configs": {
+        "s1_bias_3f": "3fold_s1_bias_bkg_sr1.json",
+        "s1_smear_3f": "3fold_s1_smearing_bkg_sr1.json",
+        "s2_bias": "s2_bias_bkg_sr1.json",
+        "s2_smear": "s2_smearing_bkg_sr1.json",
+        "s1_correction": "s1_correction_sr1.json",
+        "s1_lce": "s1_correction_sr1.json",
+        "s2_correction": "s2_correction_sr1.json",
+        "s2_lce": "s2_correction_sr1.json",
+        "posrec_reso": "posrec_reso_sr0.json",
+        "elife": "elife_bkg_sr1.json",
+        "civ": "civ_sr1.json",
+        "s1_eff_n_hits_3f": [
+            "3fold_recon_eff_n_hits_median_sr1.json",
+            "3fold_recon_eff_n_hits_lower_sr1.json",
+            "3fold_recon_eff_n_hits_upper_sr1.json"
+        ],
+        "s1_cut_acc": [
+            "s1_cut_acc_median_ambe_flat.json",
+            "s1_cut_acc_lower_ambe_flat.json",
+            "s1_cut_acc_upper_ambe_flat.json"
+        ],
+        "s2_cut_acc": [
+            "s2_cut_acc_median_ambe_fitted.json",
+            "s2_cut_acc_lower_ambe_fitted.json",
+            "s2_cut_acc_upper_ambe_fitted.json"
+        ],
+        "g4": [
+            "g4_ambe_sr1.npy",
+            1000000,
+            7
+        ],
+        "event_building_eff": "event_building_eff_ambe_sr1.json",
+        "min_allowed_alt_s2_area_offset_low_s2": 200,
+        "min_allowed_alt_s2_area_slope_low_s2": 0.0143,
+        "min_allowed_alt_s2_area_offset_high_s2": 210,
+        "min_allowed_alt_s2_area_slope_high_s2": 0.02,
+        "boundary_low_and_high_s2": 30000,
+        "coeffcient_fermi_dirac": 0.0005,
+        "really_apply_s2ss": true
+    },
+    "likelihoods": {
+        "ambe_llh": {
+            "components": {
+                "ambe_nr": "AmBe"
+            },
+            "copy_parameters": {},
+            "data_file_name": "data_ambe_sr1.csv",
+            "bins_type": "equiprob",
+            "bins_on": [
+                "cs1",
+                "cs2"
+            ],
+            "bins": [
+                15,
+                15
+            ],
+            "x_clip": [
+                0,
+                100
+            ],
+            "y_clip": [
+                250.0,
+                10000.0
+            ]
+        }
+    },
+    "par_config": "param_nr_sr1.json"
+}
