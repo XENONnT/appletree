@@ -1,5 +1,4 @@
 {
-    "_comment": "Copied from https://github.com/XENONnT/private_nt_aux_files/blob/master/apt_files/param_nr_sr1.json",
     "gas_gain": {
         "prior_type": "fixed",
         "prior_args": {
