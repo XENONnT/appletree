@@ -1,4 +1,5 @@
 {
+    "_comment": "Copied from https://github.com/XENONnT/private_nt_aux_files/blob/master/apt_files/instruct_ambe_sr1.json",
     "backend_h5": "backend_name.h5",
     "configs": {
         "s1_bias_3f": "3fold_s1_bias_bkg_sr1.json",
@@ -18,9 +19,9 @@
             "3fold_recon_eff_n_hits_upper_sr1.json"
         ],
         "s1_cut_acc": [
-            "s1_cut_acc_median_ambe_flat.json",
-            "s1_cut_acc_lower_ambe_flat.json",
-            "s1_cut_acc_upper_ambe_flat.json"
+            "/home/puehlengt/applefiles/files/cut_acceptance/s1_cut_acc_median_ambe_flat.json",
+            "/home/puehlengt/applefiles/files/cut_acceptance/s1_cut_acc_lower_ambe_flat.json",
+            "/home/puehlengt/applefiles/files/cut_acceptance/s1_cut_acc_upper_ambe_flat.json"
         ],
         "s2_cut_acc": [
             "/home/puehlengt/applefiles/files/cut_acceptance/s2_cut_acc_median_ambe_fitted.json",
