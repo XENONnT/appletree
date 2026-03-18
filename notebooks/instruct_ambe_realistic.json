@@ -30,7 +30,7 @@
         ],
         "g4": [
             "g4_ambe_sr1.npy",
-            1000000,
+            100000,
             7
         ],
         "event_building_eff": "event_building_eff_ambe_sr1.json",
