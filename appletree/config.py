@@ -250,10 +250,13 @@ class Map(Config):
         self.coordinate_system = jnp.asarray(data["coordinate_system"], dtype=float)
         self.map = jnp.asarray(data["map"], dtype=float)
 
+        self._is_log_axis = ["log" in data["coordinate_type"]]
+        self._log_mask = jnp.array(self._is_log_axis)
+
         if self.method not in self._POINT_INTERPOLATORS:
             raise ValueError(f"Unknown method {self.method} for point interpolation.")
         self.interpolator = self._POINT_INTERPOLATORS[self.method]
-        self._set_preprocessor(self.coordinate_system)
+        self._validate_log_coords(self.coordinate_system)
         self.apply = self.map_point
 
     def map_point(self, pos):
@@ -305,42 +308,35 @@ class Map(Config):
         self.coordinate_uppers = jnp.asarray(data["coordinate_uppers"], dtype=float)
         self.map = jnp.asarray(data["map"], dtype=float)
 
+        self._log_mask = jnp.array(self._is_log_axis)
+
         ndim = len(self.coordinate_lowers)
         self.interpolator = self._get_regbin_interpolator(ndim)
-        self._set_preprocessor(self.coordinate_lowers, self.coordinate_uppers)
+        self._validate_log_coords(self.coordinate_lowers, self.coordinate_uppers)
         self.apply = self.map_regbin
 
-    def _set_preprocessor(self, *coord_arrays):
-        """Validate log coordinates and set self.preprocess."""
-        if hasattr(self, "_is_log_axis"):
-            # Regbin map: use per-axis log flags
-            if any(self._is_log_axis):
-                for a in coord_arrays:
-                    for i, is_log in enumerate(self._is_log_axis):
-                        if is_log and jnp.any(a[i] <= 0):
-                            raise ValueError(
-                                f"Find non-positive coordinate system in map "
-                                f"{self.file_path}, "
-                                f"which is specified as {self.coordinate_type}"
-                            )
-                if all(self._is_log_axis):
-                    self.preprocess = self.log_pos
-                else:
-                    self._log_mask = jnp.array(self._is_log_axis)
-                    self.preprocess = self._mixed_preprocess
-            else:
-                self.preprocess = self.linear_pos
-        else:
-            # Point map: original logic
-            if "log" in self.coordinate_type:
-                if any(jnp.any(a <= 0) for a in coord_arrays):
+    def _validate_log_coords(self, *coord_arrays):
+        """Raise if any log-scaled coordinate is non-positive."""
+        if not any(self._is_log_axis):
+            return
+        for a in coord_arrays:
+            if a.ndim == 0 or (a.ndim == 1 and len(self._is_log_axis) == 1):
+                # Point map or 1D regbin: check entire array
+                if jnp.any(a <= 0):
                     raise ValueError(
-                        f"Find non-positive coordinate system in map {self.file_path}, "
+                        f"Find non-positive coordinate system in map "
+                        f"{self.file_path}, "
                         f"which is specified as {self.coordinate_type}"
                     )
-                self.preprocess = self.log_pos
             else:
-                self.preprocess = self.linear_pos
+                # Multi-D regbin: check only log axes
+                for i, is_log in enumerate(self._is_log_axis):
+                    if is_log and jnp.any(a[i] <= 0):
+                        raise ValueError(
+                            f"Find non-positive coordinate system in map "
+                            f"{self.file_path}, "
+                            f"which is specified as {self.coordinate_type}"
+                        )
 
     def _get_regbin_interpolator(self, ndim):
         """Return the regular-binning interpolator for the given dimensionality."""
@@ -361,14 +357,8 @@ class Map(Config):
         )
         return val
 
-    def linear_pos(self, pos):
-        return pos
-
-    def log_pos(self, pos):
-        return jnp.log10(jnp.clip(pos, FLOAT_POS_MIN, FLOAT_POS_MAX))
-
-    def _mixed_preprocess(self, pos):
-        """Apply log10 only to axes marked as log in ``_is_log_axis``."""
+    def preprocess(self, pos):
+        """Apply log10 to axes marked as log in ``_log_mask``."""
         log_vals = jnp.log10(jnp.clip(pos, FLOAT_POS_MIN, FLOAT_POS_MAX))
         return jnp.where(self._log_mask, log_vals, pos)
 
