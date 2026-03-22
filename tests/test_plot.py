@@ -134,12 +134,13 @@ def test_collapse_regbin_map():
     args = (["x", "y", "z"], [0.0, 0.0, 0.0], [2.0, 3.0, 4.0])
 
     # Collapse z axis
-    result, names, _, _ = _collapse_regbin_map(map_data, *args, collapse={"z": None})
+    result, names, _, _, is_log = _collapse_regbin_map(map_data, *args, collapse={"z": None})
     assert result.shape == (2, 3)
     assert names == ["x", "y"]
+    assert is_log == [False, False]
 
     # Collapse with range
-    result, names, _, _ = _collapse_regbin_map(
+    result, names, _, _, _ = _collapse_regbin_map(
         map_data,
         *args,
         collapse={"z": (0.5, 1.5)},
@@ -148,7 +149,7 @@ def test_collapse_regbin_map():
     assert names == ["x", "y"]
 
     # Collapse two axes
-    result, names, _, _ = _collapse_regbin_map(
+    result, names, _, _, _ = _collapse_regbin_map(
         map_data,
         *args,
         collapse={"y": None, "z": None},
@@ -157,12 +158,12 @@ def test_collapse_regbin_map():
     assert names == ["x"]
 
     # No collapse
-    result, names, _, _ = _collapse_regbin_map(map_data, *args, collapse=None)
+    result, names, _, _, _ = _collapse_regbin_map(map_data, *args, collapse=None)
     assert result.shape == (2, 3, 4)
 
     # Range matching no bins falls back to all bins
     map_2d = np.arange(6).reshape(2, 3).astype(float)
-    result, names, _, _ = _collapse_regbin_map(
+    result, names, _, _, _ = _collapse_regbin_map(
         map_2d,
         ["x", "y"],
         [0.0, 0.0],
@@ -170,6 +171,20 @@ def test_collapse_regbin_map():
         collapse={"y": (100.0, 200.0)},
     )
     assert result.shape == (2,)
+
+    # Per-axis is_log: collapse log axis, keep linear axis
+    map_2d = np.ones((4, 5))
+    result, names, _, _, is_log = _collapse_regbin_map(
+        map_2d,
+        ["quantile", "s2_area"],
+        [0.0, 100.0],
+        [1.0, 10000.0],
+        collapse={"s2_area": None},
+        is_log=[False, True],
+    )
+    assert result.shape == (4,)
+    assert names == ["quantile"]
+    assert is_log == [False]
 
 
 def test_regbin_edges_centers():
@@ -290,3 +305,40 @@ def test_plot_routing():
     assert len(result) == 3
     for fig, _ in result:
         assert fig is not None
+
+
+def test_plot_mixed_coordinate_type():
+    """Test plotting with mixed per-axis coordinate types."""
+    # 2D map with linear axis 0, log axis 1
+    mixed_map = SimpleNamespace(
+        name="test_mixed",
+        coordinate_type=["regbin", "log_regbin"],
+        coordinate_name=["quantile", "s2_area"],
+        coordinate_lowers=[0.0, 100.0],
+        coordinate_uppers=[1.0, 10000.0],
+        map=np.ones((5, 4)),
+    )
+    fig, ax = _plot_map_2d_regbin(
+        mixed_map,
+        np.ones((5, 4)),
+        ["quantile", "s2_area"],
+        [0.0, 100.0],
+        [1.0, 10000.0],
+        is_log=[False, True],
+    )
+    assert fig is not None
+    assert ax.get_xlabel() == "quantile"
+    assert ax.get_ylabel() == "log10(s2_area)"
+
+    # Routing through _plot_regular_map
+    result = _plot_regular_map(mixed_map, None)
+    assert result is not None
+    fig, ax = result
+    assert ax.get_xlabel() == "quantile"
+    assert ax.get_ylabel() == "log10(s2_area)"
+
+    # Collapse log axis -> 1D linear plot
+    result = _plot_regular_map(mixed_map, {"s2_area": None})
+    assert result is not None
+    fig, ax = result
+    assert ax.get_xlabel() == "quantile"

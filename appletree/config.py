@@ -213,7 +213,15 @@ class Map(Config):
             raise ValueError(f"Cannot load {self.name} from {_file_path}!")
 
         coordinate_type = data["coordinate_type"]
-        if coordinate_type == "point" or coordinate_type == "log_point":
+        if isinstance(coordinate_type, list):
+            for ct in coordinate_type:
+                if ct not in ("regbin", "log_regbin"):
+                    raise ValueError(
+                        f"Per-axis coordinate_type entries must be 'regbin' or "
+                        f"'log_regbin', got '{ct}'"
+                    )
+            self.build_regbin(data)
+        elif coordinate_type == "point" or coordinate_type == "log_point":
             self.build_point(data)
         elif coordinate_type == "regbin" or coordinate_type == "log_regbin":
             self.build_regbin(data)
@@ -257,16 +265,41 @@ class Map(Config):
         return val
 
     def build_regbin(self, data):
-        """Cache the map to jnp.array if bins_type is regbin."""
-        if "pdf" in data["coordinate_name"] or "cdf" in data["coordinate_name"]:
-            if data["coordinate_type"] == "log_regbin":
-                raise ValueError(
-                    f"It is not a good idea to use log pdf nor cdf "
-                    f"in map {self.file_path}. "
-                    f"Because its coordinate type is log-binned. "
-                )
+        """Cache the map to jnp.array if bins_type is regbin.
 
-        self.coordinate_type = data["coordinate_type"]
+        ``coordinate_type`` may be a single string (``"regbin"`` or
+        ``"log_regbin"``) applied to every axis, or a list of such
+        strings with one entry per axis for mixed linear/log grids
+        (e.g. ``["regbin", "log_regbin"]``).
+
+        """
+        coordinate_type = data["coordinate_type"]
+        ndim = len(data["coordinate_lowers"])
+
+        # Determine per-axis log flags
+        if isinstance(coordinate_type, list):
+            if len(coordinate_type) != ndim:
+                raise ValueError(
+                    f"coordinate_type list length ({len(coordinate_type)}) "
+                    f"must match number of axes ({ndim})"
+                )
+            self._is_log_axis = [ct == "log_regbin" for ct in coordinate_type]
+        elif coordinate_type == "log_regbin":
+            self._is_log_axis = [True] * ndim
+        else:
+            self._is_log_axis = [False] * ndim
+
+        # Validate: don't use log-scaled pdf/cdf axes
+        if "pdf" in data["coordinate_name"] or "cdf" in data["coordinate_name"]:
+            for i, name in enumerate(data["coordinate_name"]):
+                if name in ("pdf", "cdf") and self._is_log_axis[i]:
+                    raise ValueError(
+                        f"It is not a good idea to use log pdf nor cdf "
+                        f"in map {self.file_path}. "
+                        f"Because its coordinate type is log-binned. "
+                    )
+
+        self.coordinate_type = coordinate_type
         self.coordinate_name = data["coordinate_name"]
         self.coordinate_lowers = jnp.asarray(data["coordinate_lowers"], dtype=float)
         self.coordinate_uppers = jnp.asarray(data["coordinate_uppers"], dtype=float)
@@ -279,15 +312,35 @@ class Map(Config):
 
     def _set_preprocessor(self, *coord_arrays):
         """Validate log coordinates and set self.preprocess."""
-        if "log" in self.coordinate_type:
-            if any(jnp.any(a <= 0) for a in coord_arrays):
-                raise ValueError(
-                    f"Find non-positive coordinate system in map {self.file_path}, "
-                    f"which is specified as {self.coordinate_type}"
-                )
-            self.preprocess = self.log_pos
+        if hasattr(self, "_is_log_axis"):
+            # Regbin map: use per-axis log flags
+            if any(self._is_log_axis):
+                for a in coord_arrays:
+                    for i, is_log in enumerate(self._is_log_axis):
+                        if is_log and jnp.any(a[i] <= 0):
+                            raise ValueError(
+                                f"Find non-positive coordinate system in map "
+                                f"{self.file_path}, "
+                                f"which is specified as {self.coordinate_type}"
+                            )
+                if all(self._is_log_axis):
+                    self.preprocess = self.log_pos
+                else:
+                    self._log_mask = jnp.array(self._is_log_axis)
+                    self.preprocess = self._mixed_preprocess
+            else:
+                self.preprocess = self.linear_pos
         else:
-            self.preprocess = self.linear_pos
+            # Point map: original logic
+            if "log" in self.coordinate_type:
+                if any(jnp.any(a <= 0) for a in coord_arrays):
+                    raise ValueError(
+                        f"Find non-positive coordinate system in map {self.file_path}, "
+                        f"which is specified as {self.coordinate_type}"
+                    )
+                self.preprocess = self.log_pos
+            else:
+                self.preprocess = self.linear_pos
 
     def _get_regbin_interpolator(self, ndim):
         """Return the regular-binning interpolator for the given dimensionality."""
@@ -313,6 +366,11 @@ class Map(Config):
 
     def log_pos(self, pos):
         return jnp.log10(jnp.clip(pos, FLOAT_POS_MIN, FLOAT_POS_MAX))
+
+    def _mixed_preprocess(self, pos):
+        """Apply log10 only to axes marked as log in ``_is_log_axis``."""
+        log_vals = jnp.log10(jnp.clip(pos, FLOAT_POS_MIN, FLOAT_POS_MAX))
+        return jnp.where(self._log_mask, log_vals, pos)
 
     def pdf_to_cdf(self, x, pdf):
         """Convert pdf map to cdf map."""
