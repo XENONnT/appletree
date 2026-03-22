@@ -359,7 +359,11 @@ class Map(Config):
 
     def preprocess(self, pos):
         """Apply log10 to axes marked as log in ``_log_mask``."""
-        log_vals = jnp.log10(jnp.clip(pos, FLOAT_POS_MIN, FLOAT_POS_MAX))
+        # Selectively transform only log axes so that linear axes with
+        # non-positive values are never passed through log10/clip, which
+        # would corrupt forward values or gradients.
+        safe_pos = jnp.where(self._log_mask, pos, 1.0)
+        log_vals = jnp.log10(jnp.clip(safe_pos, FLOAT_POS_MIN, FLOAT_POS_MAX))
         return jnp.where(self._log_mask, log_vals, pos)
 
     def pdf_to_cdf(self, x, pdf):
