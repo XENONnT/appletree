@@ -20,6 +20,7 @@
 
 # %%
 import os
+import sys
 from time import time
 
 import numpy as np
@@ -39,10 +40,16 @@ import aptext
 
 # %%
 # constrain the GPU memory usage
-apt.set_gpu_memory_usage(0.7)
+apt.set_gpu_memory_usage(0.2)
 
 # %%
-MC_ID = 0
+MC_ID = int(sys.argv[1])
+#MC_ID = 1
+
+#num_sims = int(3000)
+num_sims = int(50)
+#num_sims = int(10)
+#num_sims = int(1e4)
 
 # %% [markdown]
 # ## Define component
@@ -139,11 +146,6 @@ print(f'sims start: {time()}')
 # %%
 batch_size = int(1e4) # for funsies. design flaw, batch_size doesn't do shits here for multiple scatters like AmBe
 
-#num_sims = int(3000)
-num_sims = int(500)
-#num_sims = int(10)
-#num_sims = int(1e4)
-
 param_bag = []
 events_bag = []
 
@@ -179,9 +181,6 @@ print(f'sims end: {time()}')
 # %%
 save_bag = {'param_bag': param_bag,
             'events_bag': events_bag}
-
-# %%
-len(param_bag)
 
 # %%
 save_on = True
