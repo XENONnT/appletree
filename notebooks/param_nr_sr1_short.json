@@ -205,18 +205,13 @@
         "doc": "NEST parameter delta"
     },
     "epsilon": {
-        "prior_type": "twohalfnorm",
+        "prior_type": "fixed",
         "prior_args": {
-            "mu": 12.6,
-            "sigma_pos": 3.4,
-            "sigma_neg": 2.9
+            "val": 12.6
         },
-        "allowed_range": [
-            1e-10,
-            1e10
-        ],
-        "init_mean": 12.6,
-        "init_std": 2.9,
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
         "unit": "1",
         "doc": "NEST parameter epsilon"
     },
