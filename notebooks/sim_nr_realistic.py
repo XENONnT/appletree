@@ -44,10 +44,12 @@ apt.set_gpu_memory_usage(0.2)
 
 # %%
 MC_ID = int(sys.argv[1])
+num_sims = int(sys.argv[2])
+
 #MC_ID = 1
 
 #num_sims = int(3000)
-num_sims = int(50)
+#num_sims = int(50)
 #num_sims = int(10)
 #num_sims = int(1e4)
 
