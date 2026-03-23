@@ -85,17 +85,13 @@
         "doc": "elife shifter"
     },
     "s1_eff_n_hits_3f_sigma": {
-        "prior_type": "norm",
+        "prior_type": "fixed",
         "prior_args": {
-            "mean": 0.0,
-            "std": 1.0
+            "val": 0.0
         },
-        "allowed_range": [
-            -5.0,
-            5.0
-        ],
-        "init_mean": 0.0,
-        "init_std": 1.0,
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
         "unit": "1",
         "doc": "S1 efficiency shifter"
     },
@@ -130,17 +126,13 @@
         "doc": "S2 cut acceptance shifter"
     },
     "hits_acceptance": {
-        "prior_type": "norm",
+        "prior_type": "fixed",
         "prior_args": {
-            "mean": 0.935,
-            "std": 0.010
+            "val": 0.935
         },
-        "allowed_range": [
-            0.0,
-            1.0
-        ],
-        "init_mean": 0.935,
-        "init_std": 0.010,
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
         "unit": "1",
         "doc": "DAQ not lost probability"
     },
@@ -244,17 +236,13 @@
         "doc": "NEST parameter zeta"
     },
     "eta": {
-        "prior_type": "norm",
+        "prior_type": "fixed",
         "prior_args": {
-            "mean": 2.0,
-            "std": 1.0
+            "val": 2.0
         },
-        "allowed_range": [
-            0,
-            1e10
-        ],
-        "init_mean": 2.0,
-        "init_std": 1.0,
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
         "unit": "1",
         "doc": "NEST parameter eta"
     },
@@ -274,17 +262,13 @@
         "doc": "NEST parameter theta"
     },
     "iota": {
-        "prior_type": "norm",
+        "prior_type": "fixed",
         "prior_args": {
-            "mean": 2.0,
-            "std": 0.5
+            "val": 2.0
         },
-        "allowed_range": [
-            -1e10,
-            1e10
-        ],
-        "init_mean": 2.0,
-        "init_std": 0.5,
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
         "unit": "1",
         "doc": "NEST parameter iota"
     },
