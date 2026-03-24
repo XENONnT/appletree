@@ -43,15 +43,19 @@ import aptext
 apt.set_gpu_memory_usage(0.2)
 
 # %%
+#'''
 MC_ID = int(sys.argv[1])
 num_sims = int(sys.argv[2])
+#'''
 
-#MC_ID = 1
+'''
+MC_ID = 1
 
 #num_sims = int(3000)
 #num_sims = int(50)
-#num_sims = int(10)
+num_sims = int(10)
 #num_sims = int(1e4)
+#'''
 
 # %% [markdown]
 # ## Define component
@@ -81,7 +85,9 @@ aa = nr.show_config()
 aa
 
 # %%
-f_param_config = '/home/puehlengt/appletree/notebooks/param_nr_sr1_short.json'
+f_param_config = '/home/puehlengt/appletree/notebooks/param_nr_sr1_3params.json'
+param_flavour = '3params'
+#f_param_config = '/home/puehlengt/appletree/notebooks/param_nr_sr1_short.json'
 #f_param_config = '/home/puehlengt/appletree/notebooks/param_nr_sr1.json'
 
 f_instruct = 'instruct_ambe_realistic.json'
@@ -140,10 +146,14 @@ par_manager = apt.Parameter(f_param_config)
 parameters = par_manager.get_all_parameter()
 
 # %%
-parameters
+floated_param = []
+for _par in parameters.keys():
+    if isinstance(parameters[_par], np.float64):
+        floated_param.append(_par)
+print(f'Floating params: {floated_param}')
 
 # %%
-print(f'sims start: {time()}')
+t_start = time()
 
 # %%
 batch_size = int(1e4) # for funsies. design flaw, batch_size doesn't do shits here for multiple scatters like AmBe
@@ -172,13 +182,22 @@ for _mc in range(num_sims):
     sel_cs1, sel_cs2 = np.array(cs1[sel_ind]), np.array(cs2[sel_ind])
     events = np.vstack((sel_cs1, sel_cs2))
 
+    # only saving parameters that were floated
+    save_params = {}
+    for key, val in parameters.items():
+        if key in floated_param:
+            save_params[key] = val.item() # convert np.float64 to python float for better json serialization
+
     # store things
-    param_bag.append(parameters.copy())
+    param_bag.append(save_params)
     events_bag.append(events)
     
 
 # %%
-print(f'sims end: {time()}')
+t_end = time()
+
+# %%
+print(f'sims took {(t_end-t_start)/60.:.1f} minutes')
 
 # %%
 save_bag = {'param_bag': param_bag,
@@ -186,9 +205,10 @@ save_bag = {'param_bag': param_bag,
 
 # %%
 save_on = True
+#save_on = False
 
 if save_on:
-    np.save(f'testsims_10params_{num_sims}sims_mcid{MC_ID}.npy', save_bag)
+    np.save(f'testsims_{param_flavour}_{num_sims}sims_mcid{MC_ID}.npy', save_bag)
 
 # %%
 raise
@@ -222,6 +242,7 @@ for _mc in range(num_sims):
         break
     this_params = param_bag[_mc]
     this_events = events_bag[_mc]
+    print(this_params)
 
     plt.figure()
     plt.hist2d(this_events[0,:], this_events[1,:],
