@@ -57,7 +57,7 @@ class Context:
         self.register_all_likelihood(instruct)
 
     @classmethod
-    def from_backend(cls, backend_h5_file_name):
+    def from_backend(cls, backend_h5_file_name, moves=None):
         """Initialize context from a backend_h5 file."""
         with h5py.File(get_file_path(backend_h5_file_name)) as file:
             instruct = eval(file["mcmc"].attrs["instruct"])
@@ -67,7 +67,7 @@ class Context:
         # Overwrite the backend_h5 file name. If the user renames the
         # backend file then it could be different from the one in intruct
         tree.backend_h5 = backend_h5_file_name
-        tree.pre_fitting(nwalkers, batch_size=batch_size)
+        tree.pre_fitting(nwalkers, batch_size=batch_size, moves=moves)
         return tree
 
     def __getitem__(self, keys):
@@ -199,7 +199,9 @@ class Context:
                 self._backend.reset(nwalkers, self._ndim)
             print(f"With h5 backend {self.backend_h5}")
 
-    def pre_fitting(self, nwalkers=100, read_only=True, reset=False, batch_size=1_000_000):
+    def pre_fitting(
+        self, nwalkers=100, read_only=True, reset=False, batch_size=1_000_000, moves=None
+    ):
         """Prepare for fitting, initialize backend and sampler."""
         self._set_backend(nwalkers, read_only=read_only, reset=reset)
         self.sampler = emcee.EnsembleSampler(
@@ -209,10 +211,11 @@ class Context:
             backend=self._backend,
             blobs_dtype=np.float32,
             parameter_names=self.par_manager.parameter_fit,
+            moves=moves,
             kwargs={"batch_size": batch_size},
         )
 
-    def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000):
+    def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000, moves=None):
         """Fitting posterior distribution of needed parameters.
 
         Args:
@@ -227,7 +230,9 @@ class Context:
             self.par_manager.sample_init()
             p0.append(self.par_manager.parameter_fit_array)
 
-        self.pre_fitting(nwalkers=nwalkers, read_only=False, reset=True, batch_size=batch_size)
+        self.pre_fitting(
+            nwalkers=nwalkers, read_only=False, reset=True, batch_size=batch_size, moves=moves
+        )
 
         result = self.sampler.run_mcmc(
             p0,
@@ -239,7 +244,7 @@ class Context:
         self._dump_meta(batch_size=batch_size)
         return result
 
-    def continue_fitting(self, context=None, iteration=500, batch_size=1_000_000):
+    def continue_fitting(self, context=None, iteration=500, batch_size=1_000_000, moves=None):
         """Continue a fitting of another context.
 
         Args:
@@ -259,7 +264,9 @@ class Context:
         nwalkers = context.sampler.get_chain().shape[1]
 
         # Init sampler for current context
-        self.pre_fitting(nwalkers=nwalkers, read_only=False, reset=False, batch_size=batch_size)
+        self.pre_fitting(
+            nwalkers=nwalkers, read_only=False, reset=False, batch_size=batch_size, moves=moves
+        )
 
         result = self.sampler.run_mcmc(
             p0,
@@ -272,17 +279,36 @@ class Context:
         self._dump_meta(batch_size=batch_size)
         return result
 
-    def get_post_parameters(self):
-        """Get parameters correspondes to max posterior."""
-        logp = self.sampler.get_log_prob(flat=True)
-        chain = self.sampler.get_chain(flat=True)
-        mpe_parameters = chain[np.argmax(logp)]
-        mpe_parameters = emcee.ensemble.ndarray_to_list_of_dicts(
-            [mpe_parameters],
+    def get_post_parameters(self, which="mpe"):
+        """Get parameters from the backend.
+
+        Args:
+            which: str, 'mpe', 'random' or 'median'. 'mpe' is the maximum posterior estimate,
+            i.e. the parameter set with the highest posterior value. 'random' returns a
+            random parameter set from the posterior distribution. 'median' is the marginal medians.
+
+        """
+        # Assign attributes for the first time
+        # This speeds up if the user wanna call this function many times
+        if not hasattr(self, "_logp"):
+            self._logp = self.sampler.get_log_prob(flat=True)
+        if not hasattr(self, "_chain"):
+            self._chain = self.sampler.get_chain(flat=True)
+        if which == "mpe":
+            _parameters = self._chain[np.argmax(self._logp)]
+        elif which == "random":
+            _parameters = self._chain[np.random.randint(len(self._logp))]
+        elif which == "median":
+            _parameters = np.median(self._chain, axis=0)
+        else:
+            raise ValueError(f"which should be 'mpe', 'random' or 'median', got {which}!")
+
+        _parameters = emcee.ensemble.ndarray_to_list_of_dicts(
+            [_parameters],
             self.sampler.parameter_names,
         )[0]
         parameters = copy.deepcopy(self.par_manager.get_all_parameter())
-        parameters.update(mpe_parameters)
+        parameters.update(_parameters)
         return parameters
 
     def get_all_post_parameters(self, **kwargs):
@@ -325,6 +351,10 @@ class Context:
                 opt[name].attrs["_cached_configs"] = json.dumps(_cached_configs, **JSON_OPTIONS)
                 # batch size
                 opt[name].attrs["batch_size"] = batch_size
+                # acceptance fraction of MCMC
+                opt[name].attrs["acceptance_fraction"] = self.sampler.acceptance_fraction
+                # autocorrelation time
+                opt[name].attrs["autocorr_time"] = self.sampler.get_autocorr_time(quiet=True)
 
     def get_template(
         self,

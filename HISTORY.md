@@ -1,3 +1,49 @@
+v0.5.5 / 2026-02-12
+-------------------
+* Check the shape of input of interpolation by @dachengx in https://github.com/XENONnT/appletree/pull/201
+* Use numbered version of `docformatter` by @dachengx in https://github.com/XENONnT/appletree/pull/203
+* Load data from the local downloaded path assigned by `MongoDownloader` by @dachengx in https://github.com/XENONnT/appletree/pull/202
+* Equal probability binning on integer sample by @dachengx in https://github.com/XENONnT/appletree/pull/205
+* Be able to set `moves` by @dachengx in https://github.com/XENONnT/appletree/pull/206
+* Plot actual time series evaluation before applying chain reduction `thin` by @dachengx in https://github.com/XENONnT/appletree/pull/207
+* Acceptance plot by @mhliu0001 in https://github.com/XENONnT/appletree/pull/210
+* Add pandas version requirement by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/212
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.5.4...v0.5.5
+
+
+v0.5.4 / 2025-02-03
+-------------------
+* Use `importlib.resources.files` and support python 3.11 by @dachengx in https://github.com/XENONnT/appletree/pull/199
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.5.3...v0.5.4
+
+
+v0.5.3 / 2024-12-12
+-------------------
+* Remove numpy version constraint by @dachengx in https://github.com/XENONnT/appletree/pull/197
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.5.2...v0.5.3
+
+
+v0.5.2 / 2024-12-05
+-------------------
+* [pre-commit.ci] pre-commit autoupdate by @pre-commit-ci in https://github.com/XENONnT/appletree/pull/182
+* Use `pyproject.toml` to install appletree by @dachengx in https://github.com/XENONnT/appletree/pull/184
+* Fix backend filename if the user changes the h5 filename by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/185
+* [pre-commit.ci] pre-commit autoupdate by @pre-commit-ci in https://github.com/XENONnT/appletree/pull/183
+* use mongo downloader in utilix by @yuema137 in https://github.com/XENONnT/appletree/pull/190
+* Add `utilix` to `pyproject.toml` by @dachengx in https://github.com/XENONnT/appletree/pull/191
+* Update utilix dependency by @yuema137 in https://github.com/XENONnT/appletree/pull/192
+* Switch to master for docformatter by @dachengx in https://github.com/XENONnT/appletree/pull/194
+* More options for get_post_parameters by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/193
+
+New Contributors
+* @yuema137 made their first contribution in https://github.com/XENONnT/appletree/pull/190
+
+**Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.5.1...v0.5.2
+
+
 v0.5.1 / 2024-07-31
 -------------------
 * Fix S1 bias coordinate by @zihaoxu98 in https://github.com/XENONnT/appletree/pull/174

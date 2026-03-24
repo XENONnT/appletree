@@ -2,10 +2,10 @@ import os
 import json
 from warnings import warn
 import hashlib
-import importlib_resources
 from time import time
+from importlib.resources import files as _files
 
-from jax.lib import xla_bridge
+import jax
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
@@ -140,18 +140,19 @@ def _get_abspath(file_name):
 
 def _package_path(sub_directory):
     """Get the abs path of the requested sub folder."""
-    return importlib_resources.files("appletree") / sub_directory
+    return _files("appletree") / sub_directory
 
 
 @export
 def get_file_path(fname):
-    """Find the full path to the resource file. Try 5 methods in the following order.
+    """Find the full path to the resource file.
 
-    * fname begin with '/', return absolute path
-    * url_base begin with '/', return url_base + name
-    * can get file from _get_abspath, return appletree internal file path
-    * can be found in local installed ntauxfiles, return ntauxfiles absolute path
-    * can be downloaded from MongoDB, download and return cached path
+    Try 5 methods in the following order.
+        * fname begin with '/', return absolute path
+        * url_base begin with '/', return url_base + name
+        * can get file from _get_abspath, return appletree internal file path
+        * can be found in local installed ntauxfiles, return ntauxfiles absolute path
+        * can be downloaded from MongoDB, download and return cached path
 
     """
     # 1. From absolute path if file exists
@@ -187,20 +188,15 @@ def get_file_path(fname):
     # 5. From MongoDB
     if not SKIP_MONGO_DB:
         try:
-            import straxen
+            import utilix
 
-            # https://straxen.readthedocs.io/en/latest/config_storage.html
-            # downloading-xenonnt-files-from-the-database  # noqa
-
-            # we need to add the straxen.MongoDownloader() in this
-            # try: except NameError: logic because the NameError
-            # gets raised if we don't have access to utilix.
-            downloader = straxen.MongoDownloader()
+            # Mongo downloader is implemented in utilix
+            downloader = utilix.mongo_storage.MongoDownloader()
             # FileNotFoundError, ValueErrors can be raised if we
             # cannot load the requested config
             fpath = downloader.download_single(fname)
             warn(f"Loading {fname} from mongo downloader to {fpath}")
-            return fname  # Keep the name and let get_resource do its thing
+            return fpath
         except (FileNotFoundError, ValueError, NameError, AttributeError):
             warn(f"Mongo downloader not possible or does not have {fname}")
 
@@ -253,8 +249,14 @@ def timeit(indent=""):
 
 
 @export
-def get_platform():
-    """Show the platform we are using, either cpu ot gpu."""
+def get_platform() -> str:
+    """Show the platform we are using, e.g. 'cpu', 'gpu', or 'tpu'."""
+    if hasattr(jax, "default_backend"):
+        return jax.default_backend()
+
+    # Fallback for extremely old JAX versions:
+    from jax.lib import xla_bridge
+
     return xla_bridge.get_backend().platform
 
 
@@ -277,6 +279,8 @@ def get_equiprob_bins_1d(
     data,
     n_partitions,
     clip=(-np.inf, +np.inf),
+    integer=False,
+    left=True,
     which_np=np,
 ):
     """Get 2D equiprobable binning edges.
@@ -287,6 +291,8 @@ def get_equiprob_bins_1d(
         clip: lower and upper binning edges on the 0th dimension.
             Data outside the clip will be dropped.
         Data outside the y_clip will be dropped.
+        integer: bool, whether the corresponding dimension is integer.
+        left: bool, whether start searching for bin edges from the left side.
         which_np: can be numpy or jax.numpy, determining the returned array type.
 
     """
@@ -296,6 +302,8 @@ def get_equiprob_bins_1d(
     bins = GOFevaluation.utils.get_equiprobable_binning(
         data[mask],
         n_partitions,
+        integer=integer,
+        left=left,
     )
     # To be strict, clip the inf(s)
     bins = np.clip(bins, *clip)
@@ -310,6 +318,8 @@ def get_equiprob_bins_2d(
     order=(0, 1),
     x_clip=(-np.inf, +np.inf),
     y_clip=(-np.inf, +np.inf),
+    integer=[False, False],
+    left=True,
     which_np=np,
 ):
     """Get 2D equiprobable binning edges.
@@ -320,6 +330,8 @@ def get_equiprob_bins_2d(
         x_clip: lower and upper binning edges on the 0th dimension.
             Data outside the x_clip will be dropped.
         y_clip: lower and upper binning edges on the 1st dimension.
+        integer: list of bool with length 2, whether the corresponding dimension is integer.
+        left: bool, whether start searching for bin edges from the left side.
         Data outside the y_clip will be dropped.
         which_np: can be numpy or jax.numpy, determining the returned array type.
 
@@ -333,6 +345,8 @@ def get_equiprob_bins_2d(
         data[mask],
         n_partitions,
         order=order,
+        integer=integer,
+        left=left,
     )
     # To be strict, clip the inf(s)
     x_bins = np.clip(x_bins, *x_clip)
