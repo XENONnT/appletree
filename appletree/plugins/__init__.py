@@ -18,3 +18,6 @@ from .efficiency import *
 
 from . import nestv2
 from .nestv2 import *
+
+from . import nestv2_er_extension
+from .nestv2_er_extension import *
