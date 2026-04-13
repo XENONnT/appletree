@@ -1,0 +1,58 @@
+{
+    "backend_h5": "test.h5",
+    "url_base": "/home/aspelene/my_bandfit/private_nt_aux_files/apt_files",
+    
+    "configs": {
+        "elife":              "elife_bkg_sr1.json",
+        "upper_energy": 40,
+        "lower_energy": 0.01,
+        "posrec_reso":        "posrec_reso_sr0.json",
+        "s1_correction":      "s1_correction_sr1.json",
+        "s2_correction":      "s2_correction_sr1.json",
+        "s1_lce": "s1_correction_sr1.json",
+        "s2_lce": "s2_correction_sr1.json",
+        "s1_bias_3f":         "peak_bias_map_S1_sr1_photoelectrons_in_peak_TC3.json",
+        "s1_smear_3f":        "peak_bias_smearing_map_S1_sr1_photoelectrons_in_peak_TC3.json",
+        "s2_bias":            "peak_bias_map_S2_sr1_photoelectrons_in_peak_TC3.json",
+        "s2_smear":           "peak_bias_smearing_map_S2_sr1_photoelectrons_in_peak_TC3.json",
+        "s1_bias_correction": "s1_bias_correction_dummy.json",
+        "s2_bias_correction": "s2_bias_correction_dummy.json",
+        "event_building_eff": "anti_correlation_eff_rn220_sr1_extended.json",
+        "anti_correlation_eff": "anti_correlation_eff_rn220_sr1_extended.json",
+        "s1_eff_n_hits_3f": ["3fold_recon_eff_n_hits_median_sr0.json",
+                             "3fold_recon_eff_n_hits_lower_sr0.json",
+                             "3fold_recon_eff_n_hits_upper_sr0.json"],
+        "s1_cut_acc": ["s1_cut_acc_median_er_sr1.json",
+                       "s1_cut_acc_lower_er_sr1.json",
+                       "s1_cut_acc_upper_er_sr1.json"],
+        "s2_cut_acc": ["s2_cut_acc_median_er_sr1.json",
+                       "s2_cut_acc_lower_er_sr1.json",
+                       "s2_cut_acc_upper_er_sr1.json"]
+
+    },
+    
+    "likelihoods": {
+        "rn220_llh": {
+            "components": {
+                "rn220_er": "Rn220SR2_Extension",
+                "rn220_ac": {
+                    "component_cls": "AC",
+                    "file_name": "ac_template_rn220_sr1.csv"
+                }
+            },
+            "copy_parameters": {
+                "rn220_er_rate": "er_n_events_roi",
+                "rn220_ac_rate": "ac_n_events_roi"
+            },
+
+            "data_file_name": "/home/aspelene/my_bandfit/rn220_below_200keV_v16_cuts_rn220.csv",
+            "bins_type": "equiprob",
+            "bins_on": ["cs1", "cs2"],
+            "bins": [90, 90],
+            "x_clip": [0, 300],
+            "y_clip": [3e2, 3e4]
+        }
+    },
+
+    "par_config": "nestv2_er_extension_everything_on_and_new_param.json"
+}
