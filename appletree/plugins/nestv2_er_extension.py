@@ -17,7 +17,7 @@ export, __all__ = exporter(export_self=False)
 
 
 @export
-class ExcitonIonRatioER(Plugin):
+class ExcitonIonRatioER_Extension(Plugin):
     depends_on = ["energy"]
     provides = ["nex_ni_ratio", "alf"]
     parameters = ("liquid_xe_density",)
@@ -33,7 +33,7 @@ class ExcitonIonRatioER(Plugin):
 
 
 @export
-class QyER(Plugin):
+class QyER_Extension(Plugin):
     depends_on = ["energy", "nex_ni_ratio"]
     provides = ["charge_yield"]
     parameters = (
@@ -146,7 +146,7 @@ class QyER(Plugin):
 
 
 @export
-class LyER(Plugin):
+class LyER_Extension(Plugin):
     depends_on = ["charge_yield"]
     provides = ["light_yield"]
     parameters = ("w",)
@@ -160,7 +160,7 @@ class LyER(Plugin):
 
 # Same as in nestv2.py, commented out to avoid redundant code.
 @export
-class MeanNphNe(Plugin):
+class MeanNphNe_Extension(Plugin):
     depends_on = ["light_yield", "charge_yield", "energy"]
     provides = ["_Nph", "_Ne"]
 
@@ -172,7 +172,7 @@ class MeanNphNe(Plugin):
 
 
 @export
-class MeanExcitonIonER(Plugin):
+class MeanExcitonIonER_Extension(Plugin):
     depends_on = ["nex_ni_ratio", "_Nph", "_Ne"]
     provides = ["elecFrac", "recombProb"]
 
@@ -185,7 +185,7 @@ class MeanExcitonIonER(Plugin):
 
 
 @export
-class FanoFactor(Plugin):
+class FanoFactor_Extension(Plugin):
     depends_on = ["_Nph", "_Ne"]
     provides = ["fano_nq"]
     parameters = ("field", "delta_f", "liquid_xe_density")
@@ -222,7 +222,7 @@ class FanoFactor(Plugin):
 
 
 @export
-class TrueExcitonIonER(Plugin):
+class TrueExcitonIonER_Extension(Plugin):
     depends_on = ["_Nph", "_Ne", "fano_nq", "alf"]
     provides = ["Ni", "Nex", "Nq"]
 
@@ -239,7 +239,7 @@ class TrueExcitonIonER(Plugin):
 
 
 @export
-class OmegaER(Plugin):
+class OmegaER_Extension(Plugin):
     # depends_on = ["elecFrac", "recombProb", "Ni"]
     depends_on = ["elecFrac", "recombProb", "Ni", "_Ne", "_Nph"]
     provides = ["omega", "Variance"]
@@ -300,7 +300,7 @@ class OmegaER(Plugin):
 
 
 @export
-class TruePhotonElectronER(Plugin):
+class TruePhotonElectronER_Extension(Plugin):
     depends_on = ["recombProb", "Variance", "Ni", "Nq", "energy"]
     provides = ["num_photon", "num_electron"]
     parameters = ("field",)
