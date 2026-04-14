@@ -245,7 +245,7 @@ class ComponentSim(Component):
                         )
                         raise ValueError(mes)
 
-    def register_all(self, module):
+    def register_all(self, module, skip=None):
         """Register all plugins defined in module.
 
         Can pass a list/tuple of modules to register all in each.
@@ -254,7 +254,7 @@ class ComponentSim(Component):
         if isinstance(module, (tuple, list)):
             # Shortcut for multiple registration
             for x in module:
-                self.register_all(x)
+                self.register_all(x, skip=skip)
             return
 
         for x in dir(module):
@@ -262,6 +262,8 @@ class ComponentSim(Component):
             if not isinstance(x, type(type)):
                 continue
             if issubclass(x, Plugin):
+                if skip is not None and x.__name__ in skip:
+                    continue
                 self.register(x)
 
     def dependencies_deduce(

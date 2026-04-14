@@ -4,7 +4,7 @@ from functools import partial
 
 from appletree import randgen
 from appletree.plugin import Plugin
-from appletree.plugins import er_microphys
+from appletree.plugins import er_nestv2
 from appletree.config import takes_config, Constant, Map
 from appletree.utils import exporter
 
@@ -57,70 +57,97 @@ class DECEnergy(Plugin):
 
         return key, energy_x, energy_y
 
-
 @export
-class DECQuantaX(er_microphys.Quanta):
+class DECExcitonIonRatioX(er_nestv2.ExcitonIonRatioER):
     depends_on = ["energy_x"]
-    provides = ["num_quanta_x"]
+    provides = ["nex_ni_ratio_x", "alf_x"]
 
 @export
-class DECQuantaY(er_microphys.Quanta):
+class DECExcitonIonRatioY(er_nestv2.ExcitonIonRatioER):
     depends_on = ["energy_y"]
-    provides = ["num_quanta_y"]
-
-
-@export
-class DECIonizationX(er_microphys.IonizationER):
-    depends_on = ["num_quanta_x"]
-    provides = ["num_ion_x"]
+    provides = ["nex_ni_ratio_y", "alf_y"]
 
 @export
-class DECIonizationY(er_microphys.IonizationER):
-    depends_on = ["num_quanta_y"]
-    provides = ["num_ion_y"]
-
-
-@export
-class DECmTIX(er_microphys.mTI):
-    depends_on = ["energy_x"]
-    provides = ["recomb_mean_x"]
+class DECQyX(er_nestv2.QyER):
+    depends_on = ["energy_x", "nex_ni_ratio_x"]
+    provides = ["charge_yield_x"]
 
 @export
-class DECmTIY(er_microphys.mTI):
-    depends_on = ["energy_y"]
-    provides = ["recomb_mean_y"]
-
-
-@export
-class DECRecombFluctX(er_microphys.RecombFluct):
-    depends_on = ["energy_x"]
-    provides = ["recomb_std_x"]
+class DECQyY(er_nestv2.QyER):
+    depends_on = ["energy_y", "nex_ni_ratio_y"]
+    provides = ["charge_yield_y"]
 
 @export
-class DECRecombFluctY(er_microphys.RecombFluct):
-    depends_on = ["energy_y"]
-    provides = ["recomb_std_y"]
-
-
-@export
-class DECTrueRecombX(er_microphys.TrueRecombER):
-    depends_on = ["recomb_mean_x", "recomb_std_x"]
-    provides = ["recomb_x"]
+class DECLyX(er_nestv2.LyER):
+    depends_on = ["charge_yield_x"]
+    provides = ["light_yield_x"]
 
 @export
-class DECTrueRecombY(er_microphys.TrueRecombER):
-    depends_on = ["recomb_mean_y", "recomb_std_y"]
-    provides = ["recomb_y"]
+class DECLyY(er_nestv2.LyER):
+    depends_on = ["charge_yield_y"]
+    provides = ["light_yield_y"]
 
+@export
+class DECMeanNphNeX(er_nestv2.MeanNphNe):
+    depends_on = ["light_yield_x", "charge_yield_x", "energy_x"]
+    provides = ["_Nph_x", "_Ne_x"]
+
+@export
+class DECMeanNphNeY(er_nestv2.MeanNphNe):
+    depends_on = ["light_yield_y", "charge_yield_y", "energy_y"]
+    provides = ["_Nph_y", "_Ne_y"]
+
+@export
+class DECMeanExcitonIonX(er_nestv2.MeanExcitonIonER):
+    depends_on = ["nex_ni_ratio_x", "_Nph_x", "_Ne_x"]
+    provides = ["elecFrac_x", "recombProb_x"]
+
+@export
+class DECMeanExcitonIonY(er_nestv2.MeanExcitonIonER):
+    depends_on = ["nex_ni_ratio_y", "_Nph_y", "_Ne_y"]
+    provides = ["elecFrac_y", "recombProb_y"]
+
+@export
+class DECFanoFactorX(er_nestv2.FanoFactor):
+    depends_on = ["_Nph_x", "_Ne_x"]
+    provides = ["fano_nq_x"]
+
+@export
+class DECFanoFactorY(er_nestv2.FanoFactor):
+    depends_on = ["_Nph_y", "_Ne_y"]
+    provides = ["fano_nq_y"]
+
+@export
+class DECTrueExcitonIonX(er_nestv2.TrueExcitonIonER):
+    depends_on = ["_Nph_x", "_Ne_x", "fano_nq_x", "alf_x"]
+    provides = ["Ni_x", "Nex_x", "Nq_x"]
+
+@export
+class DECTrueExcitonIonY(er_nestv2.TrueExcitonIonER):
+    depends_on = ["_Nph_y", "_Ne_y", "fano_nq_y", "alf_y"]
+    provides = ["Ni_y", "Nex_y", "Nq_y"]
+
+@export
+class DECTotalProperties(Plugin):
+    depends_on = ["Ni_x", "Ni_y", "Nq_x", "Nq_y",
+                  "_Ne_x", "_Ne_y", "_Nph_x", "_Nph_y",
+                  "energy_x", "energy_y",
+                  ]
+    provides = ["elecFrac", "Ni", "Nq", "_Ne", "_Nph", "energy"]
+
+    @partial(jit, static_argnums=(0,))
+    def simulate(self, key, parameters, Ni_x, Ni_y, Nq_x, Nq_y, _Ne_x, _Ne_y, _Nph_x, _Nph_y, energy_x, energy_y):
+        elecFrac = (_Ne_x + _Ne_y) / (_Nph_x + _Nph_y + _Ne_x + _Ne_y)
+        return key, elecFrac, Ni_x + Ni_y, Nq_x + Nq_y, _Ne_x + _Ne_y, _Nph_x + _Nph_y, energy_x + energy_y
 
 @export
 class DECRecombComposeConstantR(Plugin):
-    depends_on = ["recomb_x", "recomb_y"]
-    provides = ["recomb"]
+    depends_on = ["recombProb_x", "recombProb_y"]
+    provides = ["recombProb"]
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, recomb_x, recomb_y):
-        recomb = recomb_x * (1.0 - recomb_y) + recomb_y * (1.0 - recomb_x)
-        renormalization = recomb + (1.0 - recomb_x) * (1.0 - recomb_y)
+    def simulate(self, key, parameters, recombProb_x, recombProb_y):
+        recomb = recombProb_x * (1.0 - recombProb_y) + recombProb_y * (1.0 - recombProb_x)
+        renormalization = recomb + (1.0 - recombProb_x) * (1.0 - recombProb_y)
 
         return key, recomb / renormalization
 
@@ -157,28 +184,25 @@ v_running_r_recomb = vmap(running_r_recomb)
     ),
 )
 class DECRecombComposeRunningR(Plugin):
-    depends_on = ["recomb_x", "recomb_y", "num_ion_x", "num_ion_y"]
-    provides = ["recomb"]
+    depends_on = ["recombProb_x", "recombProb_y", "Ni_x", "Ni_y"]
+    provides = ["recombProb"]
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, recomb_x, recomb_y, num_ion_x, num_ion_y):
-        scale_x = 10 ** self.running_r_scaling.apply(recomb_x)
-        scale_y = 10 ** self.running_r_scaling.apply(recomb_y)
+    def simulate(self, key, parameters, recombProb_x, recombProb_y, Ni_x, Ni_y):
+        scale_x = 10 ** self.running_r_scaling.apply(recombProb_x)
+        scale_y = 10 ** self.running_r_scaling.apply(recombProb_y)
         recomb = v_running_r_recomb(
-            num_ion_x, num_ion_y, scale_x, scale_y
+            Ni_x, Ni_y, scale_x, scale_y
         )
 
         return key, recomb
 
+@export
+class DECOmegaER(er_nestv2.OmegaER):
+    depends_on = ["elecFrac", "recombProb", "Ni", "_Ne", "_Nph"]
+    provides = ["omega", "Variance"]
 
 @export
-class DECRecombination(Plugin):
-    depends_on = ["num_quanta_x", "num_ion_x", "num_quanta_y", "num_ion_y", "recomb"]
+class DECTruePhotonElectronER(er_nestv2.TruePhotonElectronER):
+    depends_on = ["recombProb", "Variance", "Ni", "Nq", "energy"]
     provides = ["num_photon", "num_electron"]
-
-    @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, num_quanta_x, num_ion_x, num_quanta_y, num_ion_y, recomb):
-        p_not_recomb = 1.0 - recomb
-        key, num_electron = randgen.binomial(key, p_not_recomb, num_ion_x + num_ion_y)
-        num_photon = num_quanta_x + num_quanta_y - num_electron
-        return key, num_photon, num_electron
