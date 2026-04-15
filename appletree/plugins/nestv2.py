@@ -144,7 +144,9 @@ class MeanNphNe(Plugin):
     def simulate(self, key, parameters, light_yield, charge_yield, energy):
         _Nph = light_yield * energy
         _Ne = charge_yield * energy
-        return key, _Nph, _Ne
+        # Zero both when _Nph + _Ne < 1 (NEST's YieldResultValidity).
+        mask = (_Nph + _Ne) >= 1.0
+        return key, jnp.where(mask, _Nph, 0.0), jnp.where(mask, _Ne, 0.0)
 
 
 @export
@@ -158,9 +160,10 @@ class MeanExcitonIon(Plugin):
             4.0 * jnp.exp(_Ne * ThomasImel / 4.0) - (_Ne + _Nph) * ThomasImel - 4.0
         )
         _Ni = (4.0 / ThomasImel) * (jnp.exp(_Ne * ThomasImel / 4.0) - 1.0)
-        nex_ni_ratio = _Nex / _Ni
+        nex_ni_ratio = jnp.where(_Ni > 0, _Nex / _Ni, 1.0)
+        _Nq = _Nph + _Ne
         alf = 1.0 / (1.0 + nex_ni_ratio)
-        elecFrac = _Ne / (_Nph + _Ne)
+        elecFrac = jnp.where(_Nq > 0, _Ne / _Nq, 0.0)
         recombProb = 1.0 - (nex_ni_ratio + 1.0) * elecFrac
         return key, _Nex, _Ni, nex_ni_ratio, alf, elecFrac, recombProb
 
@@ -206,12 +209,12 @@ class OmegaNR(Plugin):
 
 @export
 class TruePhotonElectronNR(Plugin):
-    depends_on = ["recombProb", "Variance", "Ni", "Nq"]
+    depends_on = ["recombProb", "Variance", "Ni", "Nex", "Nq"]
     provides = ["num_photon", "num_electron"]
     parameters = ("alpha2",)
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, recombProb, Variance, Ni, Nq):
+    def simulate(self, key, parameters, recombProb, Variance, Ni, Nex, Nq):
         # these parameters will make mean num_electron is just (1. - recombProb) * Ni
         widthCorrection = (
             1.0 - (2.0 / jnp.pi) * parameters["alpha2"] ** 2 / (1.0 + parameters["alpha2"] ** 2)
@@ -229,8 +232,8 @@ class TruePhotonElectronNR(Plugin):
             (1.0 - recombProb) * Ni - muCorrection,
             jnp.sqrt(Variance) / widthCorrection,
         )
-        num_electron = jnp.clip(num_electron.round().astype(int), 0, jnp.inf)
-        num_photon = jnp.clip(Nq - num_electron, 0, jnp.inf)
+        num_electron = jnp.clip(num_electron.round().astype(int), 0, Ni)
+        num_photon = jnp.maximum(Nq - num_electron, Nex)
         return key, num_photon, num_electron
 
 
