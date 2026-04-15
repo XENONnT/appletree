@@ -147,6 +147,50 @@
         "unit": "1",
         "doc": "NEST parameter iota"
     },
+    "ly_lux_2016_field": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 180.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "V/cm",
+        "doc": "Electric field for LUX 2016 LY"
+    },
+    "qy_lenardo_2019_field": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 220.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "V/cm",
+        "doc": "Electric field for Lenardo 2019 QY"
+    },
+    "ly_lux_2022_field": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 400.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "V/cm",
+        "doc": "Electric field for LUX 2022 LY"
+    },
+    "qy_lux_2022_field": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 400.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "V/cm",
+        "doc": "Electric field for LUX 2022 QY"
+    },
     "rate": {
         "prior_type": "fixed",
         "prior_args": {
