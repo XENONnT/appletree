@@ -67,7 +67,7 @@ class S1LCE(Plugin):
     ),
 )
 class S2LCE(Plugin):
-    depends_on = ["x_obs", "y_obs"]
+    depends_on = ["x", "y"]
     provides = ["s2_lce"]
 
     @partial(jit, static_argnums=(0,))
