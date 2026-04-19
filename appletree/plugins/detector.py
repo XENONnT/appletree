@@ -147,17 +147,20 @@ class ElectronDrifted(Plugin):
 class S2PE(Plugin):
     depends_on = ["num_electron_drifted", "s2_lce", "x", "y"]
     provides = ["num_s2_pe"]
-    parameters = ("g2", "gas_gain")
+    parameters = ("g2", "gas_gain", "p_dpe")
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, num_electron_drifted, s2_lce, x, y):
         pos_true = jnp.stack([x, y]).T
-        gas_gain = parameters["gas_gain"] * self.gas_gain_relative.apply((pos_true))
-        extraction_eff = parameters["g2"] * s2_lce / gas_gain
-
+        gas_gain_relative = self.gas_gain_relative.apply(pos_true)
+        extraction_eff = parameters["g2"] / (parameters["gas_gain"] * gas_gain_relative)
         key, num_electron_extracted = randgen.binomial(key, extraction_eff, num_electron_drifted)
 
-        mean_s2_pe = num_electron_extracted * gas_gain
-        key, num_s2_pe = randgen.truncate_normal(key, mean_s2_pe, jnp.sqrt(mean_s2_pe), vmin=0)
+        gas_gain = parameters["gas_gain"] * gas_gain_relative * s2_lce
+        phd_gain = gas_gain / (1.0 + parameters["p_dpe"])
+        mean_s2_phd = num_electron_extracted * phd_gain
 
-        return key, num_s2_pe
+        key, num_s2_phd = randgen.poisson(key, mean_s2_phd)
+        key, num_dpe = randgen.binomial(key, parameters["p_dpe"], num_s2_phd)
+
+        return key, (num_s2_phd + num_dpe).astype(randgen.FLOAT)
