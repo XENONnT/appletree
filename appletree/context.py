@@ -187,7 +187,7 @@ class Context:
 
             log_posterior += log_prior
             return log_posterior
-        
+
         if repeat_times > 1:
             log_posteriors = []
             for _ in range(repeat_times):
