@@ -109,6 +109,37 @@ class Config:
         """Build configuration, set attributes to Config instance."""
         raise NotImplementedError
 
+    def _resolve_cached_config(self, llh_name, transform=None):
+        """Look up config in cache, apply transform, resolve per-likelihood dict.
+
+        Args:
+            llh_name: name of the likelihood component.
+            transform: optional callable applied to the default value
+                before caching (e.g. get_file_path for Map configs).
+
+        Returns:
+            The resolved scalar (or per-likelihood) config value.
+
+        """
+        if self.name in _cached_configs:
+            value = _cached_configs[self.name]
+        else:
+            value = self.get_default()
+            if transform is not None:
+                value = transform(value)
+            _cached_configs[self.name] = value
+
+        if isinstance(value, dict):
+            try:
+                return value[llh_name]
+            except KeyError:
+                raise ValueError(
+                    f"You specified {self.name} as a dictionary. "
+                    f"The key of it should be the name of one "
+                    f"of the likelihood, but it is {llh_name}."
+                )
+        return value
+
     def required_parameter(self, llh_name=None):
         return None
 
@@ -129,25 +160,7 @@ class Constant(Config):
 
     def build(self, llh_name: Optional[str] = None):
         """Set value of Constant."""
-        if self.name in _cached_configs:
-            value = _cached_configs[self.name]
-        else:
-            value = self.get_default()
-            # Update values to sharing dictionary
-            _cached_configs[self.name] = value
-
-        if isinstance(value, dict):
-            try:
-                self.value = value[llh_name]
-            except KeyError:
-                mesg = (
-                    f"You specified {self.name} as a dictionary. "
-                    f"The key of it should be the name of one "
-                    f"of the likelihood, but it is {llh_name}."
-                )
-                raise ValueError(mesg)
-        else:
-            self.value = value
+        self.value = self._resolve_cached_config(llh_name)
 
     @property
     def lineage(self):
@@ -168,32 +181,29 @@ class Map(Config):
 
     """
 
+    _POINT_INTERPOLATORS = {
+        "IDW": interpolation.curve_interpolator,
+        "NN": interpolation.map_interpolator_nearest_neighbor_1d,
+        "LERP": interpolation.map_interpolator_linear_1d,
+    }
+
+    _REGBIN_INTERPOLATORS = {
+        (2, "IDW"): interpolation.map_interpolator_regular_binning_2d,
+        (2, "NN"): interpolation.map_interpolator_regular_binning_nearest_neighbor_2d,
+        (3, "IDW"): interpolation.map_interpolator_regular_binning_3d,
+        (3, "NN"): interpolation.map_interpolator_regular_binning_nearest_neighbor_3d,
+    }
+
     def __init__(self, method="IDW", **kwargs):
         super().__init__(**kwargs)
         self.method = method
 
     def build(self, llh_name: Optional[str] = None):
         """Cache the map to jnp.array."""
-
-        if self.name in _cached_configs:
-            file_path = _cached_configs[self.name]
-        else:
-            file_path = get_file_path(self.get_default())
-            # Update values to sharing dictionary
-            _cached_configs[self.name] = file_path
-
-        if isinstance(file_path, dict):
-            try:
-                self.file_path = file_path[llh_name]
-            except KeyError:
-                mesg = (
-                    f"You specified {self.name} as a dictionary. "
-                    f"The key of it should be the name of one "
-                    f"of the likelihood, but it is {llh_name}."
-                )
-                raise ValueError(mesg)
-        else:
-            self.file_path = file_path
+        self.file_path = self._resolve_cached_config(
+            llh_name,
+            transform=get_file_path,
+        )
 
         # try to find the path first
         _file_path = get_file_path(self.file_path)
@@ -203,7 +213,15 @@ class Map(Config):
             raise ValueError(f"Cannot load {self.name} from {_file_path}!")
 
         coordinate_type = data["coordinate_type"]
-        if coordinate_type == "point" or coordinate_type == "log_point":
+        if isinstance(coordinate_type, list):
+            for ct in coordinate_type:
+                if ct not in ("regbin", "log_regbin"):
+                    raise ValueError(
+                        f"Per-axis coordinate_type entries must be 'regbin' or "
+                        f"'log_regbin', got '{ct}'"
+                    )
+            self.build_regbin(data)
+        elif coordinate_type == "point" or coordinate_type == "log_point":
             self.build_point(data)
         elif coordinate_type == "regbin" or coordinate_type == "log_regbin":
             self.build_regbin(data)
@@ -232,32 +250,14 @@ class Map(Config):
         self.coordinate_system = jnp.asarray(data["coordinate_system"], dtype=float)
         self.map = jnp.asarray(data["map"], dtype=float)
 
-        if self.method == "IDW":
-            setattr(self, "interpolator", interpolation.curve_interpolator)
-        elif self.method == "NN":
-            setattr(
-                self,
-                "interpolator",
-                interpolation.map_interpolator_nearest_neighbor_1d,
-            )
-        elif self.method == "LERP":
-            setattr(
-                self,
-                "interpolator",
-                interpolation.map_interpolator_linear_1d,
-            )
-        else:
-            raise ValueError(f"Unknown method {self.method} for 1D regular binning.")
-        if self.coordinate_type == "log_point":
-            if jnp.any(self.coordinate_system <= 0):
-                raise ValueError(
-                    f"Find non-positive coordinate system in map {self.file_path}, "
-                    f"which is specified as {self.coordinate_type}"
-                )
-            setattr(self, "preprocess", self.log_pos)
-        else:
-            setattr(self, "preprocess", self.linear_pos)
-        setattr(self, "apply", self.map_point)
+        self._is_log_axis = ["log" in data["coordinate_type"]]
+        self._log_mask = jnp.array(self._is_log_axis)
+
+        if self.method not in self._POINT_INTERPOLATORS:
+            raise ValueError(f"Unknown method {self.method} for point interpolation.")
+        self.interpolator = self._POINT_INTERPOLATORS[self.method]
+        self._validate_log_coords(self.coordinate_system)
+        self.apply = self.map_point
 
     def map_point(self, pos):
         val = self.interpolator(
@@ -268,55 +268,85 @@ class Map(Config):
         return val
 
     def build_regbin(self, data):
-        """Cache the map to jnp.array if bins_type is regbin."""
-        if "pdf" in data["coordinate_name"] or "cdf" in data["coordinate_name"]:
-            if data["coordinate_type"] == "log_regbin":
-                raise ValueError(
-                    f"It is not a good idea to use log pdf nor cdf "
-                    f"in map {self.file_path}. "
-                    f"Because its coordinate type is log-binned. "
-                )
+        """Cache the map to jnp.array if bins_type is regbin.
 
-        self.coordinate_type = data["coordinate_type"]
+        ``coordinate_type`` may be a single string (``"regbin"`` or
+        ``"log_regbin"``) applied to every axis, or a list of such
+        strings with one entry per axis for mixed linear/log grids
+        (e.g. ``["regbin", "log_regbin"]``).
+
+        """
+        coordinate_type = data["coordinate_type"]
+        ndim = len(data["coordinate_lowers"])
+
+        # Determine per-axis log flags
+        if isinstance(coordinate_type, list):
+            if len(coordinate_type) != ndim:
+                raise ValueError(
+                    f"coordinate_type list length ({len(coordinate_type)}) "
+                    f"must match number of axes ({ndim})"
+                )
+            self._is_log_axis = [ct == "log_regbin" for ct in coordinate_type]
+        elif coordinate_type == "log_regbin":
+            self._is_log_axis = [True] * ndim
+        else:
+            self._is_log_axis = [False] * ndim
+
+        # Validate: don't use log-scaled pdf/cdf axes
+        if "pdf" in data["coordinate_name"] or "cdf" in data["coordinate_name"]:
+            for i, name in enumerate(data["coordinate_name"]):
+                if name in ("pdf", "cdf") and self._is_log_axis[i]:
+                    raise ValueError(
+                        f"It is not a good idea to use log pdf nor cdf "
+                        f"in map {self.file_path}. "
+                        f"Because its coordinate type is log-binned. "
+                    )
+
+        self.coordinate_type = coordinate_type
         self.coordinate_name = data["coordinate_name"]
         self.coordinate_lowers = jnp.asarray(data["coordinate_lowers"], dtype=float)
         self.coordinate_uppers = jnp.asarray(data["coordinate_uppers"], dtype=float)
         self.map = jnp.asarray(data["map"], dtype=float)
 
-        if len(self.coordinate_lowers) == 1:
-            setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_1d)
-        elif len(self.coordinate_lowers) == 2:
-            if self.method == "IDW":
-                setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_2d)
-            elif self.method == "NN":
-                setattr(
-                    self,
-                    "interpolator",
-                    interpolation.map_interpolator_regular_binning_nearest_neighbor_2d,
-                )
+        self._log_mask = jnp.array(self._is_log_axis)
+
+        ndim = len(self.coordinate_lowers)
+        self.interpolator = self._get_regbin_interpolator(ndim)
+        self._validate_log_coords(self.coordinate_lowers, self.coordinate_uppers)
+        self.apply = self.map_regbin
+
+    def _validate_log_coords(self, *coord_arrays):
+        """Raise if any log-scaled coordinate is non-positive."""
+        if not any(self._is_log_axis):
+            return
+        for a in coord_arrays:
+            if a.ndim == 0 or (a.ndim == 1 and len(self._is_log_axis) == 1):
+                # Point map or 1D regbin: check entire array
+                if jnp.any(a <= 0):
+                    raise ValueError(
+                        f"Find non-positive coordinate system in map "
+                        f"{self.file_path}, "
+                        f"which is specified as {self.coordinate_type}"
+                    )
             else:
-                raise ValueError(f"Unknown method {self.method} for 2D regular binning.")
-        elif len(self.coordinate_lowers) == 3:
-            if self.method == "IDW":
-                setattr(self, "interpolator", interpolation.map_interpolator_regular_binning_3d)
-            elif self.method == "NN":
-                setattr(
-                    self,
-                    "interpolator",
-                    interpolation.map_interpolator_regular_binning_nearest_neighbor_3d,
-                )
-            else:
-                raise ValueError(f"Unknown method {self.method} for 3D regular binning.")
-        if self.coordinate_type == "log_regbin":
-            if jnp.any(self.coordinate_lowers <= 0) or jnp.any(self.coordinate_uppers <= 0):
-                raise ValueError(
-                    f"Find non-positive coordinate system in map {self.file_path}, "
-                    f"which is specified as {self.coordinate_type}"
-                )
-            setattr(self, "preprocess", self.log_pos)
-        else:
-            setattr(self, "preprocess", self.linear_pos)
-        setattr(self, "apply", self.map_regbin)
+                # Multi-D regbin: check only log axes
+                for i, is_log in enumerate(self._is_log_axis):
+                    if is_log and jnp.any(a[i] <= 0):
+                        raise ValueError(
+                            f"Find non-positive coordinate system in map "
+                            f"{self.file_path}, "
+                            f"which is specified as {self.coordinate_type}"
+                        )
+
+    def _get_regbin_interpolator(self, ndim):
+        """Return the regular-binning interpolator for the given dimensionality."""
+        if ndim == 1:
+            return interpolation.map_interpolator_regular_binning_1d
+        key = (ndim, self.method)
+        try:
+            return self._REGBIN_INTERPOLATORS[key]
+        except KeyError:
+            raise ValueError(f"Unknown method {self.method} " f"for {ndim}D regular binning.")
 
     def map_regbin(self, pos):
         val = self.interpolator(
@@ -327,11 +357,14 @@ class Map(Config):
         )
         return val
 
-    def linear_pos(self, pos):
-        return pos
-
-    def log_pos(self, pos):
-        return jnp.log10(jnp.clip(pos, a_min=FLOAT_POS_MIN, a_max=FLOAT_POS_MAX))
+    def preprocess(self, pos):
+        """Apply log10 to axes marked as log in ``_log_mask``."""
+        # Selectively transform only log axes so that linear axes with
+        # non-positive values are never passed through log10/clip, which
+        # would corrupt forward values or gradients.
+        safe_pos = jnp.where(self._log_mask, pos, 1.0)
+        log_vals = jnp.log10(jnp.clip(safe_pos, FLOAT_POS_MIN, FLOAT_POS_MAX))
+        return jnp.where(self._log_mask, log_vals, pos)
 
     def pdf_to_cdf(self, x, pdf):
         """Convert pdf map to cdf map."""
@@ -372,71 +405,85 @@ class SigmaMap(Config):
 
     """
 
+    median: Map
+    lower: Map
+    upper: Map
+
     def __init__(self, method="IDW", **kwargs):
         super().__init__(**kwargs)
         self.method = method
+
+    def _resolve_sigma_value(self, configs, index, label):
+        """Extract the i-th sigma value from a list-or-string config.
+
+        Args:
+            configs: list of file paths or a single file path string.
+            index: which sigma (0=median, 1=lower, 2=upper).
+            label: "configs" or "default configs" for error messages.
+
+        """
+        if isinstance(configs, list):
+            return configs[index]
+        if not isinstance(configs, str):
+            raise ValueError(
+                f"If {self.name}'s {label} is not a list, " "then it should be a string."
+            )
+        return configs
+
+    def _update_sigma_cache(self, map_name, value):
+        """Update _cached_configs for a sigma sub-map, checking for conflicts."""
+        # In case some plugins only use the median
+        # and may already update the map name in `_cached_configs`
+        if map_name not in _cached_configs:
+            _cached_configs[map_name] = dict()
+        if isinstance(_cached_configs[map_name], dict):
+            existing = _cached_configs[map_name].get(
+                self.llh_name,
+                value,
+            )
+            if existing != value:
+                raise ValueError(
+                    f"You give different values for {self.name} in "
+                    f"configs, find {existing} and {value}."
+                )
+            _cached_configs[map_name][self.llh_name] = value
 
     def build(self, llh_name: Optional[str] = None):
         """Read maps."""
         self.llh_name = llh_name
         _configs = self.get_configs()
-
         _configs_default = self.get_default()
 
         if isinstance(_configs, list) and len(_configs) > 4:
             raise ValueError(f"You give too much information in {self.name}'s configs.")
-
         if isinstance(_configs_default, list) and len(_configs_default) > 4:
             raise ValueError(f"You give too much information in {self.name}'s default configs.")
 
-        maps = dict()
         sigmas = ["median", "lower", "upper"]
         for i, sigma in enumerate(sigmas):
-            # propagate _configs_default to Map instances
-            if isinstance(_configs_default, list):
-                default = _configs_default[i]
-            else:
-                if not isinstance(_configs_default, str):
-                    raise ValueError(
-                        f"If {self.name}'s default configuration is not a list, "
-                        "then it should be a string."
-                    )
-                # If only one file is given, then use the same file for all sigmas
-                default = _configs_default
-            maps[sigma] = Map(method=self.method, name=self.name + f"_{sigma}", default=default)
+            default = self._resolve_sigma_value(
+                _configs_default,
+                i,
+                "default configuration",
+            )
+            m = Map(
+                method=self.method,
+                name=f"{self.name}_{sigma}",
+                default=default,
+            )
+            setattr(self, sigma, m)
 
-            setattr(self, sigma, maps[sigma])
+            if self.llh_name is not None:
+                value = self._resolve_sigma_value(
+                    _configs,
+                    i,
+                    "configuration",
+                )
+                self._update_sigma_cache(m.name, value)
 
-            if self.llh_name is None:
-                # if llh_name is not specified, no need to update _cached_configs
-                continue
-
-            # In case some plugins only use the median
-            # and may already update the map name in `_cached_configs`
-            if maps[sigma].name not in _cached_configs.keys():
-                _cached_configs[maps[sigma].name] = dict()
-            if isinstance(_cached_configs[maps[sigma].name], dict):
-                if isinstance(_configs, list):
-                    value = _configs[i]
-                else:
-                    if not isinstance(_configs, str):
-                        raise ValueError(
-                            f"If {self.name}'s configuration is not a list, "
-                            "then it should be a string."
-                        )
-                    # If only one file is given, then use the same file for all sigmas
-                    value = _configs
-                _value = _cached_configs[maps[sigma].name].get(self.llh_name, value)
-                if _value != value:
-                    raise ValueError(
-                        f"You give different values for {self.name} in "
-                        f"configs, find {_value} and {value}."
-                    )
-                _cached_configs[maps[sigma].name].update({self.llh_name: value})
-
-        self.median.build(llh_name=self.llh_name)  # type: ignore
-        self.lower.build(llh_name=self.llh_name)  # type: ignore
-        self.upper.build(llh_name=self.llh_name)  # type: ignore
+        self.median.build(llh_name=self.llh_name)
+        self.lower.build(llh_name=self.llh_name)
+        self.upper.build(llh_name=self.llh_name)
 
         required_parameter = self.required_parameter()
         if required_parameter is not None:
@@ -445,7 +492,7 @@ class SigmaMap(Config):
                 f"the parameter {required_parameter}."
             )
         else:
-            print(f"{self.llh_name}'s map {self.name} is static and not using any parameter.")
+            print(f"{self.llh_name}'s map {self.name} is static " f"and not using any parameter.")
 
     def get_configs(self, llh_name=None):
         """Get configs of SigmaMap."""
@@ -526,26 +573,8 @@ class ConstantSet(Config):
     """
 
     def build(self, llh_name: Optional[str] = None):
-        """Set value of Constant."""
-        if self.name in _cached_configs:
-            value = _cached_configs[self.name]
-        else:
-            value = self.get_default()
-            # Update values to sharing dictionary
-            _cached_configs[self.name] = value
-
-        if isinstance(value, dict):
-            try:
-                self.value = value[llh_name]
-            except KeyError:
-                mesg = (
-                    f"You specified {self.name} as a dictionary. "
-                    f"The key of it should be the name of one "
-                    f"of the likelihood, but it is {llh_name}."
-                )
-                raise ValueError(mesg)
-        else:
-            self.value = value
+        """Set value of ConstantSet."""
+        self.value = self._resolve_cached_config(llh_name)
 
         self._sanity_check()
         self.set_volume = len(self.value[1][0])
