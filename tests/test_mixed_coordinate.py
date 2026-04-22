@@ -1,7 +1,4 @@
 """Tests for mixed per-axis coordinate_type in Map."""
-
-import sys
-import json
 import numpy as np
 import numpy.testing as npt
 from jax import numpy as jnp
@@ -37,6 +34,58 @@ def test_mixed_coordinate_type_2d():
     m = _build_map_from_dict(data)
 
     assert m._is_log_axis == [False, True]
+
+
+    def test_mixed_coordinate_type_3d():
+        """A 3D map with mixed per-axis coordinate types: linear, log, linear."""
+        # 3x4x5 map: axis 0 linear [0,1], axis 1 log [10,10000], axis 2 linear [-1,1]
+        map_vals = np.arange(60, dtype=float).reshape(3, 4, 5)
+        data = {
+            "coordinate_type": ["regbin", "log_regbin", "regbin"],
+            "coordinate_name": ["quantile", "s2_area", "z"],
+            "coordinate_lowers": [0.0, 10.0, -1.0],
+            "coordinate_uppers": [1.0, 10000.0, 1.0],
+            "map": map_vals.tolist(),
+        }
+        m = _build_map_from_dict(data)
+
+        assert m._is_log_axis == [False, True, False]
+        assert isinstance(m.coordinate_type, list)
+        assert len(m.coordinate_type) == 3
+
+        # Interpolate at a few interior points
+        pos = jnp.array([
+            [0.25, 100.0, -0.5],
+            [0.5, 1000.0, 0.0],
+            [0.75, 5000.0, 0.5],
+        ])
+        vals = m.apply(pos)
+        assert np.all(np.isfinite(vals))
+        assert np.all(vals >= map_vals.min())
+        assert np.all(vals <= map_vals.max())
+
+
+    def test_mixed_coordinate_type_3d_all_log():
+        """3D mixed list with all-log entries must give same result as uniform log_regbin."""
+        map_vals = np.random.default_rng(7).random((4, 5, 3))
+        base = {
+            "coordinate_name": ["x", "y", "z"],
+            "coordinate_lowers": [1.0, 10.0, 100.0],
+            "coordinate_uppers": [1000.0, 10000.0, 100000.0],
+            "map": map_vals.tolist(),
+        }
+        data_uniform = {**base, "coordinate_type": "log_regbin"}
+        data_mixed = {**base, "coordinate_type": ["log_regbin", "log_regbin", "log_regbin"]}
+
+        m_uniform = _build_map_from_dict(data_uniform, name="u3d")
+        m_mixed = _build_map_from_dict(data_mixed, name="m3d")
+
+        pos = jnp.array([
+            [10.0, 100.0, 1000.0],
+            [100.0, 1000.0, 10000.0],
+            [500.0, 5000.0, 50000.0],
+        ])
+        npt.assert_allclose(m_uniform.apply(pos), m_mixed.apply(pos), atol=1e-6)
     assert isinstance(m.coordinate_type, list)
 
     # Test interpolation between grid nodes (avoid exact nodes
