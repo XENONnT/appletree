@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "appletree"
-version = "0.5.4"
+version = "0.5.5"
 description = "A high-Performance Program simuLatEs and fiTs REsponse of xEnon."
 readme = "README.md"
 authors = [
@@ -26,7 +26,7 @@ rechunker = "bin.rechunker:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.13"
-jax = "<0.8.0"
+jax = "*"
 corner = "*"
 emcee = "*"
 GOFevaluation = ">=0.1.6"
@@ -36,7 +36,7 @@ matplotlib = "*"
 multihist = "*"
 numpy = "*"
 numpyro = "*"
-pandas = "*"
+pandas = "<3.0"
 scikit-learn = "*"
 scipy = "*"
 strax = "*"
