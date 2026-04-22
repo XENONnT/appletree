@@ -42,6 +42,9 @@ from .context import *
 
 from .plot import *
 
+from . import profiler
+from .profiler import *
+
 # check CUDA support setup
 from warnings import warn
 
