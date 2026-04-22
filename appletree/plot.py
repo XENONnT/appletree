@@ -555,15 +555,24 @@ def _collapse_regbin_map(
         coordinate_lowers: array of lower bounds per axis.
         coordinate_uppers: array of upper bounds per axis.
         collapse: dict mapping axis names to None or (lo, hi) ranges.
-        is_log: if True, bins are uniform in log10 space.
+        is_log: bool or list of bool.  When a list, one entry per axis
+            indicating whether that axis is log-scaled.  A single bool
+            is broadcast to all axes for backward compatibility.
 
     Returns:
-        (map_data, coordinate_name, coordinate_lowers, coordinate_uppers)
-        after collapsing.
+        (map_data, coordinate_name, coordinate_lowers, coordinate_uppers,
+         is_log_axes) after collapsing.  ``is_log_axes`` is a list of
+        bool with one entry per remaining axis.
 
     """
+    ndim = map_data.ndim
+    if isinstance(is_log, (list, tuple)):
+        is_log_axes = list(is_log)
+    else:
+        is_log_axes = [is_log] * ndim
+
     if collapse is None:
-        return map_data, coordinate_name, coordinate_lowers, coordinate_uppers
+        return map_data, coordinate_name, coordinate_lowers, coordinate_uppers, is_log_axes
 
     # Process axes from highest index to lowest to avoid index shifting
     axes_to_collapse = []
@@ -584,7 +593,7 @@ def _collapse_regbin_map(
             coordinate_lowers[axis_idx],
             coordinate_uppers[axis_idx],
             n_bins,
-            is_log,
+            is_log_axes[axis_idx],
         )
 
         if axis_range is not None:
@@ -605,8 +614,9 @@ def _collapse_regbin_map(
         coordinate_name.pop(axis_idx)
         coordinate_lowers.pop(axis_idx)
         coordinate_uppers.pop(axis_idx)
+        is_log_axes.pop(axis_idx)
 
-    return map_data, coordinate_name, coordinate_lowers, coordinate_uppers
+    return map_data, coordinate_name, coordinate_lowers, coordinate_uppers, is_log_axes
 
 
 def _plot_map_1d_point(config):
@@ -654,7 +664,17 @@ def _plot_map_2d_regbin(
     is_log=False,
     label=None,
 ):
-    """Plot a 2D regbin Map with imshow."""
+    """Plot a 2D regbin Map with imshow.
+
+    ``is_log`` may be a single bool (applied to both axes) or a list of
+    two bools for per-axis control.
+
+    """
+    if isinstance(is_log, (list, tuple)):
+        is_log_axes = list(is_log)
+    else:
+        is_log_axes = [is_log, is_log]
+
     if label is None:
         label = config.name
     fig, ax = plt.subplots()
@@ -663,32 +683,22 @@ def _plot_map_2d_regbin(
         coord_lowers[0],
         coord_uppers[0],
         n0,
-        is_log,
+        is_log_axes[0],
     )
     edges1, _ = _regbin_edges_centers(
         coord_lowers[1],
         coord_uppers[1],
         n1,
-        is_log,
+        is_log_axes[1],
     )
-    if is_log:
-        extent = [
-            np.log10(edges0[0]),
-            np.log10(edges0[-1]),
-            np.log10(edges1[0]),
-            np.log10(edges1[-1]),
-        ]
-        xlabel = f"log10({coord_names[0]})"
-        ylabel = f"log10({coord_names[1]})"
-    else:
-        extent = [
-            edges0[0],
-            edges0[-1],
-            edges1[0],
-            edges1[-1],
-        ]
-        xlabel = coord_names[0]
-        ylabel = coord_names[1]
+    extent = [
+        np.log10(edges0[0]) if is_log_axes[0] else edges0[0],
+        np.log10(edges0[-1]) if is_log_axes[0] else edges0[-1],
+        np.log10(edges1[0]) if is_log_axes[1] else edges1[0],
+        np.log10(edges1[-1]) if is_log_axes[1] else edges1[-1],
+    ]
+    xlabel = f"log10({coord_names[0]})" if is_log_axes[0] else coord_names[0]
+    ylabel = f"log10({coord_names[1]})" if is_log_axes[1] else coord_names[1]
     im = ax.imshow(
         map_data.T,
         origin="lower",
@@ -850,20 +860,25 @@ def _plot_regular_map(config, collapse):
     if coord_type in ("point", "log_point"):
         return _plot_map_1d_point(config)
 
-    elif coord_type in ("regbin", "log_regbin"):
-        is_log = coord_type == "log_regbin"
+    elif isinstance(coord_type, list) or coord_type in ("regbin", "log_regbin"):
+        if isinstance(coord_type, list):
+            is_log_axes = [ct == "log_regbin" for ct in coord_type]
+        else:
+            ndim = len(config.coordinate_lowers)
+            is_log_axes = [coord_type == "log_regbin"] * ndim
+
         map_data = np.array(config.map)
         coord_name = list(config.coordinate_name)
         coord_lowers = list(np.array(config.coordinate_lowers))
         coord_uppers = list(np.array(config.coordinate_uppers))
 
-        map_data, coord_name, coord_lowers, coord_uppers = _collapse_regbin_map(
+        map_data, coord_name, coord_lowers, coord_uppers, is_log_axes = _collapse_regbin_map(
             map_data,
             coord_name,
             coord_lowers,
             coord_uppers,
             collapse,
-            is_log=is_log,
+            is_log=is_log_axes,
         )
         ndim_after = len(coord_lowers)
 
@@ -874,7 +889,7 @@ def _plot_regular_map(config, collapse):
                 coord_name[0],
                 coord_lowers[0],
                 coord_uppers[0],
-                is_log=is_log,
+                is_log=is_log_axes[0],
             )
         elif ndim_after == 2:
             return _plot_map_2d_regbin(
@@ -883,7 +898,7 @@ def _plot_regular_map(config, collapse):
                 coord_name,
                 coord_lowers,
                 coord_uppers,
-                is_log=is_log,
+                is_log=is_log_axes,
             )
         elif ndim_after == 0:
             warn(f"Map '{config.name}' collapsed to 0D " f"(scalar). Skipping plot.")
@@ -911,8 +926,13 @@ def _plot_sigma_map(config, collapse):
     if coord_type in ("point", "log_point"):
         return [_plot_sigma_map_1d_point(config)]
 
-    elif coord_type in ("regbin", "log_regbin"):
-        is_log = coord_type == "log_regbin"
+    elif isinstance(coord_type, list) or coord_type in ("regbin", "log_regbin"):
+        if isinstance(coord_type, list):
+            is_log_axes = [ct == "log_regbin" for ct in coord_type]
+        else:
+            ndim = len(median.coordinate_lowers)
+            is_log_axes = [coord_type == "log_regbin"] * ndim
+
         med_data = np.array(median.map)
         low_data = np.array(config.lower.map)
         up_data = np.array(config.upper.map)
@@ -920,29 +940,30 @@ def _plot_sigma_map(config, collapse):
         coord_lowers = list(np.array(median.coordinate_lowers))
         coord_uppers = list(np.array(median.coordinate_uppers))
 
-        med_data, coord_name, coord_lowers, coord_uppers = _collapse_regbin_map(
+        orig_is_log_axes = list(is_log_axes)
+        med_data, coord_name, coord_lowers, coord_uppers, is_log_axes = _collapse_regbin_map(
             med_data,
             coord_name,
             coord_lowers,
             coord_uppers,
             collapse,
-            is_log=is_log,
+            is_log=orig_is_log_axes,
         )
-        low_data, _, _, _ = _collapse_regbin_map(
+        low_data, _, _, _, _ = _collapse_regbin_map(
             low_data,
             list(median.coordinate_name),
             list(np.array(median.coordinate_lowers)),
             list(np.array(median.coordinate_uppers)),
             collapse,
-            is_log=is_log,
+            is_log=orig_is_log_axes,
         )
-        up_data, _, _, _ = _collapse_regbin_map(
+        up_data, _, _, _, _ = _collapse_regbin_map(
             up_data,
             list(median.coordinate_name),
             list(np.array(median.coordinate_lowers)),
             list(np.array(median.coordinate_uppers)),
             collapse,
-            is_log=is_log,
+            is_log=orig_is_log_axes,
         )
 
         ndim_after = len(coord_lowers)
@@ -957,7 +978,7 @@ def _plot_sigma_map(config, collapse):
                     coord_name[0],
                     coord_lowers[0],
                     coord_uppers[0],
-                    is_log=is_log,
+                    is_log=is_log_axes[0],
                 )
             ]
         elif ndim_after == 2:
@@ -974,7 +995,7 @@ def _plot_sigma_map(config, collapse):
                         coord_name,
                         coord_lowers,
                         coord_uppers,
-                        is_log=is_log,
+                        is_log=is_log_axes,
                         label=f"{config.name} ({suffix})",
                     )
                 )
