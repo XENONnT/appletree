@@ -103,8 +103,7 @@ def test_repeat_times():
     # Build the fit-parameter dict emcee would pass to log_posterior.
     context.par_manager.sample_init()
     fit_params = {
-        name: context.par_manager.get_parameter(name)
-        for name in context.par_manager.parameter_fit
+        name: context.par_manager.get_parameter(name) for name in context.par_manager.parameter_fit
     }
 
     batch_size = int(1e4)
@@ -120,9 +119,7 @@ def test_repeat_times():
     assert prior_single == prior_repeat
 
     # Full fitting path with repeat_times > 1.
-    context.fitting(
-        nwalkers=100, iteration=2, batch_size=batch_size, repeat_times=2
-    )
+    context.fitting(nwalkers=100, iteration=2, batch_size=batch_size, repeat_times=2)
     check_unused_configs()
 
 

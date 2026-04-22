@@ -213,7 +213,13 @@ class Context:
             print(f"With h5 backend {self.backend_h5}")
 
     def pre_fitting(
-        self, nwalkers=100, read_only=True, reset=False, batch_size=1_000_000, moves=None, repeat_times=1
+        self,
+        nwalkers=100,
+        read_only=True,
+        reset=False,
+        batch_size=1_000_000,
+        moves=None,
+        repeat_times=1,
     ):
         """Prepare for fitting, initialize backend and sampler."""
         self._set_backend(nwalkers, read_only=read_only, reset=reset)
@@ -228,7 +234,9 @@ class Context:
             kwargs={"batch_size": batch_size, "repeat_times": repeat_times},
         )
 
-    def fitting(self, nwalkers=200, iteration=500, batch_size=1_000_000, moves=None, repeat_times=1):
+    def fitting(
+        self, nwalkers=200, iteration=500, batch_size=1_000_000, moves=None, repeat_times=1
+    ):
         """Fitting posterior distribution of needed parameters.
 
         Args:
@@ -244,7 +252,12 @@ class Context:
             p0.append(self.par_manager.parameter_fit_array)
 
         self.pre_fitting(
-            nwalkers=nwalkers, read_only=False, reset=True, batch_size=batch_size, moves=moves, repeat_times=repeat_times
+            nwalkers=nwalkers,
+            read_only=False,
+            reset=True,
+            batch_size=batch_size,
+            moves=moves,
+            repeat_times=repeat_times,
         )
 
         result = self.sampler.run_mcmc(
@@ -257,7 +270,9 @@ class Context:
         self._dump_meta(batch_size=batch_size)
         return result
 
-    def continue_fitting(self, context=None, iteration=500, batch_size=1_000_000, moves=None, repeat_times=1):
+    def continue_fitting(
+        self, context=None, iteration=500, batch_size=1_000_000, moves=None, repeat_times=1
+    ):
         """Continue a fitting of another context.
 
         Args:
@@ -278,7 +293,12 @@ class Context:
 
         # Init sampler for current context
         self.pre_fitting(
-            nwalkers=nwalkers, read_only=False, reset=False, batch_size=batch_size, moves=moves, repeat_times=repeat_times
+            nwalkers=nwalkers,
+            read_only=False,
+            reset=False,
+            batch_size=batch_size,
+            moves=moves,
+            repeat_times=repeat_times,
         )
 
         result = self.sampler.run_mcmc(
