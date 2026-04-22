@@ -43,7 +43,15 @@ class IonizationER(Plugin):
 class mTI(Plugin):
     depends_on = ["energy", "field"]
     provides = ["recomb_mean"]
-    parameters = ("w", "nex_ni_ratio", "py0", "py1", "py2", "py3", "py4",)
+    parameters = (
+        "w",
+        "nex_ni_ratio",
+        "py0",
+        "py1",
+        "py2",
+        "py3",
+        "py4",
+    )
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, energy, field):
