@@ -1,10 +1,10 @@
-"""Tests for every interpolator registered on ``Map`` —
-``_POINT_INTERPOLATORS`` (1-D point-based) and ``_REGBIN_INTERPOLATORS``
-(2-D and 3-D regular-binning).
+"""Tests for every interpolator registered on ``Map`` — ``_POINT_INTERPOLATORS`` (1-D point-based)
+and ``_REGBIN_INTERPOLATORS`` (2-D and 3-D regular-binning).
 
 We sample the known function ``f(x) = sum(x_i)`` on a uniform grid in
 ``[0, 1]^ndim`` and check that each method returns the analytically-correct
 value at a method-appropriate query point.
+
 """
 
 import numpy as np
@@ -63,6 +63,7 @@ def test_known_function(ndim, method):
         ``2^ndim`` corners of the surrounding cell are equidistant, so both
         methods reduce to the corner average. For a linear ``f`` the corner
         average equals ``f(center) = 0.375 * ndim``.
+
     """
     m = _build_map(ndim, method, n_per_axis=5)
 
