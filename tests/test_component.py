@@ -40,10 +40,10 @@ def test_fixed_component():
 
 
 component_params = [
-    (apt.components.ERBand, "er_sim", "er_rate", "er_nestv2.json"),
-    (apt.components.ERBandmTI, "er_sim", "er_rate", "er.json"),
-    (apt.components.ERPeak, "er_sim", "er_rate", "er_nestv2.json"),
-    (apt.components.ERPeakmTI, "er_sim", "er_rate", "er.json"),
+    (apt.components.ERBand, "er_sim", "er_rate", "er.json"),
+    (apt.components.ERBandNestV2, "er_sim", "er_rate", "er_nestv2.json"),
+    (apt.components.ERPeak, "er_sim", "er_rate", "er.json"),
+    (apt.components.ERPeakNestV2, "er_sim", "er_rate", "er_nestv2.json"),
     (apt.components.NR, "nr_sim", "nr_rate", "nr_low.json"),
 ]
 
