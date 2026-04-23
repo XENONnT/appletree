@@ -23,6 +23,7 @@ bins_cs1, bins_cs2 = apt.utils.get_equiprob_bins_2d(
     which_np=np,
 )
 
+
 def test_fixed_component():
     """Test ComponentFixed."""
     ac = apt.components.AC(
@@ -46,6 +47,7 @@ component_params = [
     (apt.components.ERPeakmTI, "er_sim", "er_rate", "er.json"),
     (apt.components.NR, "nr_sim", "nr_rate", "nr_low.json"),
 ]
+
 
 @pytest.mark.parametrize("ComponentClass, func_name, rate_name, par_file", component_params)
 def test_sim_component_parameterized(ComponentClass, func_name, rate_name, par_file):
