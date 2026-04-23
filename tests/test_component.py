@@ -6,7 +6,6 @@ import pandas as pd
 import appletree as apt
 from appletree.utils import get_file_path
 from appletree.share import _cached_functions
-from package_dump.appletree.appletree import parameter
 
 # Define bins
 data_file_name = get_file_path(
