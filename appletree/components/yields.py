@@ -8,6 +8,8 @@ class MonoEnergiesYields(ComponentSim):
         super().__init__(*args, **kwargs)
 
         self.register(apt.plugins.MonoEnergiesSpectra)
+        self.register(apt.plugins.PositionSpectra)
+        self.register(apt.plugins.EField)
         self.register(apt.plugins.TotalQuanta)
         self.register(apt.plugins.ThomasImelBox)
         self.register(apt.plugins.QyNR)
@@ -20,6 +22,8 @@ class BandEnergiesYields(ComponentSim):
         super().__init__(*args, **kwargs)
 
         self.register(apt.plugins.UniformEnergiesSpectra)
+        self.register(apt.plugins.PositionSpectra)
+        self.register(apt.plugins.EField)
         self.register(apt.plugins.TotalQuanta)
         self.register(apt.plugins.ThomasImelBox)
         self.register(apt.plugins.QyNR)
