@@ -46,6 +46,8 @@ apt.set_gpu_memory_usage(0.2)
 #'''
 MC_ID = int(sys.argv[1])
 num_sims = int(sys.argv[2])
+f_param_config = sys.argv[3]
+param_flavour = sys.argv[4]
 #'''
 
 '''
@@ -55,6 +57,8 @@ MC_ID = 1
 #num_sims = int(50)
 num_sims = int(10)
 #num_sims = int(1e4)
+f_param_config = '/home/puehlengt/appletree/notebooks/param_nr_sr1_3params.json'
+param_flavour = '3params'
 #'''
 
 # %% [markdown]
@@ -85,8 +89,7 @@ aa = nr.show_config()
 aa
 
 # %%
-f_param_config = '/home/puehlengt/appletree/notebooks/param_nr_sr1_3params.json'
-param_flavour = '3params'
+#f_param_config = '/home/puehlengt/appletree/notebooks/param_nr_sr1_3params.json'
 #f_param_config = '/home/puehlengt/appletree/notebooks/param_nr_sr1_short.json'
 #f_param_config = '/home/puehlengt/appletree/notebooks/param_nr_sr1.json'
 
