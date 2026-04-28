@@ -184,7 +184,6 @@ class TrueExcitonIonER(Plugin):
 
 @export
 class OmegaER(Plugin):
-    # depends_on = ["elecFrac", "recombProb", "Ni"]
     depends_on = ["elecFrac", "recombProb", "Ni", "_Ne", "_Nph"]
     provides = ["omega", "Variance"]
     parameters = ("A_er", "xi_er", "omega_er", "alpha3_er", "field")
@@ -230,7 +229,7 @@ class OmegaER(Plugin):
 
 @export
 class TruePhotonElectronER(Plugin):
-    depends_on = ["recombProb", "Variance", "Ni", "Nq", "energy"]
+    depends_on = ["recombProb", "Variance", "Ni", "Nq"]
     provides = ["num_photon", "num_electron"]
     parameters = ("field",)
 
@@ -243,7 +242,6 @@ class TruePhotonElectronER(Plugin):
         Variance,
         Ni,
         Nq,
-        energy,
     ):
         key, num_electron = randgen.normal(key, (1 - recombProb) * Ni, jnp.sqrt(Variance))
         num_electron = jnp.clip(num_electron.round().astype(int), 0, Ni)  # 16.02.2026 jnp.inf ->Ni
