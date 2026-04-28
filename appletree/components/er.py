@@ -12,7 +12,7 @@ class ERBand(ComponentSim):
 
         self.register(apt.plugins.common.UniformEnergySpectra)
         self.register(apt.plugins.common.PositionSpectra)
-        self.register_all(apt.plugins.nestv2_er_kate)
+        self.register_all(apt.plugins.er_microphys)
         self.register_all(apt.plugins.detector)
         self.register_all(apt.plugins.reconstruction)
         self.register_all(apt.plugins.efficiency)
@@ -27,7 +27,37 @@ class ERPeak(ComponentSim):
 
         self.register(apt.plugins.common.MonoEnergySpectra)
         self.register(apt.plugins.common.PositionSpectra)
-        self.register_all(apt.plugins.nestv2_er_kate)
+        self.register_all(apt.plugins.er_microphys)
+        self.register_all(apt.plugins.detector)
+        self.register_all(apt.plugins.reconstruction)
+        self.register_all(apt.plugins.efficiency)
+
+
+class ERBandNestV2(ComponentSim):
+    norm_type = "on_pdf"
+    add_eps_to_hist = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.register(apt.plugins.common.UniformEnergySpectra)
+        self.register(apt.plugins.common.PositionSpectra)
+        self.register_all(apt.plugins.er_nestv2)
+        self.register_all(apt.plugins.detector)
+        self.register_all(apt.plugins.reconstruction)
+        self.register_all(apt.plugins.efficiency)
+
+
+class ERPeakNestV2(ComponentSim):
+    norm_type = "on_pdf"
+    add_eps_to_hist = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.register(apt.plugins.common.MonoEnergySpectra)
+        self.register(apt.plugins.common.PositionSpectra)
+        self.register_all(apt.plugins.er_nestv2)
         self.register_all(apt.plugins.detector)
         self.register_all(apt.plugins.reconstruction)
         self.register_all(apt.plugins.efficiency)

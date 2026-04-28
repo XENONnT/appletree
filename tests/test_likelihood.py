@@ -42,7 +42,7 @@ def test_nr_likelihood():
         data_file_name=get_file_path("data_Neutron.csv"),
         bins_type="equiprob",
         bins_on=["num_s1_phd", "cs2"],
-        bins=[8, 15],
+        bins=[4, 7],
         x_clip=[1.5, 9.5],
         y_clip=[1e2, 1e3],
     )
