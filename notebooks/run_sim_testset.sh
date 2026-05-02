@@ -1,6 +1,6 @@
 #!/bin/bash
 
-num_sims=2000
+num_sims=200
 
 f_param_config='/home/puehlengt/appletree/notebooks/param_nr_sr1_6params.json'
 param_flavour='6params'
