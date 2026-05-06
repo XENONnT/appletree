@@ -1,0 +1,314 @@
+{
+    "gas_gain": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 29.4
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "PE/electron",
+        "doc": "Gas gain"
+    },
+    "drift_velocity": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.0677
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "cm/us",
+        "doc": "Gas gain"
+    },
+    "s2_threshold": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 250.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "PE",
+        "doc": "S2 threshold"
+    },
+    "g1": {
+        "prior_type": "uniform",
+        "prior_args": {
+            "lower": 0.132,
+            "upper": 0.142
+        },
+        "allowed_range": [
+            0,
+            1.0
+        ],
+        "init_mean": 0.1367,
+        "init_std": 0.001,
+        "unit": "PE/photon",
+        "doc": "g1"
+    },
+    "g2": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 16.85
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "PE/electron",
+        "doc": "g2"
+    },
+    "p_dpe": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.227
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "DPE probability"
+    },
+    "elife_sigma": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "elife shifter"
+    },
+    "s1_eff_n_hits_3f_sigma": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "S1 efficiency shifter"
+    },
+    "s1_cut_acc_sigma": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "S1 cut acceptance shifter"
+    },
+    "s2_cut_acc_sigma": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "S2 cut acceptance shifter"
+    },
+    "hits_acceptance": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.935
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "DAQ not lost probability"
+    },
+    "liquid_xe_density": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 2.8619
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "g/cm^3",
+        "doc": "Density of the lXe"
+    },
+    "alpha": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 11.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter alpha"
+    },
+    "beta": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 1.1
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter beta"
+    },
+    "gamma": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.0480
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter gamma"
+    },
+    "delta": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": -0.0533
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter delta"
+    },
+    "epsilon": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 12.6
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter epsilon"
+    },
+    "zeta": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.3
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "keV",
+        "doc": "NEST parameter zeta"
+    },
+    "eta": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 2.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter eta"
+    },
+    "theta": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.3
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "keV",
+        "doc": "NEST parameter theta"
+    },
+    "iota": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 2.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter iota"
+    },
+    "fano_ni": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.4
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter fano_ni"
+    },
+    "fano_nex": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.4
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter fano_nex"
+    },
+    "A": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.04
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter A"
+    },
+    "xi": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.5
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter xi"
+    },
+    "omega": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.19
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter omega"
+    },
+    "alpha2": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 2.25
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter alpha2"
+    },
+    "ambe_nr_rate": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 5500
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "total number of events in the AmBe NR calibration"
+    }
+}
