@@ -415,6 +415,7 @@ class Likelihood:
         Args:
             indent: str of indent.
             short: bool, whether only print short summary.
+
         """
         print("\n" + "-" * 40)
 
@@ -567,6 +568,7 @@ class LikelihoodLit(Likelihood):
         Args:
             indent: str of indent.
             short: bool, whether only print short summary.
+
         """
         print("\n" + "-" * 40)
 
