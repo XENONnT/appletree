@@ -174,10 +174,9 @@ class Constant(Config):
 class Map(Config):
     """Map is a special config that takes input files.
 
-    The method ``apply`` is dynamically assigned.
-    When using points, the ``apply`` will be ``map_point``,
-    while using regular binning, the ``apply`` will be ``map_regbin``.
-    When using log-binning, we will first convert the positions to log space.
+    The method ``apply`` is dynamically assigned. When using points, the ``apply`` will be
+    ``map_point``, while using regular binning, the ``apply`` will be ``map_regbin``. When using
+    log-binning, we will first convert the positions to log space.
 
     """
 
@@ -270,9 +269,8 @@ class Map(Config):
     def build_regbin(self, data):
         """Cache the map to jnp.array if bins_type is regbin.
 
-        ``coordinate_type`` may be a single string (``"regbin"`` or
-        ``"log_regbin"``) applied to every axis, or a list of such
-        strings with one entry per axis for mixed linear/log grids
+        ``coordinate_type`` may be a single string (``"regbin"`` or ``"log_regbin"``) applied to
+        every axis, or a list of such strings with one entry per axis for mixed linear/log grids
         (e.g. ``["regbin", "log_regbin"]``).
 
         """

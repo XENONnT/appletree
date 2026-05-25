@@ -7,7 +7,6 @@ import appletree as apt
 from appletree.utils import get_file_path
 from appletree.share import _cached_functions
 
-
 # Get parameters
 par_instruct_file_name = get_file_path("er.json")
 par_manager = apt.Parameter(par_instruct_file_name)
