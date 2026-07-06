@@ -210,7 +210,8 @@ class OmegaER(Plugin):
             jnp.exp(-0.5 * (mode - cntr) ** 2 / (wide * wide))
             * (1.0 + jsp.special.erf(skew * (mode - cntr) / (wide * sqrt2)))
         )  # makes sure omega never exceeds ampl
-        omega = (norm
+        omega = (
+            norm
             * ampl
             * jnp.exp(-0.5 * (elecFrac - cntr) ** 2 / (wide * wide))
             * (1.0 + jsp.special.erf(skew * (elecFrac - cntr) / (wide * sqrt2)))
