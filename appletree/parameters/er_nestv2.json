@@ -261,15 +261,6 @@
         "unit": "1",
         "doc": "NEST parameter omega remove field dependence"
     },
-    "alpha2_er": {
-        "prior_type": "fixed",
-        "prior_args": {"val": 0},
-        "allowed_range": null,
-        "init_mean": null,
-        "init_std": null,
-        "unit": "1",
-        "doc": "NEST parameter alpha r"
-    },
     "alpha3_er": {
         "prior_type": "fixed",
         "prior_args": {"val": -0.2},
