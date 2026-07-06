@@ -173,8 +173,9 @@ class TrueExcitonIonER(Plugin):
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, _Nph, _Ne, fano_nq, alf):
         Nq_mean = _Nph + _Ne
-        key, Nq = randgen.truncate_normal(key, Nq_mean, jnp.sqrt(fano_nq * Nq_mean), 
-                                          vmin=0.0, vmax=jnp.inf)
+        key, Nq = randgen.truncate_normal(
+            key, Nq_mean, jnp.sqrt(fano_nq * Nq_mean), vmin=0.0, vmax=jnp.inf
+        )
         Nq = Nq.round().astype(int)
         key, Ni = randgen.binomial(key, alf, Nq)
         Nex = Nq - Ni
