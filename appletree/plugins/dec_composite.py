@@ -1,3 +1,5 @@
+from re import S
+from typing import final
 from jax import numpy as jnp
 from jax import jit, vmap, lax
 from functools import partial
@@ -7,6 +9,7 @@ from appletree.plugin import Plugin
 from appletree.plugins import er_microphys
 from appletree.config import takes_config, Constant, Map
 from appletree.utils import exporter
+from simulation.composite.composite_utils import running_uncertainty_plot
 
 export, __all__ = exporter(export_self=False)
 

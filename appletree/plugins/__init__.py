@@ -24,6 +24,3 @@ from .nestv2 import *
 
 from . import er_nestv2
 from .er_nestv2 import *
-
-from . import dec_composite_nestv2
-from .dec_composite_nestv2 import *
