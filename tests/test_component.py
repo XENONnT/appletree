@@ -7,13 +7,6 @@ import appletree as apt
 from appletree.utils import get_file_path
 from appletree.share import _cached_functions
 
-
-# Get parameters
-par_instruct_file_name = get_file_path("er.json")
-par_manager = apt.Parameter(par_instruct_file_name)
-par_manager.sample_init()
-parameters = par_manager.get_all_parameter()
-
 # Define bins
 data_file_name = get_file_path(
     "data_Rn220.csv",
@@ -37,6 +30,8 @@ def test_fixed_component():
         bins_type="irreg",
         file_name="AC_Rn220.pkl",
     )
+    parameters = {}
+    parameters["ac_rate"] = 1e3
     ac.rate_name = "ac_rate"
     ac.deduce(data_names=["cs1", "cs2"])
     ac.lineage_hash
@@ -44,28 +39,48 @@ def test_fixed_component():
     ac.simulate_weighted_data(parameters)
 
 
-def test_sim_component():
+component_params = [
+    (apt.components.ERBand, "er_sim", "er_rate", "er.json"),
+    (apt.components.ERBandNestV2, "er_sim", "er_rate", "er_nestv2.json"),
+    (apt.components.ERPeak, "er_sim", "er_rate", "er.json"),
+    (apt.components.ERPeakNestV2, "er_sim", "er_rate", "er_nestv2.json"),
+    (apt.components.NR, "nr_sim", "nr_rate", "nr_low.json"),
+]
+
+
+@pytest.mark.parametrize("ComponentClass, func_name, rate_name, par_file", component_params)
+def test_sim_component_parameterized(ComponentClass, func_name, rate_name, par_file):
     """Test ComponentSim."""
     _cached_functions.clear()
-    er = apt.components.ERBand(
+    er = ComponentClass(
         bins=[bins_cs1, bins_cs2],
         bins_type="irreg",
     )
     er.deduce(
         data_names=["cs1", "cs2"],
-        func_name="er_sim",
+        func_name=func_name,
     )
     er.compile()
     er.save_code("_temp.json")
-    er.rate_name = "er_rate"
-    batch_size = int(1e3)
+    er.rate_name = rate_name
+    batch_size = int(100)
     key = apt.randgen.get_key(seed=137)
 
+    # Get parameters
+    par_instruct_file_name = get_file_path(par_file)
+    par_manager = apt.Parameter(par_instruct_file_name)
+    par_manager.sample_init()
+    parameters = par_manager.get_all_parameter()
+
     key, r = er.multiple_simulations(key, batch_size, parameters, 5, apply_eff=True)
-
     key, h = er.simulate_hist(key, batch_size, parameters)
-    apt.utils.plot_irreg_histogram_2d(*er.bins, h, density=False)
 
+    # Run the following line only for the first component
+    if ComponentClass != apt.components.ERBand:
+        return
+
+    batch_size = int(1e3)
+    apt.utils.plot_irreg_histogram_2d(*er.bins, h, density=False)
     er.simulate_weighted_data(key, batch_size, parameters)
 
     @apt.utils.timeit
