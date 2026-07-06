@@ -30,11 +30,17 @@
             "ly_lux_2022": 2.5,
             "qy_lux_2022": 2.5
         },
-        "literature_field": {
+        "field": {
             "ly_lux_2016": 180.0,
             "qy_lenardo_2019": 220.0,
             "ly_lux_2022": 400.0,
             "qy_lux_2022": 400.0
+        },
+        "efield_position_dependence": {
+            "ly_lux_2016": false,
+            "qy_lenardo_2019": false,
+            "ly_lux_2022": false,
+            "qy_lux_2022": false
         }
     },
 
@@ -46,6 +52,9 @@
             },
             "copy_parameters": {
                 "ly_lux_2016_nr_rate": "rate"
+            },
+            "parameter_alias": {
+                "ly_lux_2016_field": "field"
             },
 
             "bins_on": ["energy", "light_yield"],
@@ -67,6 +76,9 @@
             "copy_parameters": {
                 "qy_lenardo_2019_nr_rate": "rate"
             },
+            "parameter_alias": {
+                "qy_lenardo_2019_field": "field"
+            },
 
             "bins_on": ["energy", "charge_yield"],
             "variable_type": "twohalfnorm",
@@ -86,6 +98,9 @@
             },
             "copy_parameters": {
                 "ly_lux_2022_nr_rate": "rate"
+            },
+            "parameter_alias": {
+                "ly_lux_2022_field": "field"
             },
 
             "bins_on": ["energy", "light_yield"],
@@ -107,6 +122,9 @@
             },
             "copy_parameters": {
                 "qy_lux_2022_nr_rate": "rate"
+            },
+            "parameter_alias": {
+                "qy_lux_2022_field": "field"
             },
 
             "bins_on": ["energy", "charge_yield"],
