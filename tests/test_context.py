@@ -1,3 +1,5 @@
+import numpy as np
+
 import appletree as apt
 from appletree.share import _cached_configs, _cached_functions
 from appletree.utils import get_file_path, load_json, check_unused_configs
@@ -88,6 +90,36 @@ def test_literature_context():
 
     parameters = context.get_post_parameters()
     context.get_num_events_accepted(parameters, batch_size=batch_size)
+    check_unused_configs()
+
+
+def test_repeat_times():
+    """Test log_posterior averaging and fitting with repeat_times > 1."""
+    _cached_functions.clear()
+    _cached_configs.clear()
+    context = apt.ContextRn220()
+    context.lineage_hash
+
+    # Build the fit-parameter dict emcee would pass to log_posterior.
+    context.par_manager.sample_init()
+    fit_params = {
+        name: context.par_manager.get_parameter(name) for name in context.par_manager.parameter_fit
+    }
+
+    batch_size = int(1e4)
+    lp_single, prior_single = context.log_posterior(
+        fit_params, batch_size=batch_size, repeat_times=1
+    )
+    lp_repeat, prior_repeat = context.log_posterior(
+        fit_params, batch_size=batch_size, repeat_times=3
+    )
+    assert np.isfinite(lp_single)
+    assert np.isfinite(lp_repeat)
+    # Prior depends only on parameters, so it must match across calls.
+    assert prior_single == prior_repeat
+
+    # Full fitting path with repeat_times > 1.
+    context.fitting(nwalkers=100, iteration=2, batch_size=batch_size, repeat_times=2)
     check_unused_configs()
 
 

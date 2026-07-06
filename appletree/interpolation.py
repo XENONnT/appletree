@@ -245,6 +245,90 @@ def map_interpolator_regular_binning_3d(pos, ref_pos_lowers, ref_pos_uppers, ref
     return val
 
 
+@export
+@jit
+def map_interpolator_regular_binning_bilinear_2d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
+    """Bilinear (LERP) interpolation on a uniform 2D mesh.
+
+    For each query point we locate the lower-left corner cell and blend the
+    four corner values with weights ``(1-t)(1-u), t(1-u), (1-t)u, t u`` where
+    ``t, u`` are the fractional offsets along each axis. Corner indices are
+    clipped so queries outside the box snap to the nearest edge cell.
+
+    Args:
+        pos: array with shape (N, 2), positions at which the interp is calculated.
+        ref_pos_lowers: array with shape (2,), the lower edges of the binning on each dimension.
+        ref_pos_uppers: array with shape (2,), the upper edges of the binning on each dimension.
+        ref_val: array with shape (M1, M2), map values.
+
+    """
+    assert len(pos.shape) == 2 and pos.shape[1] == 2, "pos must have 2 columns"
+
+    num_bins = jnp.asarray(jnp.shape(ref_val))
+    bin_sizes = (ref_pos_uppers - ref_pos_lowers) / (num_bins - 1)
+    frac = (pos - ref_pos_lowers) / bin_sizes
+
+    i0 = jnp.clip(jnp.floor(frac[:, 0]).astype(int), 0, num_bins[0] - 2)
+    j0 = jnp.clip(jnp.floor(frac[:, 1]).astype(int), 0, num_bins[1] - 2)
+    t = jnp.clip(frac[:, 0] - i0, 0.0, 1.0)
+    u = jnp.clip(frac[:, 1] - j0, 0.0, 1.0)
+
+    v00 = ref_val[i0, j0]
+    v10 = ref_val[i0 + 1, j0]
+    v01 = ref_val[i0, j0 + 1]
+    v11 = ref_val[i0 + 1, j0 + 1]
+
+    return (1 - t) * (1 - u) * v00 + t * (1 - u) * v10 + (1 - t) * u * v01 + t * u * v11
+
+
+@export
+@jit
+def map_interpolator_regular_binning_trilinear_3d(pos, ref_pos_lowers, ref_pos_uppers, ref_val):
+    """Trilinear (LERP) interpolation on a uniform 3D mesh.
+
+    For each query point we locate the lower-corner voxel, blend along each
+    axis sequentially (x, then y, then z), and clip corner indices so queries
+    outside the box snap to the nearest edge voxel.
+
+    Args:
+        pos: array with shape (N, 3), positions at which the interp is calculated.
+        ref_pos_lowers: array with shape (3,), the lower edges of the binning on each dimension.
+        ref_pos_uppers: array with shape (3,), the upper edges of the binning on each dimension.
+        ref_val: array with shape (M1, M2, M3), map values.
+
+    """
+    assert len(pos.shape) == 2 and pos.shape[1] == 3, "pos must have 3 columns"
+
+    num_bins = jnp.asarray(jnp.shape(ref_val))
+    bin_sizes = (ref_pos_uppers - ref_pos_lowers) / (num_bins - 1)
+    frac = (pos - ref_pos_lowers) / bin_sizes
+
+    i0 = jnp.clip(jnp.floor(frac[:, 0]).astype(int), 0, num_bins[0] - 2)
+    j0 = jnp.clip(jnp.floor(frac[:, 1]).astype(int), 0, num_bins[1] - 2)
+    k0 = jnp.clip(jnp.floor(frac[:, 2]).astype(int), 0, num_bins[2] - 2)
+    t = jnp.clip(frac[:, 0] - i0, 0.0, 1.0)
+    u = jnp.clip(frac[:, 1] - j0, 0.0, 1.0)
+    w = jnp.clip(frac[:, 2] - k0, 0.0, 1.0)
+
+    v000 = ref_val[i0, j0, k0]
+    v100 = ref_val[i0 + 1, j0, k0]
+    v010 = ref_val[i0, j0 + 1, k0]
+    v110 = ref_val[i0 + 1, j0 + 1, k0]
+    v001 = ref_val[i0, j0, k0 + 1]
+    v101 = ref_val[i0 + 1, j0, k0 + 1]
+    v011 = ref_val[i0, j0 + 1, k0 + 1]
+    v111 = ref_val[i0 + 1, j0 + 1, k0 + 1]
+
+    # Blend along x, then y, then z.
+    c00 = (1 - t) * v000 + t * v100
+    c10 = (1 - t) * v010 + t * v110
+    c01 = (1 - t) * v001 + t * v101
+    c11 = (1 - t) * v011 + t * v111
+    c0 = (1 - u) * c00 + u * c10
+    c1 = (1 - u) * c01 + u * c11
+    return (1 - w) * c0 + w * c1
+
+
 @jit
 def find_nearest_indices(x, y):
     x = x[:, jnp.newaxis]
