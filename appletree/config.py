@@ -189,8 +189,10 @@ class Map(Config):
 
     _REGBIN_INTERPOLATORS = {
         (2, "IDW"): interpolation.map_interpolator_regular_binning_2d,
+        (2, "LERP"): interpolation.map_interpolator_regular_binning_bilinear_2d,
         (2, "NN"): interpolation.map_interpolator_regular_binning_nearest_neighbor_2d,
         (3, "IDW"): interpolation.map_interpolator_regular_binning_3d,
+        (3, "LERP"): interpolation.map_interpolator_regular_binning_trilinear_3d,
         (3, "NN"): interpolation.map_interpolator_regular_binning_nearest_neighbor_3d,
     }
 
