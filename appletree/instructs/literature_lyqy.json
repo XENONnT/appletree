@@ -36,7 +36,7 @@
             "ly_lux_2022": 400.0,
             "qy_lux_2022": 400.0
         },
-        "enable_efield_position_dependence": {
+        "efield_position_dependence": {
             "ly_lux_2016": false,
             "qy_lenardo_2019": false,
             "ly_lux_2022": false,
