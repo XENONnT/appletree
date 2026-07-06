@@ -209,19 +209,10 @@ class OmegaER(Plugin):
             jnp.exp(-0.5 * (mode - cntr) ** 2 / (wide * wide))
             * (1.0 + jsp.special.erf(skew * (mode - cntr) / (wide * sqrt2)))
         )  # makes sure omega never exceeds ampl
-        log_nq = jnp.log10(_Nph + _Ne)
-        omega = jnp.where(
-            cntr < 1.0,
-            norm
+        omega = (norm
             * ampl
             * jnp.exp(-0.5 * (elecFrac - cntr) ** 2 / (wide * wide))
-            * (1.0 + jsp.special.erf(skew * (elecFrac - cntr) / (wide * sqrt2))),
-            ampl
-            * jnp.exp(-0.5 * (log_nq - cntr) ** 2 / (wide * wide))
-            * (1.0 + jsp.special.erf(skew * (log_nq - cntr) / (wide * sqrt2)))
-            + 0.072
-            * jnp.exp(-0.5 * (log_nq - 4.40) ** 2 / (0.85 * 0.85))
-            * (1.0 + jsp.special.erf(0.0 * (log_nq - 4.40) / (0.85 * sqrt2))),
+            * (1.0 + jsp.special.erf(skew * (elecFrac - cntr) / (wide * sqrt2)))
         )
         omega = jnp.maximum(omega, 0.0)
         Variance = recombProb * (1.0 - recombProb) * Ni + omega * omega * Ni * Ni
