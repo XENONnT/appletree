@@ -1,0 +1,291 @@
+{
+     "w": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.0137,
+            "std": 0.0002
+        },
+        "allowed_range": [
+            0,
+            1.0
+        ],
+        "init_mean": 0.0137,
+        "init_std": 0.0002,
+        "unit": "keV",
+        "doc": "Mean energy to generate a quanta in liquid xenon"
+    },
+    "gas_gain": {
+        "prior_type": "fixed",
+        "prior_args": {"val": 29.4},
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "PE/electron",
+        "doc": "Gas gain"
+    },
+    "drift_velocity": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 0.0677
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "cm/us",
+        "doc": "Drift velocity"
+    },
+    "s2_threshold": {
+        "prior_type": "fixed",
+        "prior_args": {"val": 500.0},
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "PE",
+        "doc": "S2 threshold"
+    },
+    "field": {
+        "prior_type": "fixed",
+        "prior_args": {
+            "val": 23.0
+        },
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "V/cm",
+        "doc": "Drift field"
+    },
+    "liquid_xe_density": {
+        "prior_type": "fixed",
+        "prior_args": {"val": 2.9},
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "g/cm^3",
+        "doc": "Density of the lXe"
+    },
+    "g1": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.1515,
+            "std": 0.0014
+        },
+        "allowed_range": [
+            0,
+            1.0
+        ],
+        "init_mean": 0.1515,
+        "init_std": 0.0014,
+        "unit": "PE/photon",
+        "doc": "g1"
+    },
+    "g2": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 16.45,
+            "std": 0.64
+        },
+        "allowed_range": [
+            0,
+            100.0
+        ],
+        "init_mean": 16.45,
+        "init_std": 0.64,
+        "unit": "PE/electron",
+        "doc": "g2"
+    },
+    "p_dpe": {
+        "prior_type": "norm",
+        "prior_args": {
+            "mean": 0.227,
+            "std": 0.024
+        },
+        "allowed_range": [
+            0,
+            1.0
+        ],
+        "init_mean": 0.227,
+        "init_std": 0.024,
+        "unit": "1",
+        "doc": "DPE probability"
+    },
+    "elife_sigma": {
+        "prior_type": "norm",
+        "prior_args": {"mean": 0.0, "std":0.02},
+        "allowed_range": [-0.5, 0.5],
+        "init_mean": 0.0,
+        "init_std": 0.02,
+        "unit": "1",
+        "doc": "elife shifter"
+    },
+    "s1_eff_n_hits_3f_sigma": {
+        "prior_type": "norm",
+        "prior_args": {"mean": 0.0, "std": 1.0},
+        "allowed_range": [-3.0, 3.0],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S1 efficiency shifter"
+    },
+    "s1_cut_acc_sigma": {
+        "prior_type": "norm",
+        "prior_args": {"mean": 0.0, "std": 1.0},
+        "allowed_range": [-3.0, 3.0],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S1 cut acceptance shifter"
+    },
+    "s2_cut_acc_sigma": {
+        "prior_type": "norm",
+        "prior_args": {"mean": 0.0, "std": 1.0},
+        "allowed_range": [-3.0, 3.0],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "S2 cut acceptance shifter"
+    },
+    "hits_acceptance": {
+        "prior_type": "norm",
+        "prior_args": {"mean": 0.935, "std": 0.010},
+        "allowed_range": [0.9, 1.0],
+        "init_mean": 0.935,
+        "init_std": 0.010,
+        "unit": "1",
+        "doc": "DAQ not lost probability"
+    },
+    "m1": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [-20.0, 20.0],
+        "init_mean": -1.35,
+        "init_std": 1,
+        "unit": "keV^-1",
+        "doc": "NEST parameter m1 remove field dependence"
+    },
+    "m2": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [60, 100],
+        "init_mean": 77.27,
+        "init_std": 5,
+        "unit": "keV^-1",
+        "doc": "NEST parameter m2"
+    },
+    "m3": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [0.45, 0.55],
+        "init_mean": 0.52,
+        "init_std": 0.01,
+        "unit": "keV",
+        "doc": "NEST parameter m3 remove field dependence"
+    },
+    "m4": {
+        "prior_type": "fixed",
+        "prior_args": {"val": 2.82528809},
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter m4 remove field dependence"
+    },
+    "m7": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [10, 1000],
+        "init_mean": 99.13,
+        "init_std": 0.1,
+        "unit": "keV",
+        "doc": "NEST parameter m7 remove field dependence"
+    },
+    "m8": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [2, 10],
+        "init_mean": 3.453,
+        "init_std": 0.1,
+        "unit": "1",
+        "doc": "NEST parameter m8"
+    },
+    "m9": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [0.15, 0.45],
+        "init_mean": 0.25,
+        "init_std": 0.05,
+        "unit": "1",
+        "doc": "NEST parameter m9"
+    },
+    "m10": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [0, 1],
+        "init_mean": 0.117,
+        "init_std": 0.0001,
+        "unit": "1",
+        "doc": "NEST parameter m10 remove field dependence"
+    },
+    "delta_f": {
+        "prior_type": "fixed",
+        "prior_args": {"val": 1.0},
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter delta F"
+    },
+    "A_er": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [0.0, 0.2],
+        "init_mean": 0.035,
+        "init_std": 0.001,
+        "unit": "1",
+        "doc": "custom parameter"
+    },
+    "xi_er": {
+        "prior_type": "fixed",
+        "prior_args": {"val": 0.46},
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter xi"
+    },
+    "omega_er": {
+        "prior_type": "fixed",
+        "prior_args": {"val": 0.205},
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter omega remove field dependence"
+    },
+    "alpha3_er": {
+        "prior_type": "fixed",
+        "prior_args": {"val": -0.2},
+        "allowed_range": null,
+        "init_mean": null,
+        "init_std": null,
+        "unit": "1",
+        "doc": "NEST parameter alpha p"
+    },
+    "ac_rate": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [0, 10000000000.0],
+        "init_mean": 33,
+        "init_std": 6.6,
+        "unit": "1",
+        "doc": "number of AC events in ROI, should be used when component is on_pdf"
+    },
+    "er_rate": {
+        "prior_type": "free",
+        "prior_args": {},
+        "allowed_range": [0, 10000000000.0],
+        "init_mean": 42796,
+        "init_std": 200,
+        "unit": "1",
+        "doc": "number of ER events in ROI, should be used when component is on_pdf"
+    }
+}
