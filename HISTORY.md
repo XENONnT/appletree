@@ -1,6 +1,5 @@
 v0.6.0 / 2025-07-07
 -------------------
-## What's Changed
 * Add JAX 0.8+ and 0.9+ compatibility by @mhliu0001 in https://github.com/XENONnT/appletree/pull/208
 * Refactor `likelihood.py` and `config.py` + bug fixes by @mhliu0001 in https://github.com/XENONnT/appletree/pull/216
 * Add function to plot all maps by @mhliu0001 in https://github.com/XENONnT/appletree/pull/215
@@ -12,7 +11,6 @@ v0.6.0 / 2025-07-07
 * Add bilinear (2-D) and trilinear (3-D) LERP interpolators for regbin maps by @mhliu0001 in https://github.com/XENONnT/appletree/pull/223
 * NESTv2 ER plugin by @zhut19 in https://github.com/XENONnT/appletree/pull/220
 * Better fuse matching by @mhliu0001 in https://github.com/XENONnT/appletree/pull/222
-
 
 **Full Changelog**: https://github.com/XENONnT/appletree/compare/v0.5.5...v0.6.0
 
