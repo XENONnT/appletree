@@ -454,9 +454,8 @@ class Plotter:
 def _collect_maps(context):
     """Collect all Map and SigmaMap configs from a context.
 
-    Deduplicates by resolved file path. Returns a dict mapping a
-    deduplication key to ``(config, names)`` where *names* is the set
-    of all config names that share the same underlying file(s).
+    Deduplicates by resolved file path. Returns a dict mapping a deduplication key to ``(config,
+    names)`` where *names* is the set of all config names that share the same underlying file(s).
 
     """
     collected = {}
@@ -666,8 +665,8 @@ def _plot_map_2d_regbin(
 ):
     """Plot a 2D regbin Map with imshow.
 
-    ``is_log`` may be a single bool (applied to both axes) or a list of
-    two bools for per-axis control.
+    ``is_log`` may be a single bool (applied to both axes) or a list of two bools for per-axis
+    control.
 
     """
     if isinstance(is_log, (list, tuple)):
