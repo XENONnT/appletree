@@ -34,7 +34,7 @@ class ExcitonIonRatioER(Plugin):
 
 @export
 class QyER(Plugin):
-    depends_on = ["energy", "nex_ni_ratio"]
+    depends_on = ["energy", "nex_ni_ratio", "field"]
     provides = ["charge_yield"]
     parameters = (
         "m1",
@@ -46,31 +46,26 @@ class QyER(Plugin):
         "m9",
         "m10",
         "w",
-        "field",
         "liquid_xe_density",
     )
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, energy, nex_ni_ratio):
+    def simulate(self, key, parameters, energy, nex_ni_ratio, field):
         DENSITY = parameters["liquid_xe_density"]  # 2.8619
-        m1 = (
-            30.66
-            + (parameters["m1"] - 30.66)
-            / (1.0 + (parameters["field"] / 73.855) ** 2.0318) ** 0.41883
-        )
+        m1 = 30.66 + (parameters["m1"] - 30.66) / (1.0 + (field / 73.855) ** 2.0318) ** 0.41883
         m2 = parameters["m2"]
-        m3 = jnp.log10(parameters["field"]) * 0.13946236 + parameters["m3"]
+        m3 = jnp.log10(field) * 0.13946236 + parameters["m3"]
         m4 = 1.82217496 + (parameters["m4"] - 1.82217496) / (
-            1.0 + (parameters["field"] / 144.65029656) ** -2.80532006
+            1.0 + (field / 144.65029656) ** -2.80532006
         )
         m5 = 1.0 / parameters["w"] / (1.0 + nex_ni_ratio) - m1
         m7 = 7.02921301 + (parameters["m7"] - 7.02921301) / (
-            1.0 + (parameters["field"] / 256.48156448) ** 1.29119251
+            1.0 + (field / 256.48156448) ** 1.29119251
         )
         m8 = parameters["m8"]
         m9 = parameters["m9"]
         m10 = 0.0508273937 + (parameters["m10"] - 0.0508273937) / (
-            1.0 + (parameters["field"] / 139.260460) ** -0.65763592
+            1.0 + (field / 139.260460) ** -0.65763592
         )
 
         charge_yield_beta = jnp.ones(shape=jnp.shape(energy)) * m1
@@ -107,7 +102,7 @@ class LyER(Plugin):
 
 
 @export
-class MeanNphNe(Plugin):
+class MeanNphNeER(Plugin):
     depends_on = ["light_yield", "charge_yield", "energy"]
     provides = ["_Nph", "_Ne"]
 
@@ -132,15 +127,15 @@ class MeanExcitonIonER(Plugin):
 
 
 @export
-class FanoFactor(Plugin):
-    depends_on = ["_Nph", "_Ne"]
+class FanoFactorER(Plugin):
+    depends_on = ["_Nph", "_Ne", "field"]
     provides = [
         "fano_nq",
     ]
-    parameters = ("field", "delta_f", "liquid_xe_density")
+    parameters = ("delta_f", "liquid_xe_density")
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, _Nph, _Ne):
+    def simulate(self, key, parameters, _Nph, _Ne, field):
         # Mimicking the behavior of NEST v2.4.0
         # negative 0.0015 restores https://arxiv.org/abs/2211.10726v3 Eq. 8
         sign = jnp.sign(parameters["delta_f"])
@@ -157,9 +152,7 @@ class FanoFactor(Plugin):
             + 0.0015957 * parameters["liquid_xe_density"] ** 3
         )
         fano_nq += (
-            (1.0 - sign)
-            / 2.0
-            * (fano_nq_const + abs_delta_f * jnp.sqrt((_Nph + _Ne) * parameters["field"]))
+            (1.0 - sign) / 2.0 * (fano_nq_const + abs_delta_f * jnp.sqrt((_Nph + _Ne) * field))
         )
 
         return key, fano_nq
@@ -186,17 +179,21 @@ class TrueExcitonIonER(Plugin):
 
 @export
 class OmegaER(Plugin):
-    depends_on = ["elecFrac", "recombProb", "Ni", "_Ne", "_Nph"]
+    depends_on = ["elecFrac", "recombProb", "Ni", "_Ne", "_Nph", "field"]
     provides = ["omega", "Variance"]
-    parameters = ("A_er", "xi_er", "omega_er", "alpha3_er", "field")
+    parameters = (
+        "A_er",
+        "xi_er",
+        "omega_er",
+        "alpha3_er",
+    )
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, elecFrac, recombProb, Ni, _Ne, _Nph):
+    def simulate(self, key, parameters, elecFrac, recombProb, Ni, _Ne, _Nph, field):
         # was A in previous version, be advised
         ampl = (
             0.086036
-            + (parameters["A_er"] - 0.086036)
-            / (1.0 + (parameters["field"] / 295.2) ** 251.6) ** 0.0069114
+            + (parameters["A_er"] - 0.086036) / (1.0 + (field / 295.2) ** 251.6) ** 0.0069114
         )
         sqrt2 = jnp.sqrt(2.0)
 
@@ -225,7 +222,6 @@ class OmegaER(Plugin):
 class TruePhotonElectronER(Plugin):
     depends_on = ["recombProb", "Variance", "Ni", "Nq"]
     provides = ["num_photon", "num_electron"]
-    parameters = ("field",)
 
     @partial(jit, static_argnums=(0,))
     def simulate(
