@@ -52,11 +52,7 @@ class QyER(Plugin):
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, energy, nex_ni_ratio, field):
         DENSITY = parameters["liquid_xe_density"]  # 2.8619
-        m1 = (
-            30.66
-            + (parameters["m1"] - 30.66)
-            / (1.0 + (field / 73.855) ** 2.0318) ** 0.41883
-        )
+        m1 = 30.66 + (parameters["m1"] - 30.66) / (1.0 + (field / 73.855) ** 2.0318) ** 0.41883
         m2 = parameters["m2"]
         m3 = jnp.log10(field) * 0.13946236 + parameters["m3"]
         m4 = 1.82217496 + (parameters["m4"] - 1.82217496) / (
@@ -156,9 +152,7 @@ class FanoFactorER(Plugin):
             + 0.0015957 * parameters["liquid_xe_density"] ** 3
         )
         fano_nq += (
-            (1.0 - sign)
-            / 2.0
-            * (fano_nq_const + abs_delta_f * jnp.sqrt((_Nph + _Ne) * field))
+            (1.0 - sign) / 2.0 * (fano_nq_const + abs_delta_f * jnp.sqrt((_Nph + _Ne) * field))
         )
 
         return key, fano_nq
@@ -187,15 +181,19 @@ class TrueExcitonIonER(Plugin):
 class OmegaER(Plugin):
     depends_on = ["elecFrac", "recombProb", "Ni", "_Ne", "_Nph", "field"]
     provides = ["omega", "Variance"]
-    parameters = ("A_er", "xi_er", "omega_er", "alpha3_er", )
+    parameters = (
+        "A_er",
+        "xi_er",
+        "omega_er",
+        "alpha3_er",
+    )
 
     @partial(jit, static_argnums=(0,))
     def simulate(self, key, parameters, elecFrac, recombProb, Ni, _Ne, _Nph, field):
         # was A in previous version, be advised
         ampl = (
             0.086036
-            + (parameters["A_er"] - 0.086036)
-            / (1.0 + (field / 295.2) ** 251.6) ** 0.0069114
+            + (parameters["A_er"] - 0.086036) / (1.0 + (field / 295.2) ** 251.6) ** 0.0069114
         )
         sqrt2 = jnp.sqrt(2.0)
 
@@ -226,7 +224,15 @@ class TruePhotonElectronER(Plugin):
     provides = ["num_photon", "num_electron"]
 
     @partial(jit, static_argnums=(0,))
-    def simulate( self, key, parameters, recombProb, Variance, Ni, Nq,):
+    def simulate(
+        self,
+        key,
+        parameters,
+        recombProb,
+        Variance,
+        Ni,
+        Nq,
+    ):
         key, num_electron = randgen.normal(key, (1 - recombProb) * Ni, jnp.sqrt(Variance))
         num_electron = jnp.clip(num_electron.round().astype(int), 0, Ni)  # 16.02.2026 jnp.inf ->Ni
         # num_electron = jnp.clip(num_electron.round().astype(int), 0, Nq)
