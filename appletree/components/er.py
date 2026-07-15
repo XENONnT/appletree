@@ -18,6 +18,20 @@ class ERBand(ComponentSim):
         self.register_all(apt.plugins.efficiency)
 
 
+class ERBandSR(ComponentSim):
+    norm_type = "on_pdf"
+    add_eps_to_hist = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.register(apt.plugins.common.UniformEnergySpectra)
+        self.register(apt.plugins.common.PositionSpectra)
+        self.register_all(apt.plugins.er_sr_microphys)
+        self.register_all(apt.plugins.detector)
+        self.register_all(apt.plugins.reconstruction)
+        self.register_all(apt.plugins.efficiency)
+
+
 class ERPeak(ComponentSim):
     norm_type = "on_pdf"
     add_eps_to_hist = False
