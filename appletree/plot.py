@@ -205,21 +205,18 @@ class Plotter:
             samples = self.flat_chain[:, i]
             if self.plot_posterior_values:
                 median = np.percentile(samples, 50)
-                lower  = np.percentile(samples, 15.8655)   # -1 sgma
-                upper  = np.percentile(samples, 84.1345)   # +1 sigma
+                lower = np.percentile(samples, 15.8655)  # -1 sgma
+                upper = np.percentile(samples, 84.1345)  # +1 sigma
                 msigma = median - lower
                 psigma = upper - median
 
-                ax.axvline(median, color='k')
-                ax.axvline(lower, color='k', ls='dashed')
-                ax.axvline(upper, color='k', ls='dashed')
-                ax.set_title(f'Posterior: {median:.2} +{psigma:.2}/-{msigma:.2}')
-            
-            
-            ax.hist(samples, density=True, label="Posterior", **hist_kwargs)
-            
+                ax.axvline(median, color="k")
+                ax.axvline(lower, color="k", ls="dashed")
+                ax.axvline(upper, color="k", ls="dashed")
+                ax.set_title(f"Posterior: {median:.2} +{psigma:.2}/-{msigma:.2}")
 
-            
+            ax.hist(samples, density=True, label="Posterior", **hist_kwargs)
+
             prior = self.param_prior[self.param_names[i]]
             prior_type = prior["prior_type"]
             args = prior["prior_args"]
