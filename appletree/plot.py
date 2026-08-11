@@ -210,10 +210,10 @@ class Plotter:
                 msigma = median - lower
                 psigma = upper - median
 
-                ax.axvline(median, color='k')
-                ax.axvline(lower, color='k', ls='dashed')
-                ax.axvline(upper, color='k', ls='dashed')
-                ax.set_title(f'Posterior: {median:.4} +{psigma:.4}/-{msigma:.4}')
+                ax.axvline(median, color="k")
+                ax.axvline(lower, color="k", ls="dashed")
+                ax.axvline(upper, color="k", ls="dashed")
+                ax.set_title(f"Posterior: {median:.4} +{psigma:.4}/-{msigma:.4}")
 
             ax.hist(samples, density=True, label="Posterior", **hist_kwargs)
 
