@@ -19,7 +19,7 @@ from appletree.component import ComponentSim
 class Plotter:
     min_autocorr_time = 100
 
-    def __init__(self, backend_file_name, discard=0, thin=1):
+    def __init__(self, backend_file_name, discard=0, thin=1, plot_posterior_values=False):
         """Plotter for the MCMC chain.
 
         Args:
@@ -30,6 +30,7 @@ class Plotter:
         """
         self.discard = discard
         self.thin = thin
+        self.plot_posterior_values = plot_posterior_values
 
         self.backend_file_name = backend_file_name
         backend = emcee.backends.HDFBackend(self.backend_file_name, read_only=True)
@@ -199,8 +200,26 @@ class Plotter:
 
         axes = []
         for i in range(self.n_param):
+
             ax = fig.add_subplot(n_rows, n_cols, i + 1)
-            ax.hist(self.flat_chain[:, i], density=True, label="Posterior", **hist_kwargs)
+            samples = self.flat_chain[:, i]
+            if self.plot_posterior_values:
+                median = np.percentile(samples, 50)
+                lower  = np.percentile(samples, 15.8655)   # -1 sgma
+                upper  = np.percentile(samples, 84.1345)   # +1 sigma
+                msigma = median - lower
+                psigma = upper - median
+
+                ax.axvline(median, color='k')
+                ax.axvline(lower, color='k', ls='dashed')
+                ax.axvline(upper, color='k', ls='dashed')
+                ax.set_title(f'Posterior: {median:.2} +{psigma:.2}/-{msigma:.2}')
+            
+            
+            ax.hist(samples, density=True, label="Posterior", **hist_kwargs)
+            
+
+            
             prior = self.param_prior[self.param_names[i]]
             prior_type = prior["prior_type"]
             args = prior["prior_args"]
