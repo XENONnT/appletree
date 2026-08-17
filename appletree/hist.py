@@ -25,7 +25,6 @@ def make_hist_irreg_bin_1d(sample, bins, weights):
         weights: array with shape (N,).
 
     """
-
     ind = jnp.searchsorted(bins, sample)
 
     hist = jnp.zeros(len(bins) + 1)
