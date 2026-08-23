@@ -338,18 +338,13 @@ class Likelihood:
         result = list(r for r in np.hstack(result))
         return key, result
 
-    @need_replacing_alias
-    def get_log_likelihood(self, key, batch_size, parameters):
-        """Get log likelihood of given parameters.
+    def log_likelihood_from_hist(self, model_hist):
+        """Poisson log likelihood of an already-simulated model histogram.
 
         Args:
-            key: a pseudo-random number generator (PRNG) key.
-            batch_size: int of number of simulated events.
-            parameters: dict of parameters used in simulation.
+            model_hist: array of the same shape as the data histogram.
 
         """
-        key, model_hist = self._simulate_model_hist(key, batch_size, parameters)
-
         # More stable if we first check zeros in model_hist
         # If zeros exist, return -inf directly
         if np.any(model_hist <= 0):
@@ -358,21 +353,42 @@ class Likelihood:
                 "Consider increasing batch_size or placing more stringent bounds "
                 "on parameters to avoid this issue."
             )
-            return key, -float("inf")
+            return -float("inf")
         if np.any(np.isnan(model_hist)) or np.any(np.isinf(model_hist)):
             warn(
                 "NaN or infinite bin(s) in model histogram encountered! "
                 "This usually means there is something wrong in your plugins, "
                 "or the parameters are out of reasonable range."
             )
-            return key, -float("inf")
+            return -float("inf")
 
         # Poisson likelihood
         llh = np.sum(self.data_hist * np.log(model_hist) - model_hist)
         llh = float(llh)
         if np.isnan(llh):
             raise ValueError("NaN log likelihood encountered!")
-        return key, llh
+        return llh
+
+    @need_replacing_alias
+    def get_log_likelihood(self, key, batch_size, parameters, repeat_times=1):
+        """Get log likelihood of given parameters.
+
+        With repeat_times > 1 the model histograms are accumulated and the Poisson log
+        likelihood is taken once on the average, equivalent to a single
+        repeat_times-larger sample.
+
+        Args:
+            key: a pseudo-random number generator (PRNG) key.
+            batch_size: int of number of simulated events.
+            parameters: dict of parameters used in simulation.
+            repeat_times: int, how many times the simulation is repeated.
+
+        """
+        model_hist = None
+        for _ in range(repeat_times):
+            key, hist_i = self._simulate_model_hist(key, batch_size, parameters)
+            model_hist = hist_i if model_hist is None else model_hist + hist_i
+        return key, self.log_likelihood_from_hist(model_hist / repeat_times)
 
     @need_replacing_alias
     def get_num_events_accepted(self, batch_size, parameters):
@@ -537,15 +553,24 @@ class LikelihoodLit(Likelihood):
         self.only_component = list(self.components.keys())[0]
 
     @need_replacing_alias
-    def get_log_likelihood(self, key, batch_size, parameters):
+    def get_log_likelihood(self, key, batch_size, parameters, repeat_times=1):
         """Get log likelihood of given parameters.
+
+        Unbinned, so repeat_times averages the log likelihoods.
 
         Args:
             key: a pseudo-random number generator (PRNG) key.
             batch_size: int of number of simulated events.
             parameters: dict of parameters used in simulation.
+            repeat_times: int, how many times the simulation is repeated.
 
         """
+        if repeat_times > 1:
+            total = 0.0
+            for _ in range(repeat_times):
+                key, llh_i = self.get_log_likelihood(key, batch_size, parameters)
+                total += llh_i / repeat_times
+            return key, total
         if batch_size != 1:
             warning = (
                 "You specified the batch_size larger than 1, "
