@@ -164,7 +164,7 @@ class MeanExcitonIon(Plugin):
 
 
 @export
-class TrueExcitonIonNR(Plugin):
+class TrueExcitonIon(Plugin):
     depends_on = ["_Nph", "_Ne", "nex_ni_ratio", "alf"]
     provides = ["Ni", "Nex", "Nq"]
     parameters = ("fano_ni", "fano_nex")
