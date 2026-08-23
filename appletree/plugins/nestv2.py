@@ -131,7 +131,7 @@ class LyNR(Plugin):
 
 
 @export
-class MeanNphNeNR(Plugin):
+class MeanNphNe(Plugin):
     depends_on = ["light_yield", "charge_yield", "energy"]
     provides = ["_Nph", "_Ne"]
 
@@ -164,7 +164,7 @@ class MeanExcitonIon(Plugin):
 
 
 @export
-class TrueExcitonIon(Plugin):
+class TrueExcitonIonNR(Plugin):
     depends_on = ["_Nph", "_Ne", "nex_ni_ratio", "alf"]
     provides = ["Ni", "Nex", "Nq"]
     parameters = ("fano_ni", "fano_nex")
