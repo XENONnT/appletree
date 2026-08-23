@@ -131,7 +131,7 @@ class LyNR(Plugin):
 
 
 @export
-class MeanNphNe(Plugin):
+class MeanNphNeNR(Plugin):
     depends_on = ["light_yield", "charge_yield", "energy"]
     provides = ["_Nph", "_Ne"]
 

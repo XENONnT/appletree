@@ -118,6 +118,15 @@ def test_repeat_times():
     # Prior depends only on parameters, so it must match across calls.
     assert prior_single == prior_repeat
 
+    # repeat_times must be a positive integer.
+    for bad in (0, -1, 2.5, "2", None):
+        try:
+            context.log_posterior(fit_params, batch_size=batch_size, repeat_times=bad)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"repeat_times={bad!r} should raise ValueError")
+
     # Full fitting path with repeat_times > 1.
     context.fitting(nwalkers=100, iteration=2, batch_size=batch_size, repeat_times=2)
     check_unused_configs()

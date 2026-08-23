@@ -170,6 +170,9 @@ class Context:
                 likelihood, which decides how repeats combine.
 
         """
+        if not isinstance(repeat_times, (int, np.integer)) or repeat_times <= 0:
+            raise ValueError(f"repeat_times must be a positive integer, got {repeat_times!r}")
+
         self.par_manager.set_parameter(parameters)
         log_prior = self.par_manager.log_prior
         if not np.isfinite(log_prior):
