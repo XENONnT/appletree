@@ -94,7 +94,7 @@ def test_literature_context():
 
 
 def test_repeat_times():
-    """Test log_posterior averaging and fitting with repeat_times > 1."""
+    """Test log_posterior and fitting with repeat_times > 1."""
     _cached_functions.clear()
     _cached_configs.clear()
     context = apt.ContextRn220()
