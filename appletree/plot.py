@@ -213,7 +213,7 @@ class Plotter:
                 ax.axvline(median, color="k")
                 ax.axvline(lower, color="k", ls="dashed")
                 ax.axvline(upper, color="k", ls="dashed")
-                ax.axvline(self.param_mpe[self.param_names[i]], color='orange')
+                ax.axvline(self.param_mpe[self.param_names[i]], color="orange")
                 ax.set_title(f"Posterior: {median:.4g} +{psigma:.4g}/-{msigma:.4g}")
 
             ax.hist(samples, density=True, label="Posterior", **hist_kwargs)
