@@ -161,40 +161,36 @@ class Context:
         return n_events
 
     def log_posterior(self, parameters, batch_size=1_000_000, repeat_times=1):
-        """Get log likelihood of given parameters.
+        """Get log posterior of given parameters.
 
         Args:
-            batch_size: int of number of simulated events.
             parameters: dict of parameters used in simulation.
+            batch_size: int of number of simulated events.
+            repeat_times: int, how many times the simulation is repeated. Passed to each
+                likelihood, which decides how repeats combine.
 
         """
+        if not isinstance(repeat_times, (int, np.integer)) or repeat_times <= 0:
+            raise ValueError(f"repeat_times must be a positive integer, got {repeat_times!r}")
+
         self.par_manager.set_parameter(parameters)
         log_prior = self.par_manager.log_prior
         if not np.isfinite(log_prior):
             # Bypass simulation if prior is invalid
             return -np.inf, log_prior
 
-        def _log_posterior_once(batch_size):
-            key = randgen.get_key()
-            log_posterior = 0
-            for likelihood in self.likelihoods.values():
-                key, log_likelihood_i = likelihood.get_log_likelihood(
-                    key,
-                    batch_size,
-                    self.par_manager.get_all_parameter(),
-                )
-                log_posterior += log_likelihood_i
+        key = randgen.get_key()
+        log_posterior = 0
+        for likelihood in self.likelihoods.values():
+            key, log_likelihood_i = likelihood.get_log_likelihood(
+                key,
+                batch_size,
+                self.par_manager.get_all_parameter(),
+                repeat_times=repeat_times,
+            )
+            log_posterior += log_likelihood_i
 
-            log_posterior += log_prior
-            return log_posterior
-
-        if repeat_times > 1:
-            log_posteriors = []
-            for _ in range(repeat_times):
-                log_posteriors.append(_log_posterior_once(batch_size))
-            log_posterior = np.mean(log_posteriors)
-        else:
-            log_posterior = _log_posterior_once(batch_size)
+        log_posterior += log_prior
 
         return log_posterior, log_prior
 
