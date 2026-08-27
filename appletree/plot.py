@@ -558,8 +558,8 @@ class Plotter:
                 alpha=0.3,
             )
             ax.set_xlabel("Number of iterations")
-            ax.set_ylabel("Median")
-            ax2.set_ylabel("$\\sigma$")
+            ax.set_ylabel("Median", color="#4067b1")
+            ax2.set_ylabel("$\\sigma$", color="#6ccef5")
             ax.set_title(self.param_names[i])
             axes.append(ax)
 
