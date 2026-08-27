@@ -63,11 +63,14 @@ class Plotter:
 
         self.n_iter, self.n_walker, self.n_param = self.chain.shape
 
-    def make_all_plots(self, save=False, save_path=".", fmt=["png", "pdf"], **save_kwargs):
+    def make_all_plots(self, save=False, save_path=".", fmt=["png", "pdf"], last_n_iterations=100, **save_kwargs):
         """Make all plots and save them if save is True.
 
         The plot styles are default. save_kwargs will be passed to fig.savefig().
 
+        Args: 
+            last_n_iterations: Number of iterations to be used for shaded bands in 
+                self.plot_parameter_burn.
         """
 
         def save_fig(fig, name, fmt):
@@ -79,6 +82,10 @@ class Plotter:
         fig, axes = self.plot_burn_in()
         if save:
             save_fig(fig, "burn_in", fmt)
+
+        fig, axes = self.plot_parameter_burn(last_n_iterations)
+        if save:
+            save_fig(fig, "last_n_iterations", fmt)
 
         fig, axes = self.plot_marginal_posterior()
         if save:
@@ -464,6 +471,94 @@ class Plotter:
         ax.set_xlabel("Walker Index")
         ax.legend()
 
+        plt.tight_layout()
+        return fig, axes
+
+
+    def plot_parameter_burn(self, fig=None, last_n_iterations=100):
+        """Plots the median and standard deviation of all walker per iteration.
+        Further, displays the mean and spread of the last n iterations as a shaded band
+        for median and standard deviation.
+        This helps to better judge if a parameter already converged decently or 
+        if the fit should be run for a few more iterations.
+    
+        Args:
+            fig: he figure to plot on. If None, a new figure will be created.
+            last_n_iterations: Last N iterations which sould be use for the 
+                averaging and shaded bands.
+        """
+        n_cols = 2
+        n_rows = int(np.ceil(self.n_param / n_cols))
+    
+        if fig is None:
+            fig = plt.figure(figsize=(10, 2 * n_rows))
+    
+        axes = []
+        for i in range(self.n_param):
+            ax = fig.add_subplot(n_rows, n_cols, i + 1)
+    
+            median = np.median(self.chain[:, :, i], axis=1)
+            median_average_last_n = np.mean(median[-last_n_iterations:])
+            median_width_last_n = np.std(median[-last_n_iterations:])
+    
+            std = np.std(self.chain[:, :, i], axis=1)
+            std_average_last_n = np.mean(std[-last_n_iterations:])
+            std_width_last_n = np.std(std[-last_n_iterations:])
+            
+            n_iterations = len(median)
+            ax.plot(
+                np.arange(n_iterations-last_n_iterations),
+                median[:-last_n_iterations], color='#4067b1', alpha=0.4
+            )
+            ax.plot(
+                np.arange(n_iterations-last_n_iterations, n_iterations),
+                median[-last_n_iterations:], color='#4067b1', label = 'Median'
+            )
+            ax.axhline(
+                median_average_last_n, color='#4067b1'
+            )
+            ax.axhspan(
+                median_average_last_n-median_width_last_n,
+                median_average_last_n+median_width_last_n,
+                color='#4067b1',
+                alpha=0.3
+            )
+    
+            ax2 = ax.twinx()
+            ax2.plot(
+                np.arange(n_iterations-last_n_iterations),
+                std[:-last_n_iterations], label = '$\sigma$', color='#6ccef5', alpha=0.4
+            )
+            ax2.plot(
+                np.arange(n_iterations-last_n_iterations, n_iterations),
+                std[-last_n_iterations:], color='#6ccef5'
+            )
+            ax2.axhline(
+                std_average_last_n, color='#6ccef5'
+            )
+            ax2.axhspan(
+                std_average_last_n-std_width_last_n,
+                std_average_last_n+std_width_last_n,
+                color='#6ccef5',
+                alpha=0.3
+            )
+    
+            ax.set_xlabel('Number of iterations')
+            ax.set_ylabel('Median')
+            ax2.set_ylabel('$\sigma$')
+            ax.set_title(self.param_names[i])
+            axes.append(ax)
+    
+        # Set legend
+        handles, labels = ax.get_legend_handles_labels()
+        handles2, labels2 = ax2.get_legend_handles_labels()
+        fig.legend(
+            loc="lower center",
+            handles=np.concatenate([handles, handles2]),
+            labels=np.concatenate([labels, labels2]),
+            bbox_to_anchor=(0.5, 1.0),
+        )
+    
         plt.tight_layout()
         return fig, axes
 
