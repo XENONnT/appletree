@@ -83,7 +83,7 @@ class Plotter:
         if save:
             save_fig(fig, "burn_in", fmt)
 
-        fig, axes = self.plot_parameter_burn(last_n_iterations)
+        fig, axes = self.plot_parameter_burn(last_n_iterations=last_n_iterations)
         if save:
             save_fig(fig, "last_n_iterations", fmt)
 
@@ -487,6 +487,16 @@ class Plotter:
             last_n_iterations: Last N iterations which sould be use for the 
                 averaging and shaded bands.
         """
+        _has_enough_iterations = self.n_iter > last_n_iterations
+        if not _has_enough_iterations:
+            last_n_iterations = self.n_iter
+            warn(
+                f"Your fit has less than {last_n_iterations}."
+                '"plot_parameter_burn" will use all iterations for '
+                'averaging instead.'
+            )
+
+        
         n_cols = 2
         n_rows = int(np.ceil(self.n_param / n_cols))
     
@@ -527,7 +537,7 @@ class Plotter:
             ax2 = ax.twinx()
             ax2.plot(
                 np.arange(n_iterations-last_n_iterations),
-                std[:-last_n_iterations], label = '$\sigma$', color='#6ccef5', alpha=0.4
+                std[:-last_n_iterations], label = '$\\sigma$', color='#6ccef5', alpha=0.4
             )
             ax2.plot(
                 np.arange(n_iterations-last_n_iterations, n_iterations),
@@ -545,7 +555,7 @@ class Plotter:
     
             ax.set_xlabel('Number of iterations')
             ax.set_ylabel('Median')
-            ax2.set_ylabel('$\sigma$')
+            ax2.set_ylabel('$\\sigma$')
             ax.set_title(self.param_names[i])
             axes.append(ax)
     
