@@ -495,10 +495,9 @@ class Plotter:
             warn(
                 f"Your fit has less than {last_n_iterations}."
                 '"plot_parameter_burn" will use all iterations for '
-                'averaging instead.'
+                "averaging instead."
             )
 
-        
         n_cols = 2
         n_rows = int(np.ceil(self.n_param / n_cols))
 
