@@ -569,8 +569,8 @@ class Plotter:
         handles2, labels2 = ax2.get_legend_handles_labels()
         fig.legend(
             loc="lower center",
-            handles=np.concatenate([handles, handles2]),
-            labels=np.concatenate([labels, labels2]),
+            handles=list(np.concatenate([handles, handles2])),
+            labels=list(np.concatenate([labels, labels2])),
             bbox_to_anchor=(0.5, 1.0),
         )
 
