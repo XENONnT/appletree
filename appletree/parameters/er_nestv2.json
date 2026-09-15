@@ -117,6 +117,15 @@
         "unit": "1",
         "doc": "elife shifter"
     },
+    "t_er_yield": {
+        "prior_type": "norm",
+        "prior_args": {"mean": 0.0, "std": 1.0},
+        "allowed_range": [-3.0, 3.0],
+        "init_mean": 0.0,
+        "init_std": 1.0,
+        "unit": "1",
+        "doc": "ER light-yield uncertainty shifter; +1 is +1 sigma, not +100%"
+    },
     "s1_eff_n_hits_3f_sigma": {
         "prior_type": "norm",
         "prior_args": {"mean": 0.0, "std": 1.0},

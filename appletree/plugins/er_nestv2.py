@@ -4,6 +4,7 @@ from jax import jit
 from functools import partial
 
 from appletree import randgen
+from appletree.config import takes_config, Map
 from appletree.plugin import Plugin
 from appletree.utils import exporter
 
@@ -89,27 +90,56 @@ class QyER(Plugin):
 
 
 @export
+@takes_config(
+    Map(
+        name="er_ly_rel_uncertainty",
+        method="LERP",
+        default="_er_ly_rel_uncertainty.json",
+        help="Relative one-sigma ER light-yield uncertainty",
+    ),
+)
+class ERYieldMorpher(Plugin):
+    """Morph ER light yield by a relative uncertainty while conserving quanta."""
+
+    depends_on = ["energy", "charge_yield"]
+    provides = ["charge_yield_morphed"]
+    parameters = ("w", "t_er_yield")
+
+    @partial(jit, static_argnums=(0,))
+    def simulate(self, key, parameters, energy, charge_yield):
+        total = 1.0 / parameters["w"]
+        nominal_light_yield = total - charge_yield
+        relative_uncertainty = self.er_ly_rel_uncertainty.apply(energy)
+        morphed_light_yield = nominal_light_yield * (
+            1.0 + parameters["t_er_yield"] * relative_uncertainty
+        )
+        morphed_light_yield = jnp.clip(morphed_light_yield, 0.0, total)
+        charge_yield_morphed = total - morphed_light_yield
+        return key, charge_yield_morphed
+
+
+@export
 class LyER(Plugin):
-    depends_on = ["charge_yield"]
+    depends_on = ["charge_yield_morphed"]
     provides = ["light_yield"]
     parameters = ("w",)
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, charge_yield):
-        light_yield = 1.0 / parameters["w"] - charge_yield
+    def simulate(self, key, parameters, charge_yield_morphed):
+        light_yield = 1.0 / parameters["w"] - charge_yield_morphed
         light_yield = jnp.maximum(light_yield, 0.0)
         return key, light_yield
 
 
 @export
 class MeanNphNeER(Plugin):
-    depends_on = ["light_yield", "charge_yield", "energy"]
+    depends_on = ["light_yield", "charge_yield_morphed", "energy"]
     provides = ["_Nph", "_Ne"]
 
     @partial(jit, static_argnums=(0,))
-    def simulate(self, key, parameters, light_yield, charge_yield, energy):
+    def simulate(self, key, parameters, light_yield, charge_yield_morphed, energy):
         _Nph = light_yield * energy
-        _Ne = charge_yield * energy
+        _Ne = charge_yield_morphed * energy
         return key, _Nph, _Ne
 
 
