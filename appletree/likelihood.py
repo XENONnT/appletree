@@ -5,7 +5,8 @@ import inspect
 from copy import deepcopy
 
 import numpy as np
-from scipy.stats import norm, poisson
+from scipy.stats import norm
+from scipy.stats import poisson as scipy_poisson
 from strax import deterministic_hash
 
 from appletree import utils
@@ -363,7 +364,7 @@ class Likelihood:
             return -float("inf")
 
         # Poisson likelihood
-        llh = np.sum(poisson.logpmf(self.data_hist, model_hist))
+        llh = np.sum(scipy_poisson.logpmf(self.data_hist, model_hist))
         llh = float(llh)
         if np.isnan(llh):
             raise ValueError("NaN log likelihood encountered!")
