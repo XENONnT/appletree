@@ -478,8 +478,9 @@ class Plotter:
         return fig, axes
 
     def plot_parameter_burn(self, fig=None, last_n_iterations=100):
-        """Plots the median and standard deviation of all walker per iteration. Further, displays
-        the mean and spread of the last n iterations as a shaded band for median and standard
+        """Plots the median and standard deviation of all walker per iteration.
+
+        Further, displays the mean and spread of the last n iterations as a shaded band for median and standard
         deviation. This helps to better judge if a parameter already converged decently or if the
         fit should be run for a few more iterations.
 
@@ -580,9 +581,8 @@ class Plotter:
 def _collect_maps(context):
     """Collect all Map and SigmaMap configs from a context.
 
-    Deduplicates by resolved file path. Returns a dict mapping a
-    deduplication key to ``(config, names)`` where *names* is the set
-    of all config names that share the same underlying file(s).
+    Deduplicates by resolved file path. Returns a dict mapping a deduplication key to ``(config,
+    names)`` where *names* is the set of all config names that share the same underlying file(s).
 
     """
     collected = {}
@@ -792,8 +792,8 @@ def _plot_map_2d_regbin(
 ):
     """Plot a 2D regbin Map with imshow.
 
-    ``is_log`` may be a single bool (applied to both axes) or a list of
-    two bools for per-axis control.
+    ``is_log`` may be a single bool (applied to both axes) or a list of two bools for per-axis
+    control.
 
     """
     if isinstance(is_log, (list, tuple)):
