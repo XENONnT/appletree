@@ -11,7 +11,6 @@ from scipy.interpolate import interp1d
 
 from appletree.utils import exporter
 
-
 export, __all__ = exporter(export_self=False)
 
 # Threshold for hybrid binomial: use exact Bernoulli sum for n <= threshold,
@@ -366,7 +365,6 @@ elif hasattr(random, "binomial"):
             an updated seed, random variables.
 
         """
-
         key, seed = random.split(key)
 
         shape = shape or jnp.broadcast_shapes(jnp.shape(p), jnp.shape(n))
@@ -463,7 +461,6 @@ def negative_binomial(key, p, n, shape=()):
             2. https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.nbinom.html
 
     """
-
     key, lam = gamma(key, n, p / (1 - p), shape)
 
     key, rvs = poisson(key, lam)
@@ -489,7 +486,6 @@ def generalized_poisson(key, lam, eta, shape=()):
         2. https://search.r-project.org/CRAN/refmans/LaplacesDemon/html/dist.Generalized.Poisson.html  # noqa
 
     """
-
     shape = shape or jnp.broadcast_shapes(jnp.shape(lam), jnp.shape(eta))
     lam = jnp.broadcast_to(lam, shape).astype(FLOAT)
     eta = jnp.broadcast_to(eta, shape).astype(FLOAT)
@@ -533,7 +529,6 @@ def uniform_key_vectorized(key):
 
 class TwoHalfNorm:
     """Continuous distribution, two half Normal."""
-
     @staticmethod
     def rvs(mu=0, sigma_pos=1, sigma_neg=1, size=None):
         """Get random variables.
@@ -590,7 +585,6 @@ class TwoHalfNorm:
 class BandTwoHalfNorm:
     """This is a TwoHalfNorm which quantifies uncertainty in y-axis, but we need to interpolate from
     x-axis."""
-
     def __init__(self, x, y, yerr_upper, yerr_lower):
         self.x = x
         self.y = interp1d(x, y, bounds_error=False, fill_value=np.nan)
