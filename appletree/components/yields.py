@@ -17,6 +17,21 @@ class MonoEnergiesYields(ComponentSim):
         self.register(apt.plugins.MonoEnergiesClipEff)
 
 
+class MonoEnergiesYieldsER(ComponentSim):
+    """Electron-recoil light and charge yields for mono-energy literature constraints."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.register(apt.plugins.MonoEnergiesSpectra)
+        self.register(apt.plugins.PositionSpectra)
+        self.register(apt.plugins.EField)
+        self.register(apt.plugins.ExcitonIonRatioER)
+        self.register(apt.plugins.QyER)
+        self.register(apt.plugins.LyER)
+        self.register(apt.plugins.MonoEnergiesClipEff)
+
+
 class BandEnergiesYields(ComponentSim):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
